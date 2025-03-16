@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.fit2081assignment1_yang_xingyu_33533563"
+    namespace = "com.example.fit2081a1"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.fit2081assignment1_yang_xingyu_33533563"
+        applicationId = "com.example.fit2081a1"
         minSdk = 31
         targetSdk = 35
         versionCode = 1
