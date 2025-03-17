@@ -45,7 +45,7 @@ private const val userphoneStatic: String = ""
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
     var username by remember { mutableStateOf("")}
     var phoneNumber by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -141,7 +141,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 onClick = {
                     if (username == usernameStatic && phoneNumber == userphoneStatic) {
                         Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                        context.startActivity(Intent(context, HomeScreen::class.java))
+                        onNavigateToHome()
                     } else {
                         Toast.makeText(context, "Unauthorised User", Toast.LENGTH_SHORT).show()
                     }

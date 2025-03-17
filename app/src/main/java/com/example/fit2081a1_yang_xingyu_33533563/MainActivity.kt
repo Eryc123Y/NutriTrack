@@ -11,7 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.HomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.theme.FIT2081A1Theme
 
 class MainActivity : ComponentActivity() {
@@ -21,8 +26,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             FIT2081A1Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LoginScreen(modifier = Modifier.padding(innerPadding)
-                    )
+                    AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -30,17 +34,29 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun AppNavigation(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FIT2081A1Theme {
-        Greeting("Android")
+    NavHost(
+        navController = navController,
+        startDestination = "welcome"
+    ) {
+        //Welcome
+        composable("welcome") {
+            WelcomeScreen(onNavigateToLogin = {
+                navController.navigate("login")
+            })
+        }
+        //LoginScreen
+        composable("login") {
+            LoginScreen(onNavigateToHome = {
+                navController.navigate("home")
+            })
+        }
+        //HomeScreen
+        composable("home") {
+            HomeScreen()
+        }
     }
 }
+
