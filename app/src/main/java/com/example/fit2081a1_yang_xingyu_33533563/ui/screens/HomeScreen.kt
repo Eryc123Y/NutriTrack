@@ -19,5 +19,11 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.theme.FIT2081A1Theme
 
 @Composable
 fun HomeScreen() {
-    TODO("Not yet implemented")
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Home Screen", style = TextStyle(fontSize = 24.sp))
+    }
 }
