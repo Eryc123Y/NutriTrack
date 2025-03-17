@@ -1,7 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
 import com.example.fit2081a1_yang_xingyu_33533563.R
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -36,17 +35,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlin.jvm.java
 
 
-private const val usernameStatic: String = ""
-private const val userphoneStatic: String = ""
+private const val usernameStatic: String = "012345"
+private const val userphoneStatic: String = "1"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
-    var username by remember { mutableStateOf("")}
+    var userID by remember { mutableStateOf("")}
     var phoneNumber by remember { mutableStateOf("") }
     val context = LocalContext.current
     val logInButtonShape = MaterialTheme.shapes.medium
@@ -85,7 +83,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             ) {
                 OutlinedTextField(
                     value = selectedId,
-                    onValueChange = {},
+                    onValueChange = {selectedId = it},
                     readOnly = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -130,7 +128,8 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "This app is only for pre-registered users. Please have your ID and phone number before continuing",
+                text = "This app is only for pre-registered users. Please have your " +
+                        "ID and phone number before continuing",
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -139,7 +138,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             // Login Button
             Button(
                 onClick = {
-                    if (username == usernameStatic && phoneNumber == userphoneStatic) {
+                    if (selectedId == usernameStatic && phoneNumber == userphoneStatic) {
                         Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                         onNavigateToHome()
                     } else {
