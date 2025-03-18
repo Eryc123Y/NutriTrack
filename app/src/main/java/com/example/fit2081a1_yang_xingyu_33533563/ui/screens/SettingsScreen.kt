@@ -37,7 +37,7 @@ fun SettingsScreen(
         topBar = {
             TopNavigationBar(
                 title = "Settings",
-                showBackButton = true,
+                showBackButton = false,
                 onBackButtonClick = onBackClick
             )
         },

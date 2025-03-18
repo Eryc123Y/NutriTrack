@@ -146,7 +146,7 @@ fun QuestionnaireStatusSection(onNavigate: (String) -> Unit) {
 @Composable
 fun NutritionMixImage() {
     Row (
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ){
         Image(
@@ -161,7 +161,7 @@ fun NutritionMixImage() {
 fun MyScoreDisplay() {
     // First row with title and "See all scores" button
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){

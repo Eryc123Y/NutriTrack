@@ -25,7 +25,7 @@ fun CoachScreen(
         topBar = {
             TopNavigationBar(
                 title = "NutriCoach",
-                showBackButton = true,
+                showBackButton = false,
                 onBackButtonClick = onBackClick
             )
         },
