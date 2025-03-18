@@ -3,20 +3,45 @@ package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 
+@Preview(showSystemUi = true)
 @Composable
-fun NutriCoachScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("NutriCoach", style = TextStyle(fontSize = 24.sp))
+fun NutriCoachScreen(
+    onNavigate: (String) -> Unit = {},
+    onBackClick: () -> Unit = {}
+) {
+    Scaffold (
+        topBar = {
+            TopNavigationBar(
+                title = "NutriCoach",
+                showBackButton = true,
+                onBackButtonClick = onBackClick
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                currentRoute = "nutriCoach",
+                onNavigate = onNavigate
+            )
+        }
+    ){ innerPadding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("NutriCoach", style = TextStyle(fontSize = 24.sp))
+        }
     }
 }
