@@ -24,14 +24,14 @@ fun InsightsScreen(
     Scaffold (
         topBar = {
             TopNavigationBar(
-                title = "NutriCoach",
+                title = "Insights: Food Score",
                 showBackButton = true,
                 onBackButtonClick = onBackClick
             )
         },
         bottomBar = {
             BottomNavigationBar(
-                currentRoute = "settings",
+                currentRoute = "insights",
                 onNavigate = onNavigate
             )
         }
@@ -41,7 +41,7 @@ fun InsightsScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Settings", style = TextStyle(fontSize = 24.sp))
+            Text("Insights", style = TextStyle(fontSize = 24.sp))
         }
     }
 }
