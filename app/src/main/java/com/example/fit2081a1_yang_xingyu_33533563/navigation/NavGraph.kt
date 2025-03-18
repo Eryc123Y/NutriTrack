@@ -1,12 +1,14 @@
 package com.example.fit2081a1_yang_xingyu_33533563.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.HomeScreen
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.InsightsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.NutriCoachScreen
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
 
 /**
@@ -15,7 +17,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
  */
 
 @Composable
-fun AppNavigation(modifier: Modifier = Modifier) {
+fun AppNavigation() {
     val navController = rememberNavController()
 
     NavHost(
@@ -36,7 +38,33 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         }
         //HomeScreen
         composable("home") {
-            HomeScreen()
+            HomeScreen(
+                onNavigate = { route -> navController.navigate(route) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("insights") {
+            InsightsScreen(
+                onNavigate = { route -> navController.navigate(route) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // not implemented in A1
+        composable("nutricoach") {
+            NutriCoachScreen(
+                onNavigate = { route -> navController.navigate(route) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // not implemented in A1
+        composable("settings") {
+            SettingsScreen(
+                onNavigate = { route -> navController.navigate(route) },
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }
