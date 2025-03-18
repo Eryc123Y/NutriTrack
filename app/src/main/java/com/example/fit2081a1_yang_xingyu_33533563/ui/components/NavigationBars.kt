@@ -3,10 +3,10 @@ package com.example.fit2081a1_yang_xingyu_33533563.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -14,6 +14,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -52,12 +54,12 @@ fun BottomNavigationBar(
         ),
         NavigationItem(
             itemTitle = "NutriCoach",
-            itemIcon = Icons.Rounded.CheckCircle,
+            itemIcon = Icons.Outlined.CheckCircle,
             itemScreenRoute = "nutricoach"
         ),
         NavigationItem(
             itemTitle = "Settings",
-            itemIcon = Icons.Rounded.Settings,
+            itemIcon = Icons.Outlined.Settings,
             itemScreenRoute = "settings"
         )
     )
@@ -89,6 +91,7 @@ fun TopNavigationBar(
     showBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = {}
 ) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     TopAppBar(
         title = { Text(title) },
         navigationIcon = {
@@ -101,5 +104,7 @@ fun TopNavigationBar(
                 }
             }
         },
+        scrollBehavior = scrollBehavior
+
     )
 }
