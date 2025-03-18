@@ -43,7 +43,7 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() }
             )
         }
-
+        //InsightScreen
         composable("insights") {
             InsightsScreen(
                 onNavigate = { route -> navController.navigate(route) },
