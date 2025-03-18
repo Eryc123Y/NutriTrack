@@ -9,10 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.CoachScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.HomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.InsightsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.NutriCoachScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
@@ -91,7 +91,7 @@ fun AppNavigation() {
 
         // not implemented in A1
         composable("nutricoach") {
-            NutriCoachScreen(
+            CoachScreen(
                 onNavigate = { route -> navController.navigate(route) },
                 onBackClick = { navController.popBackStack() }
             )

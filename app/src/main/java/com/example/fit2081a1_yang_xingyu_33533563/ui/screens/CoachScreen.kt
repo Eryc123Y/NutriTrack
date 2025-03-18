@@ -17,7 +17,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 
 @Preview(showBackground = true)
 @Composable
-fun NutriCoachScreen(
+fun CoachScreen(
     onNavigate: (String) -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
