@@ -1,10 +1,8 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
 
 
@@ -28,12 +28,10 @@ fun WelcomeScreen(onNavigateToLogin: () -> Unit = {}) {
     val displayText = "This app provides general health and nutrition information for educational " +
             "purposes only. It is not intended as medical advice diagnosis, or treatment. Always " +
             "consult a qualified healthcare professional before making any changes to your diet, " +
-            "exercise, or health regimen. \nUse this app at your own risk. If you’d like to an " +
+            "exercise, or health regimen.\n\nUse this app at your own risk. If you’d like to an " +
             "Accredited Practicing Dietitian (APD), please visit the Monash Nutrition/Dietetics " +
             "Clinic (discounted rates for students): " +
             "https://www.monash.edu/medicine/scs/nutrition/clinics/nutrition"
-
-    val logoToDisplay = R.drawable.logo
 
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -58,10 +56,11 @@ fun WelcomeScreen(onNavigateToLogin: () -> Unit = {}) {
             Text(
                 text = displayText,
                 style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Justify,
+                fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            val context = LocalContext.current
             Button(
                 onClick = onNavigateToLogin,
                 shape = MaterialTheme.shapes.medium,
