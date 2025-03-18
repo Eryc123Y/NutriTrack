@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 
-@Preview(showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
 fun NutriCoachScreen(
     onNavigate: (String) -> Unit = {},
