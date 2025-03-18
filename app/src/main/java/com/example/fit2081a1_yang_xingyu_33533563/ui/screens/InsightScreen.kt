@@ -25,7 +25,7 @@ fun InsightsScreen(
         topBar = {
             TopNavigationBar(
                 title = "Insights: Food Score",
-                showBackButton = true,
+                showBackButton = false,
                 onBackButtonClick = onBackClick
             )
         },
