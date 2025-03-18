@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -131,7 +132,8 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             Text(
                 text = "This app is only for pre-registered users. Please have your " +
                         "ID and phone number before continuing",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Justify
             )
 
             Spacer(modifier = Modifier.height(24.dp))
