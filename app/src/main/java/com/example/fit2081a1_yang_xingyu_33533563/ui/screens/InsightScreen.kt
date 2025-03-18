@@ -12,17 +12,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 
 @Preview(showBackground = true)
 @Composable
-fun InsightsScreen() {
-    Scaffold { innerPadding ->
+fun InsightsScreen(
+    onNavigate: (String) -> Unit = {},
+    onBackClick: () -> Unit = {}
+) {
+    Scaffold (
+        topBar = {
+            TopNavigationBar(
+                title = "NutriCoach",
+                showBackButton = true,
+                onBackButtonClick = onBackClick
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                currentRoute = "settings",
+                onNavigate = onNavigate
+            )
+        }
+    ){ innerPadding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Insights", style = TextStyle(fontSize = 24.sp))
+            Text("Settings", style = TextStyle(fontSize = 24.sp))
         }
     }
 }
