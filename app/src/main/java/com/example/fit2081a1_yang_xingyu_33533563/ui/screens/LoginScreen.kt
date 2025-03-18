@@ -142,7 +142,6 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             Button(
                 onClick = {
                     if (selectedId == usernameStatic && phoneNumber == userphoneStatic) {
-                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                         onNavigateToHome()
                     } else {
                         Toast.makeText(context, "Unauthorised User", Toast.LENGTH_SHORT).show()
