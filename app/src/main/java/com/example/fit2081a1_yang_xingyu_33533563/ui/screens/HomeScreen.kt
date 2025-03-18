@@ -243,12 +243,12 @@ fun MyScoreDisplay() {
 @Composable
 fun FoodQualityScoreInfo() {
     Column(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Text(
             text = "What is the Food Quality Score?",
             style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
         Text(
             text = "Your Food Quality Score provides an indication of the overall quality of your diet. " +
@@ -256,7 +256,7 @@ fun FoodQualityScoreInfo() {
                     "consumption. The score is out of 100, with higher scores indicating a healthier diet. " +
                     "The score is updated each time you complete the food questionnaire.",
             textAlign = TextAlign.Justify,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Text(
