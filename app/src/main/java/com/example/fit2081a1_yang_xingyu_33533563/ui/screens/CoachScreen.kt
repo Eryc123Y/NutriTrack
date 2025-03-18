@@ -31,7 +31,7 @@ fun CoachScreen(
         },
         bottomBar = {
             BottomNavigationBar(
-                currentRoute = "nutriCoach",
+                currentRoute = "nutricoach",
                 onNavigate = onNavigate
             )
         }
