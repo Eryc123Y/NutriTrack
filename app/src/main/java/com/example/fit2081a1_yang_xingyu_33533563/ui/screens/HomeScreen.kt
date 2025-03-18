@@ -121,6 +121,7 @@ fun QuestionnaireStatusSection(onNavigate: (String) -> Unit) {
         Text(
             text = "You've filled in your food questionnaire, but you can " +
                     "change details here.",
+            textAlign = TextAlign.Justify,
             modifier = Modifier.weight(1f)
         )
 
@@ -259,7 +260,7 @@ fun FoodQualityScoreInfo() {
         )
 
         Text(
-            text = "This personalized measurement considers various food groups including" +
+            text = "This personalized measurement considers various food groups including " +
             "vegetables, fruits, whole grains, and proteins to give you practical insights" +
             "for making healthier food choices.",
             textAlign = TextAlign.Justify
