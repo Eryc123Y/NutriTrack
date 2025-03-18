@@ -16,12 +16,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.theme.FIT2081A1Theme
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreen() {
-    Scaffold { innerPadding ->
+fun HomeScreen(
+    onNavigate: (String) -> Unit = {},
+    onBackClick: () -> Unit = {}
+) {
+    Scaffold(
+        topBar = {},
+        bottomBar = {
+            BottomNavigationBar(
+                currentRoute = "home",
+                onNavigate = onNavigate
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
