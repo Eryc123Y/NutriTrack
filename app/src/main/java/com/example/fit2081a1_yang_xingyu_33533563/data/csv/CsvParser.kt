@@ -1,6 +1,8 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.csv
 
 import android.content.Context
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.User
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserInfo
 import java.io.BufferedReader
 import java.io.IOException
 
@@ -30,6 +32,33 @@ fun readColumn(context: Context, columnTitle: String, filePath: String = "testUs
     }
 
     return column
+}
+
+fun getUserFromCSV(context: Context, userId: String, filePath: String = "testUsers.csv"): User {
+    try {
+        context.assets.open(filePath).use { inputStream ->
+            val reader = inputStream.reader()
+            val lines = reader.readLines()
+
+            // Parse header
+            val header = lines[0].split(",").map { it.trim() }
+
+            // Find user by ID
+            for (i in 1 until lines.size) {
+                val values = lines[i].split(",").map { it.trim() }
+                val rowMap = header.zip(values).toMap()
+
+                if (rowMap[UserInfo.USERID.infoName] == userId) {
+                    return User.fromCsvRow(rowMap)
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    // Create empty user if not found
+    throw IllegalArgumentException("User with ID $userId not found")
 }
 
 
