@@ -2,9 +2,9 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.model
 
 import java.util.Locale
 
-enum class Gender {
-    MALE,
-    FEMALE;
+enum class Gender(val infoName: String) {
+    MALE("male"),
+    FEMALE("female");
 
     companion object {
         fun fromString(gender: String): Gender {
