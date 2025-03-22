@@ -43,6 +43,18 @@ fun InsightsScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text("Insights", style = TextStyle(fontSize = 24.sp))
+            scoreProgressBars()
+            shareAndImproveDiet()
         }
     }
+}
+
+@Composable
+fun scoreProgressBars() {
+
+}
+
+@Composable
+fun shareAndImproveDiet() {
+
 }
