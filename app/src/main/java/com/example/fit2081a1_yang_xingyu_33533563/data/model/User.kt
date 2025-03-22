@@ -13,8 +13,8 @@ data class User(
 ) {
     companion object {
         fun fromCsvRow(csvRow: Map<String, String>): User {
-            val userId = csvRow["User_ID"] ?: ""
-            val phoneNumber = csvRow["PhoneNumber"] ?: ""
+            val userId = csvRow[UserInfo.USERID.infoName] ?: ""
+            val phoneNumber = csvRow[UserInfo.PHONENUMBER.infoName] ?: ""
             val gender = Gender.fromString(csvRow["Sex"] ?: "")
             val nutritionScores = NutritionScores.fromCsvMap(csvRow, gender)
 
