@@ -25,7 +25,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
 
 /**
  * Composable function for navigation of the app
- * @return Unit
+ *
  * Router:
  * WelcomeScreen -> LoginScreen -> MainScreens
  * MainScreens: HomeScreen, InsightsScreen, NutriCoachScreen, SettingsScreen
@@ -36,6 +36,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
  * InsightsScreen : insights
  * NutriCoachScreen : nutricoach
  * SettingsScreen : settings
+ * @return Unit
  */
 @Composable
 fun AppNavigation() {
