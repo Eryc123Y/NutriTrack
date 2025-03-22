@@ -37,10 +37,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.fit2081a1_yang_xingyu_33533563.util.getLoginValidationData
 
-
-private const val usernameStatic: String = "012345"
-private const val userphoneStatic: String = "1"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
@@ -48,8 +46,13 @@ private const val userphoneStatic: String = "1"
 fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
     var userID by remember { mutableStateOf("")}
     var phoneNumber by remember { mutableStateOf("") }
+    //########################
+    //# Delete this when done#
+    //########################
+    val TESTPASSWORD = ""
     val context = LocalContext.current
     val logInButtonShape = MaterialTheme.shapes.medium
+    val userValidationMap = getLoginValidationData(LocalContext.current)
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -76,7 +79,6 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
 
             // new username box
             var expanded by remember { mutableStateOf(false) }
-            var selectedId by remember { mutableStateOf("") }
 
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -84,8 +86,8 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = selectedId,
-                    onValueChange = {selectedId = it},
+                    value = userID,
+                    onValueChange = {userID = it},
                     readOnly = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -102,11 +104,12 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    listOf("012345", "123456", "234567").forEach { id ->
+
+                    userValidationMap.keys.forEach { id ->
                         DropdownMenuItem(
                             text = { Text(id) },
                             onClick = {
-                                selectedId = id
+                                userID = id
                                 expanded = false
                             }
                         )
@@ -141,7 +144,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             // Login Button
             Button(
                 onClick = {
-                    if (selectedId == usernameStatic && phoneNumber == userphoneStatic) {
+                    if (phoneNumber == TESTPASSWORD) {
                         onNavigateToHome()
                     } else {
                         Toast.makeText(context, "Unauthorised User", Toast.LENGTH_SHORT).show()
