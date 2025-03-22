@@ -11,7 +11,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
  * SharedPreferencesManager is used to manage the shared preferences
  * of the app, for example, the questionnaire responses.
  */
-
 class SharedPreferencesManager(context: Context) {
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
         "shared_preferences", Context.MODE_PRIVATE
@@ -65,6 +64,20 @@ class SharedPreferencesManager(context: Context) {
 
     fun getQuestionnaireStatus() {
         // todo: implement
+    }
+
+    // Clear specific user data
+    fun clearUserData(userId: String) {
+        sharedPreferences.edit() {
+            sharedPreferences.all.keys
+                .filter { it.startsWith("user_${userId}_") }
+                .forEach { remove(it) }
+        }
+    }
+
+    // Just logout (remove current user reference)
+    fun logout() {
+        sharedPreferences.edit() { remove("current_user_id") }
     }
 
 
