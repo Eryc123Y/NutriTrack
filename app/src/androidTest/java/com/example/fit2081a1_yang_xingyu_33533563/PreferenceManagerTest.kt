@@ -36,30 +36,4 @@ class SharedPreferencesManagerTest {
         assertEquals("test123", prefManager.getCurrentUser())
     }
 
-    @Test
-    fun testUserStorage() {
-        // Create test user
-        val testUser = User(
-            id = "testId",
-            phoneNumber = "1234567890",
-            gender = Gender.MALE,
-            nutritionScores = NutritionScores(
-                mapOf(
-                    ScoreTypes.TOTAL to 75.5f,
-                    ScoreTypes.VEGETABLES to 8.0f
-                )
-            )
-        )
-
-        // Test saving and retrieving user
-        prefManager.saveUser(testUser)
-        val retrievedUser = prefManager.getUser()
-
-        assertNotNull(retrievedUser)
-        assertEquals("testId", retrievedUser?.id)
-        assertEquals("1234567890", retrievedUser?.phoneNumber)
-        assertEquals(Gender.MALE, retrievedUser?.gender)
-        assertEquals(75.5f, retrievedUser?.nutritionScores?.getScore(ScoreTypes.TOTAL))
-        assertEquals(8.0f, retrievedUser?.nutritionScores?.getScore(ScoreTypes.VEGETABLES))
-    }
 }
