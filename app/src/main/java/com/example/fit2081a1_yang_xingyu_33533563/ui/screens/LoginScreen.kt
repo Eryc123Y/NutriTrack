@@ -79,7 +79,6 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
 
             // new username box
             var expanded by remember { mutableStateOf(false) }
-
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
