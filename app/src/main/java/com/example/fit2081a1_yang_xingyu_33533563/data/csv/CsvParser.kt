@@ -2,7 +2,6 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.csv
 
 import android.content.Context
 import java.io.BufferedReader
-import java.io.File
 import java.io.IOException
 
 /**
