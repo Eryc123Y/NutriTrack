@@ -36,7 +36,7 @@ fun WelcomeScreen(onNavigateToLogin: () -> Unit = {}) {
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
-    )  {
+    ) {
         Column(
             modifier = Modifier.fillMaxSize()
                 .padding(24.dp),

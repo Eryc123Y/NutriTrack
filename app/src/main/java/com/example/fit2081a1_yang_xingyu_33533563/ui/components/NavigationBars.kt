@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 
 /**
  * The common bottom navigation bar for all main user interface
@@ -37,7 +38,7 @@ data class NavigationItem(
 @Preview(showBackground = true)
 @Composable
 fun BottomNavigationBar(
-    currentRoute: String = "home",
+    currentRoute: String = Screen.Home.route,
     onNavigate: (String) -> Unit = {}
 ) {
     // List of items
@@ -45,22 +46,22 @@ fun BottomNavigationBar(
         NavigationItem(
             itemTitle = "Home",
             itemIcon = Icons.Outlined.Home,
-            itemScreenRoute = "home"
+            itemScreenRoute = Screen.Home.route
         ),
         NavigationItem(
             itemTitle = "Insights",
             itemIcon = Icons.Outlined.Info,
-            itemScreenRoute = "insights"
+            itemScreenRoute = Screen.Insights.route
         ),
         NavigationItem(
             itemTitle = "NutriCoach",
             itemIcon = Icons.Outlined.CheckCircle,
-            itemScreenRoute = "nutricoach"
+            itemScreenRoute = Screen.NutriCoach.route
         ),
         NavigationItem(
             itemTitle = "Settings",
             itemIcon = Icons.Outlined.Settings,
-            itemScreenRoute = "settings"
+            itemScreenRoute = Screen.Settings.route
         )
     )
     NavigationBar (modifier = Modifier.fillMaxWidth()){

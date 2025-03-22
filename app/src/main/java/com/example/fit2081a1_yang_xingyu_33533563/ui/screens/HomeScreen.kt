@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
+import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.getGradientColorsForScore
 
@@ -43,26 +44,19 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.getGradientColorsForScore
 @Preview(showSystemUi = true)
 @Composable
 fun HomeScreen(
-    userId: String = "Eric",
+    userId: String = "UserName",
     onNavigate: (String) -> Unit = {}
 ) {
     Scaffold(
-        topBar = {
-//            TopNavigationBar(
-//                title = "Home",
-//                showBackButton = false,
-//                onBackButtonClick = onBackClick
-//            )
-        },
         bottomBar = {
             BottomNavigationBar(
-                currentRoute = "home",
+                currentRoute = Screen.Home.route,
                 onNavigate = onNavigate
             )
         }
     ) { innerPadding ->
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize() .padding(top = 8.dp),
             color = MaterialTheme.colorScheme.background
         ) {
             Column(
@@ -85,7 +79,7 @@ fun HomeScreen(
  * Composable function for the greeting section
  */
 @Composable
-fun GreetingSection(userId: String = "Eric") {
+fun GreetingSection(userId: String) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(
             text = "Hello,",
