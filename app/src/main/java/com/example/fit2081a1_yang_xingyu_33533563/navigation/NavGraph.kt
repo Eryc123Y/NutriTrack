@@ -59,13 +59,13 @@ fun AppNavigation() {
         //Welcome
         composable("welcome") {
             WelcomeScreen(onNavigateToLogin = {
-                navController.navigate("login")
+                navController.navigate(Screen.Login.route)
             })
         }
         //LoginScreen
         composable("login") {
             LoginScreen(onNavigateToHome = {
-                navController.navigate("home")
+                navController.navigate(Screen.Home.route)
             })
         }
         //HomeScreen
@@ -77,15 +77,13 @@ fun AppNavigation() {
         //InsightScreen
         composable("insights") {
             InsightsScreen(
-                onNavigate = { route -> navController.navigate(route) },
-                onBackClick = { navController.popBackStack() }
+                onNavigate = { route -> navController.navigate(route) }
             )
         }
 
         //QuestionnaireScreen
         composable("questionnaire") {
             QuestionnaireScreen(
-                onNavigate = { route -> navController.navigate(route) },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -93,16 +91,14 @@ fun AppNavigation() {
         // not implemented in A1
         composable("nutricoach") {
             CoachScreen(
-                onNavigate = { route -> navController.navigate(route) },
-                onBackClick = { navController.popBackStack() }
+                onNavigate = { route -> navController.navigate(route) }
             )
         }
 
         // not implemented in A1
         composable("settings") {
             SettingsScreen(
-                onNavigate = { route -> navController.navigate(route) },
-                onBackClick = { navController.popBackStack() }
+                onNavigate = { route -> navController.navigate(route) }
             )
         }
     }
