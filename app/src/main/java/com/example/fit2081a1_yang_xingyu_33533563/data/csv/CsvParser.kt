@@ -1,6 +1,9 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.csv
 
+import android.R.attr.phoneNumber
 import android.content.Context
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.Gender
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.NutritionScores
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.User
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserInfo
@@ -51,6 +54,10 @@ fun readColumn(context: Context, columnTitle: String, filePath: String = "testUs
  */
 fun getUserFromCSV(context: Context, userId: String, filePath: String = "testUsers.csv"): User {
     try {
+        val userID = UserInfo.USERID.infoName
+        val gender = UserInfo.GENDER.infoName
+        val phoneNumber = UserInfo.PHONENUMBER.infoName
+
         context.assets.open(filePath).use { inputStream ->
             val reader = inputStream.reader()
             val lines = reader.readLines()
@@ -63,8 +70,21 @@ fun getUserFromCSV(context: Context, userId: String, filePath: String = "testUse
                 val values = lines[i].split(",").map { it.trim() }
                 val rowMap = header.zip(values).toMap()
 
-                if (rowMap[UserInfo.USERID.infoName] == userId) {
-                    return User.fromCsvRow(rowMap)
+                // Use direct column name "User_ID" instead of enum for consistency
+                if (rowMap[userID] == userId) {
+                    // Create user with more robust gender handling
+                    val id = rowMap[userID] ?: ""
+                    val phoneNumber = rowMap[phoneNumber] ?: ""
+
+                    // Determine gender directly from Sex column like retrieveUserScore does
+                    val gender = if (rowMap[gender]?.equals("Male", ignoreCase = true) == true)
+                        Gender.MALE
+                    else
+                        Gender.FEMALE
+
+                    val nutritionScores = NutritionScores.fromCsvMap(rowMap, gender)
+
+                    return User(id, phoneNumber, gender, nutritionScores)
                 }
             }
         }
@@ -72,7 +92,6 @@ fun getUserFromCSV(context: Context, userId: String, filePath: String = "testUse
         e.printStackTrace()
     }
 
-    // Create empty user if not found
     throw IllegalArgumentException("User with ID $userId not found")
 }
 
@@ -89,6 +108,9 @@ fun retrieveUserScore(context: Context,
                       scoreType: ScoreTypes,
                       filePath: String = "testUsers.csv"): Float {
     try {
+        val userID = UserInfo.USERID.infoName
+        val gender = UserInfo.GENDER.infoName
+
         context.assets.open(filePath).use { inputStream ->
             val reader = inputStream.reader()
             val lines = reader.readLines()
@@ -101,14 +123,23 @@ fun retrieveUserScore(context: Context,
                 val values = lines[i].split(",").map { it.trim() }
                 val rowMap = header.zip(values).toMap()
 
-                if (rowMap[UserInfo.USERID.infoName] == userId) {
-                    return rowMap[scoreType.displayName]?.toFloat() ?: 0f
+                if (rowMap[userID] == userId) {
+                    // Directly determine gender from the Sex column
+                    val gender = if (rowMap[gender]?.equals("Male", ignoreCase = true) == true)
+                        Gender.MALE
+                    else
+                        Gender.FEMALE
+
+                    // Get the correct column name based on gender
+                    val columnName = scoreType.getColumnName(gender)
+
+                    // Return the score value
+                    return rowMap[columnName]?.toFloatOrNull() ?: 0f
                 }
             }
         }
-    } catch ( e: Exception) {
+    } catch (e: Exception) {
         e.printStackTrace()
     }
     throw IllegalArgumentException("User with ID $userId not found")
 }
-
