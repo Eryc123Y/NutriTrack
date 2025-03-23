@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getLoginValidationData
 
 
@@ -51,6 +52,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
     //########################
     val TESTPASSWORD = ""
     val context = LocalContext.current
+    val prefManager = SharedPreferencesManager(context)
     val logInButtonShape = MaterialTheme.shapes.medium
     val userValidationMap = getLoginValidationData(LocalContext.current)
 
@@ -103,7 +105,6 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-
                     userValidationMap.keys.forEach { id ->
                         DropdownMenuItem(
                             text = { Text(id) },
@@ -144,6 +145,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             Button(
                 onClick = {
                     if (phoneNumber == TESTPASSWORD) {
+                        prefManager.setCurrentUser(userID)
                         onNavigateToHome()
                     } else {
                         Toast.makeText(context, "Unauthorised User", Toast.LENGTH_SHORT).show()
