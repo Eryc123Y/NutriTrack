@@ -12,30 +12,41 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
  * of the app, for example, the questionnaire responses.
  */
 class SharedPreferencesManager(context: Context) {
+
+    enum class PreferenceKey(val key: String) {
+        PREFERENCES_FILE("shared_preferences"),
+        CURRENT_USER_ID("currentUserID"),
+        KNOWN_USERS("known_users"),
+        USER_PREFIX("user_")
+    }
+
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-        "shared_preferences", Context.MODE_PRIVATE
+        PreferenceKey.PREFERENCES_FILE.key, Context.MODE_PRIVATE
     )
 
     fun setCurrentUser(userId: String) {
-        sharedPreferences.edit() { putString("currentUserID", userId) }
+        sharedPreferences.edit() {
+            putString(PreferenceKey.CURRENT_USER_ID.key, userId)
+            addKnownUser(userId)
+        }
     }
 
     fun getCurrentUser(): String? {
-        return sharedPreferences.getString("currentUserID", null)
+        return sharedPreferences.getString(PreferenceKey.CURRENT_USER_ID.key, null)
     }
 
     private fun addKnownUser(userId: String) {
         val knownUsers = getKnownUsers().toMutableSet()
         knownUsers.add(userId)
-        sharedPreferences.edit() { putStringSet("known_users", knownUsers) }
+        sharedPreferences.edit() { putStringSet(PreferenceKey.KNOWN_USERS.key, knownUsers) }
     }
 
     fun getKnownUsers(): Set<String> {
-        return sharedPreferences.getStringSet("known_users", emptySet()) ?: emptySet()
+        return sharedPreferences.getStringSet(PreferenceKey.KNOWN_USERS.key, emptySet()) ?: emptySet()
     }
 
     private fun generateUserKey(userId: String, key: String): String {
-        return "user_${userId}_$key"
+        return "${PreferenceKey.USER_PREFIX.key}${userId}_$key"
     }
 
     fun saveUserScores(userId: String, scores: NutritionScores) {
@@ -77,7 +88,7 @@ class SharedPreferencesManager(context: Context) {
 
     // Just logout (remove current user reference)
     fun logout() {
-        sharedPreferences.edit() { remove("current_user_id") }
+        sharedPreferences.edit() { remove(PreferenceKey.CURRENT_USER_ID.key) }
     }
 
 
