@@ -59,6 +59,16 @@ class SharedPreferencesManager(context: Context) {
         }
     }
 
+    fun getUserPersona(userId: String): String {
+        val key = generateUserKey(userId, "persona")
+        return sharedPreferences.getString(key, "") ?: ""
+    }
+
+    fun setUserPersona(userId: String, persona: String) {
+        val key = generateUserKey(userId, "persona")
+        sharedPreferences.edit() { putString(key, persona) }
+    }
+
     fun getUserScores(userId: String): NutritionScores {
         val scoreMap = mutableMapOf<ScoreTypes, Float>()
         for (scoreType in ScoreTypes.entries) {
