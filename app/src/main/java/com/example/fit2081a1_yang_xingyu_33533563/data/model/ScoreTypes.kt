@@ -6,6 +6,7 @@ enum class ScoreTypes(
     val maxScore: Int,
     val displayName: String
 ) {
+    TOTAL("HEIFAtotalscoreMale", "HEIFAtotalscoreFemale", 100, "Total Food Quality Score"),
     VEGETABLES("VegetablesHEIFAscoreMale", "VegetablesHEIFAscoreFemale", 10, "Vegetables"),
     FRUITS("FruitHEIFAscoreMale", "FruitHEIFAscoreFemale", 10, "Fruits"),
     GRAINS_CEREALS("GrainsandcerealsHEIFAscoreMale", "GrainsandcerealsHEIFAscoreFemale", 10, "Grains & Cereals"),
@@ -17,8 +18,8 @@ enum class ScoreTypes(
     SODIUM("SodiumHEIFAscoreMale", "SodiumHEIFAscoreFemale", 10, "Sodium"),
     SUGAR("SugarHEIFAscoreMale", "SugarHEIFAscoreFemale", 10, "Sugar"),
     ALCOHOL("AlcoholHEIFAscoreMale", "AlcoholHEIFAscoreFemale", 5, "Alcohol"),
-    DISCRETIONARY("DiscretionaryHEIFAscoreMale", "DiscretionaryHEIFAscoreFemale", 10, "Discretionary Foods"),
-    TOTAL("HEIFAtotalscoreMale", "HEIFAtotalscoreFemale", 100, "Total Food Quality Score");
+    DISCRETIONARY("DiscretionaryHEIFAscoreMale", "DiscretionaryHEIFAscoreFemale", 10, "Discretionary Foods");
+
 
     fun getColumnName(gender: Gender): String {
         return when (gender) {
