@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -39,6 +41,7 @@ fun InsightsScreen(
             )
         }
     ){ innerPadding ->
+        val scrollState = rememberScrollState()
         Surface(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             color = MaterialTheme.colorScheme.background
@@ -46,7 +49,10 @@ fun InsightsScreen(
             val context = LocalContext.current
             val prefManager = SharedPreferencesManager(context)
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

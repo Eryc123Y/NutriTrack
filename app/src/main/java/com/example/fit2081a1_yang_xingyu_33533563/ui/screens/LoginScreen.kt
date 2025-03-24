@@ -156,9 +156,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             ) {
                 Text("Continue")
             }
-
             HorizontalDivider(modifier = Modifier.padding(8.dp), thickness = 2.dp)
-
         }
     }
 }

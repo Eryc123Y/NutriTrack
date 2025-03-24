@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,6 +45,7 @@ fun QuestionnaireScreen(
             )
         }
     ) { innerPadding ->
+        val scrollState = rememberScrollState()
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -50,7 +53,9 @@ fun QuestionnaireScreen(
             color = MaterialTheme.colorScheme.background
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize().padding(16.dp)
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {

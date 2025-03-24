@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
+import android.R.attr.fontWeight
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
@@ -28,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,15 +42,19 @@ import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getGradientColorsForScore
 
 
 @Preview(showSystemUi = true)
 @Composable
 fun HomeScreen(
-    userId: String = "UserName",
     onNavigate: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val prefManager = SharedPreferencesManager(context)
+    val userId = prefManager.getCurrentUser()
+    val scrollState = rememberScrollState()
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -62,11 +70,12 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
-                GreetingSection(userId = userId)
+                GreetingSection(userId = userId.toString())
                 QuestionnaireStatusSection(onNavigate = onNavigate)
                 NutritionMixImage()
                 MyScoreDisplay()
@@ -75,6 +84,7 @@ fun HomeScreen(
         }
     }
 }
+
 /**
  * Composable function for the greeting section
  */
@@ -89,7 +99,7 @@ fun GreetingSection(userId: String) {
         // User greeting
         val gradientColors = listOf(Color.Cyan, Color.Blue)
         Text(
-            text = userId,
+            text = "User_$userId",
             style = TextStyle(
                 fontSize = 32.sp,
                 brush = Brush.linearGradient(colors = gradientColors)
