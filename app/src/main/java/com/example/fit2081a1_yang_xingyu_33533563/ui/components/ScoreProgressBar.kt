@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
+import com.example.fit2081a1_yang_xingyu_33533563.util.getColorforScore
 import kotlin.text.toFloat
 
 
@@ -39,88 +40,12 @@ import kotlin.text.toFloat
 fun ScoreInterface(userID: String) {
     val scoreList = ScoreTypes.entries.toList()
     Column(
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(vertical = 16.dp)
     ) {
         for (scoreType in scoreList) {
             ScoreProgressBarRow(scoreType, userID)
-        }
-    }
-}
-
-@Composable
-fun ScoreProgressBarRowSlider(scoreType: ScoreTypes, userID: String) {
-    val context = LocalContext.current
-    val prefManager = SharedPreferencesManager(context)
-    val userID = prefManager.getCurrentUser()
-
-    if (scoreType == ScoreTypes.TOTAL) {
-        // Title row for TOTAL
-        Row(
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            ScoreText(
-                text = scoreType.displayName,
-                size = 16,
-                weight = "bold",
-                modifier = Modifier.padding(bottom = 2.dp)
-            )
-        }
-        // Slider row for TOTAL
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ScoreSlider(
-                context = context,
-                scoreType = scoreType,
-                userID = userID.toString(),
-                modifier = Modifier.weight(1f)
-            )
-
-            val score = retrieveUserScore(context, userID.toString(), scoreType).toInt()
-            ScoreText(
-                text = "$score/${scoreType.maxScore}",
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
-
-    } else {
-        // Standard row for other scores
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            ScoreText(
-                text = scoreType.displayName,
-                modifier = Modifier.width(120.dp)
-            )
-
-            ScoreSlider(
-                context = context,
-                scoreType = scoreType,
-                userID = userID.toString(),
-                modifier = Modifier.weight(1f)
-            )
-
-            val score = runCatching {
-                retrieveUserScore(context, userID.toString(), scoreType).toInt()
-            }.getOrDefault(0)
-
-            ScoreText(
-                text = "$score/${scoreType.maxScore}",
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
         }
     }
 }
@@ -140,42 +65,9 @@ fun ScoreText(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ScoreSlider(context: Context, scoreType: ScoreTypes, userID: String, modifier: Modifier = Modifier) {
-    val sliderValue = runCatching {
-        retrieveUserScore(context, userID, scoreType)
-    }.getOrDefault(0f)
-
-    val color = Color.LightGray
-
-    Slider(
-        value = sliderValue,
-        onValueChange = { /* Read-only slider */ },
-        valueRange = 0f..scoreType.maxScore.toFloat(),
-        steps = minOf(20, scoreType.maxScore - 1),
-        enabled = false,
-        colors = SliderDefaults.colors(
-            thumbColor = color,
-            activeTrackColor = color,
-            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        modifier = modifier,
-        thumb = {
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(color = color, shape = CircleShape)
-            )
-        }
-    )
-}
-
 @Composable
 fun ScoreProgressIndicator(context: Context, scoreType: ScoreTypes, userID: String, modifier: Modifier = Modifier) {
-    val scoreValue = runCatching {
-        retrieveUserScore(context, userID, scoreType)
-    }.getOrDefault(0f)
+    val scoreValue = retrieveUserScore(context, userID, scoreType)
 
     // Convert to 0.0-1.0 range for LinearProgressIndicator
     val progress = scoreValue / scoreType.maxScore.toFloat()
@@ -186,12 +78,7 @@ fun ScoreProgressIndicator(context: Context, scoreType: ScoreTypes, userID: Stri
             .height(10.dp)
             .clip(RoundedCornerShape(5.dp)),
         trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        color = when {
-            scoreType == ScoreTypes.TOTAL -> MaterialTheme.colorScheme.primary
-            progress < 0.4f -> MaterialTheme.colorScheme.error
-            progress < 0.7f -> MaterialTheme.colorScheme.tertiary
-            else -> MaterialTheme.colorScheme.secondary
-        }
+        color = getColorforScore(scoreValue.toInt(), scoreType)
     )
 }
 
@@ -208,7 +95,7 @@ fun ScoreProgressBarRow(scoreType: ScoreTypes, userID: String) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             ScoreText(
                 text = scoreType.displayName,

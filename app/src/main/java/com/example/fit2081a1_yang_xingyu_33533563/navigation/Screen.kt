@@ -12,9 +12,11 @@ package com.example.fit2081a1_yang_xingyu_33533563.navigation
  * @param route: String
  */
 enum class Screen(val route: String) {
+    Welcome("welcome"),
     Login("login"),
     Home("home"),
     Insights("insights"),
     NutriCoach("nutricoach"),
-    Settings("settings")
+    Settings("settings"),
+    Questionnaire("questionnaire"),
 }

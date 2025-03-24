@@ -45,7 +45,6 @@ fun QuestionnaireScreen(
             )
         }
     ) { innerPadding ->
-        val scrollState = rememberScrollState()
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -54,8 +53,7 @@ fun QuestionnaireScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize().padding(16.dp)
-                    .verticalScroll(scrollState),
+                    .fillMaxSize().padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {

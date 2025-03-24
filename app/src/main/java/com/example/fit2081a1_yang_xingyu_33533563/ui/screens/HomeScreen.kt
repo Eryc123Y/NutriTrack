@@ -40,6 +40,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
+import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
@@ -78,7 +80,8 @@ fun HomeScreen(
                 GreetingSection(userId = userId.toString())
                 QuestionnaireStatusSection(onNavigate = onNavigate)
                 NutritionMixImage()
-                MyScoreDisplay()
+                var score = retrieveUserScore(context, userId.toString(), ScoreTypes.TOTAL)
+                MyScoreDisplay(score.toInt())
                 FoodQualityScoreInfo()
             }
         }
@@ -131,7 +134,7 @@ fun QuestionnaireStatusSection(onNavigate: (String) -> Unit) {
 
         // Edit Button
         Button(
-            onClick = { onNavigate("questionnaire") },
+            onClick = { onNavigate(Screen.Questionnaire.route) },
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.padding(start = 8.dp)
         ) {
@@ -163,7 +166,7 @@ fun NutritionMixImage() {
 }
 
 @Composable
-fun MyScoreDisplay() {
+fun MyScoreDisplay(score: Int) {
     // First row with title and "See all scores" button
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -191,7 +194,6 @@ fun MyScoreDisplay() {
     }
 
     // Second row with trend indicator + text on left, score on right
-    var score = 90
     var currentColours: List<Color> = getGradientColorsForScore(score)
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
