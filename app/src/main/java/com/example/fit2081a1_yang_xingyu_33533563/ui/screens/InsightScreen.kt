@@ -57,7 +57,7 @@ fun InsightsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val userID = prefManager.getCurrentUser()
-                ScoreInterface(userID.toString())
+                ScoreInterface()
             }
         }
     }
