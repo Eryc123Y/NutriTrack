@@ -6,4 +6,5 @@ enum class UserInfo(val infoName: String) {
     GENDER("Sex");
 
 
+
 }

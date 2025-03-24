@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 
 enum class FoodCategory(val foodName: String) {
     FRUIT("Fruit"),
@@ -51,46 +52,3 @@ fun CheckboxWithText(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CheckboxContainer() {
-    // use a list of FoodCategory to generate checkboxes by iterating over the list
-    val foodCategories = remember { FoodCategory.entries.toList() }
-
-    // initialize a map to store the checked state of each checkbox
-    val checkedState = remember {
-        mutableStateMapOf<FoodCategory, Boolean>().apply {
-            FoodCategory.entries.forEach { category ->
-                this[category] = false
-            }
-        }
-    }
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(foodCategories.size) { index ->
-            val category = foodCategories[index]
-            CheckboxWithText(
-                text = category.foodName,
-                checked = checkedState[category] == true,
-                onCheckedChange = { checked ->
-                    checkedState[category] = checked
-                }
-            )
-        }
-    }
-
-//    foodCategories.forEach { category ->
-//        CheckboxWithText(
-//            text = category.foodName,
-//            checked = checkedState[category] == true,
-//            onCheckedChange = { checked ->
-//                checkedState[category] = checked
-//            }
-//        )
-//    }
-}
