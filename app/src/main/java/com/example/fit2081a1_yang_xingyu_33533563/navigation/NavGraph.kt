@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -16,6 +17,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 
 /**
  * Created by Xingyu Yang
@@ -41,6 +43,9 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val prefManager = SharedPreferencesManager(context)
+    var currentUser = prefManager.getCurrentUser()
 
     NavHost(
         navController = navController,
@@ -65,7 +70,11 @@ fun AppNavigation() {
         //LoginScreen
         composable("login") {
             LoginScreen(onNavigateToHome = {
-                navController.navigate(Screen.Home.route)
+                if (prefManager.getKnownUsers().contains(currentUser)) {
+                    navController.navigate(Screen.Home.route)
+                } else {
+                    navController.navigate(Screen.Questionnaire.route)
+                }
             })
         }
         //HomeScreen
