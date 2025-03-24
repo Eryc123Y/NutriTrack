@@ -38,23 +38,8 @@ enum class Persona(val personaName: String) {
     FOOD_CAREFREE("Food Carefree"),
 }
 
-@Preview
-@Composable
-fun CreatePersonaButtons() {
-    val personas: List<Persona> = Persona.entries
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxWidth() .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        personas.forEach(){ persona ->
-            item {
-                PersonaButton(persona)
-            }
-        }
-    }
-}
+
+
 
 @Composable
 fun PersonaButton(persona: Persona) {

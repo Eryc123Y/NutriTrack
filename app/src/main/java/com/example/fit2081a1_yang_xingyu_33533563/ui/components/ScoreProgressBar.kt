@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults.drawStopIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -64,7 +66,9 @@ fun ScoreProgressIndicator(context: Context, scoreType: ScoreTypes, userID: Stri
         modifier = modifier
             .height(10.dp),
         trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        color = getColorforScore(scoreValue.toInt(), scoreType)
+        color = getColorforScore(scoreValue.toInt(), scoreType),
+        gapSize = 0.dp,
+        drawStopIndicator = {}
     )
 }
 
@@ -102,13 +106,15 @@ fun ScoreProgressBarRow(scoreType: ScoreTypes) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         ScoreProgressIndicator(
             context = context,
             scoreType = scoreType,
             userID = userID.toString(),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .width(300.dp)
         )
 
         val score = retrieveUserScore(context, userID.toString(), scoreType).toInt()

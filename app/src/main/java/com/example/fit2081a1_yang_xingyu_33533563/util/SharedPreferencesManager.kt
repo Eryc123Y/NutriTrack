@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.NutritionScores
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserTimePref
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategory
 
 /**
  * Created by Xingyu Yang
@@ -59,16 +61,6 @@ class SharedPreferencesManager(context: Context) {
         }
     }
 
-    fun getUserPersona(userId: String): String {
-        val key = generateUserKey(userId, "persona")
-        return sharedPreferences.getString(key, "") ?: ""
-    }
-
-    fun setUserPersona(userId: String, persona: String) {
-        val key = generateUserKey(userId, "persona")
-        sharedPreferences.edit() { putString(key, persona) }
-    }
-
     fun getUserScores(userId: String): NutritionScores {
         val scoreMap = mutableMapOf<ScoreTypes, Float>()
         for (scoreType in ScoreTypes.entries) {
@@ -79,13 +71,41 @@ class SharedPreferencesManager(context: Context) {
         return NutritionScores(scoreMap)
     }
 
-    fun saveQuestionnaireStatus() {
-        // todo: implement
+    fun getUserPersona(userId: String): String {
+        val key = generateUserKey(userId, "persona")
+        return sharedPreferences.getString(key, "") ?: ""
     }
 
-    fun getQuestionnaireStatus() {
-        // todo: implement
+    fun setUserPersona(userId: String, persona: String) {
+        val key = generateUserKey(userId, "persona")
+        sharedPreferences.edit() { putString(key, persona) }
     }
+
+    fun getCheckboxState(userId: String, category: FoodCategory): Boolean {
+        val key = generateUserKey(userId, category.foodName)
+        return sharedPreferences.getBoolean(key, false)
+    }
+
+    fun setCheckboxState(userId: String, checkedState: Map<FoodCategory, Boolean>) {
+        sharedPreferences.edit {
+            for ((category, isChecked) in checkedState) {
+                val key = generateUserKey(userId, category.foodName)
+                putBoolean(key, isChecked)
+            }
+        }
+    }
+
+    fun getTimePref(userId: String, timePrefType: UserTimePref): String {
+        val key = generateUserKey(userId, timePrefType.timePrefName)
+        return sharedPreferences.getString(key, "") ?: ""
+    }
+
+    fun setTimePref(userId: String, timePrefType: UserTimePref, time: String) {
+        val key = generateUserKey(userId, timePrefType.timePrefName)
+        sharedPreferences.edit() { putString(key, time) }
+    }
+
+
 
     // Clear specific user data
     fun clearUserData(userId: String) {
@@ -100,6 +120,4 @@ class SharedPreferencesManager(context: Context) {
     fun logout() {
         sharedPreferences.edit() { remove(PreferenceKey.CURRENT_USER_ID.key) }
     }
-
-
 }
