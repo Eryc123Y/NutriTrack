@@ -1,11 +1,14 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
+import android.content.Intent
+import android.content.Intent.ACTION_SEND
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -17,13 +20,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
+import com.example.fit2081a1_yang_xingyu_33533563.data.csv.getUserFromCSV
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.User
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.ScoreProgressBarRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TotalScoreCard
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
+import com.example.fit2081a1_yang_xingyu_33533563.util.generateSharedText
 
 @Preview(showBackground = true)
 @Composable
@@ -54,7 +61,7 @@ fun InsightsScreen(
             val context = LocalContext.current
             val prefManager = SharedPreferencesManager(context)
             val userID = prefManager.getCurrentUser() ?: ""
-
+            val user: User = getUserFromCSV(context, userID)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,7 +85,40 @@ fun InsightsScreen(
                 for (scoreType in scoreList) {
                     ScoreProgressBarRow(scoreType)
                 }
+                ShareButton(user)
+                ImproveDietButton()
+
             }
         }
+    }
+}
+
+@Composable
+fun ShareButton(user: User) {
+    val context = LocalContext.current
+    Button(
+        onClick = {
+            val shareText: String = generateSharedText(user.nutritionScores)
+            val shareIntent = Intent(ACTION_SEND)
+            shareIntent.type = "text/plain"
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
+            val chooserIntent = Intent.createChooser(shareIntent, "Share text via")
+            context.startActivity(chooserIntent)
+        }
+    ) {
+        Text("Share With Someone")
+    }
+}
+
+@Composable
+fun ImproveDietButton(
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.padding(16.dp)
+    ) {
+        Text("Improve My Diet")
     }
 }
