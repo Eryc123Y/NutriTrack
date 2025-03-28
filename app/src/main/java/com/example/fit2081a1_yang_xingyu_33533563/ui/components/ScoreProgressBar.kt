@@ -1,22 +1,29 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.components
 
 import android.content.Context
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults.drawStopIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
@@ -24,20 +31,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getColorforScore
 
-
-@Composable
-fun ScoreInterface() {
-    val scoreList = ScoreTypes.entries.toList()
-    Column(
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(vertical = 16.dp)
-    ) {
-        for (scoreType in scoreList) {
-            ScoreProgressBarRow(scoreType)
-        }
-    }
-}
 
 @Composable
 fun ScoreText(
@@ -77,51 +70,120 @@ fun ScoreProgressBarRow(scoreType: ScoreTypes) {
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager(context)
     val userID = prefManager.getCurrentUser()
+    val score = retrieveUserScore(context, userID.toString(), scoreType).toInt()
 
-    Row(
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        if (scoreType == ScoreTypes.TOTAL) {
-            ScoreText(
-                text = "Total Score",
-                size = 24,
-                weight = "bold",
-                modifier = Modifier.padding(bottom = 4.dp)
+        // Category name
+        ScoreText(
+            text = scoreType.displayName,
+            size = 16,
+            weight = "bold",
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        // Progress bar and score value in one consistent row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ScoreProgressIndicator(
+                context = context,
+                scoreType = scoreType,
+                userID = userID.toString(),
+                modifier = Modifier.weight(1f)
             )
-        } else {
+
             ScoreText(
-                text = scoreType.displayName,
-                size = 16,
-                weight = "bold",
-                modifier = Modifier.padding(bottom = 2.dp)
+                text = "$score/${scoreType.maxScore}",
+                modifier = Modifier.padding(start = 8.dp)
             )
         }
     }
-    // Progress row for TOTAL
-    Row(
+}
+
+@Composable
+fun CircularScoreIndicator(
+    score: Int,
+    maxScore: Int,
+    size: Dp = 160.dp,
+    strokeWidth: Dp = 16.dp
+) {
+    val progress = score.toFloat() / maxScore
+    val animatedProgress = animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(1000),
+        label = "progress"
+    ).value
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(size)
+    ) {
+        CircularProgressIndicator(
+            progress = { animatedProgress },
+            modifier = Modifier.fillMaxSize(),
+            strokeWidth = strokeWidth,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            color = getColorforScore(score, ScoreTypes.TOTAL)
+        )
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = score.toString(),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "/$maxScore",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun TotalScoreCard(userID: String, context: Context) {
+    val totalScoreType = ScoreTypes.TOTAL
+    val score = retrieveUserScore(context, userID, totalScoreType).toInt()
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        ScoreProgressIndicator(
-            context = context,
-            scoreType = scoreType,
-            userID = userID.toString(),
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .width(300.dp)
-        )
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Food Quality Score",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        val score = retrieveUserScore(context, userID.toString(), scoreType).toInt()
-        ScoreText(
-            text = "$score/${scoreType.maxScore}",
-            modifier = Modifier.padding(start = 8.dp)
-        )
+            CircularScoreIndicator(
+                score = score,
+                maxScore = totalScoreType.maxScore
+            )
+
+            Text(
+                text = "Your overall nutritional quality",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
     }
-
 }
