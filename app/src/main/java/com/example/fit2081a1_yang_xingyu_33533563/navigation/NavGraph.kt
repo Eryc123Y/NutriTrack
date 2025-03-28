@@ -93,7 +93,8 @@ fun AppNavigation() {
         //QuestionnaireScreen
         composable("questionnaire") {
             QuestionnaireScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onSaveComplete = {}
             )
         }
 

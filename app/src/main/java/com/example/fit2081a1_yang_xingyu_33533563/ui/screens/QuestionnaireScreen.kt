@@ -1,5 +1,7 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -15,6 +18,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,15 +39,42 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlin.collections.forEach
 import kotlin.collections.set
+import kotlin.text.get
+import kotlin.text.set
 
 @Preview(showSystemUi = true)
 @Composable
 fun QuestionnaireScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onSaveComplete: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager(context)
     val userID = prefManager.getCurrentUser()
+
+    // read from SharedPreferences
+    val checkedState = remember {
+        mutableStateMapOf<FoodCategory, Boolean>().apply {
+            FoodCategory.entries.forEach { category ->
+                this[category] = prefManager.getCheckboxState(userID.toString(), category)
+            }
+        }
+    }
+
+    // State for persona selection
+    val selectedPersona = remember {
+        mutableStateOf(prefManager.getUserPersona(userID.toString()))
+    }
+
+    // State for time preferences
+    val timePreferences = remember {
+        mutableStateMapOf<UserTimePref, String>().apply {
+            UserTimePref.entries.forEach { timePref ->
+                this[timePref] = prefManager.getTimePref(userID.toString(), timePref)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopNavigationBar(
@@ -66,35 +97,59 @@ fun QuestionnaireScreen(
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 QuestionnaireTextRow("Tick all the food categories you can eat", 18)
-                CheckboxContainer(prefManager, userID.toString())
+                CheckboxContainer(
+                    checkedState = checkedState,
+                    onCheckedChange = { category, checked -> checkedState[category] = checked }
+                )
                 QuestionnaireTextRow("Your Persona", 18)
                 CreatePersonaButtons()
                 HorizontalDivider(modifier = Modifier.padding(4.dp))
                 QuestionnaireTextRow("Which persona best fits you?", 16)
-                PersonaSelectionDropdownField(prefManager, userID.toString())
+                PersonaSelectionDropdownField(
+                    selectedPersona = selectedPersona.value,
+                    onPersonaSelected = { selectedPersona.value = it },
+                    )
                 QuestionnaireTextRow("Timings", 16)
                 TimePickerInterface(
                     modifier = Modifier.fillMaxWidth().padding(4.dp),
-                    sharedPref = prefManager,
-                    userID = userID.toString()
+                    timePreferences = timePreferences,
+                    onTimeSelected = { timePrefType, newTime ->
+                        timePreferences[timePrefType] = newTime
+                    }
                 )
+                // save button, save all preferences at once
+                Button(
+                    onClick = {
+                        // Save all preferences at once
+                        prefManager.setCheckboxState(userID.toString(), checkedState)
+                        prefManager.setUserPersona(userID.toString(), selectedPersona.value)
+                        timePreferences.forEach { (timePref, time) ->
+                            prefManager.setTimePref(userID.toString(), timePref, time)
+                        }
+
+                        Toast.makeText(
+                            context,
+                            "Your preferences have been saved",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        onSaveComplete()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
+                ) {
+                    Text("Save Preferences")
+                }
             }
         }
     }
 }
 @Composable
-fun CheckboxContainer(prefManager: SharedPreferencesManager, userID: String) {
-    // use a list of FoodCategory to generate checkboxes by iterating over the list
+fun CheckboxContainer(
+    checkedState: Map<FoodCategory, Boolean>,
+    onCheckedChange: (FoodCategory, Boolean) -> Unit
+) {
     val foodCategories = remember { FoodCategory.entries.toList() }
-
-    // initialize a map to store the checked state of each checkbox from SharedPreferences
-    val checkedState = remember {
-        mutableStateMapOf<FoodCategory, Boolean>().apply {
-            FoodCategory.entries.forEach { category ->
-                this[category] = prefManager.getCheckboxState(userID, category)
-            }
-        }
-    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -107,10 +162,7 @@ fun CheckboxContainer(prefManager: SharedPreferencesManager, userID: String) {
             CheckboxWithText(
                 text = category.foodName,
                 checked = checkedState[category] == true,
-                onCheckedChange = { checked ->
-                    checkedState[category] = checked
-                    prefManager.setCheckboxState(userID, checkedState)
-                }
+                onCheckedChange = { checked -> onCheckedChange(category, checked) }
             )
         }
     }
@@ -130,14 +182,17 @@ fun QuestionnaireTextRow(text: String, fontSize: Int ) {
 }
 
 @Composable
-fun TimePickerInterface(modifier: Modifier, sharedPref: SharedPreferencesManager, userID: String) {
+fun TimePickerInterface(
+    modifier: Modifier,
+    timePreferences: Map<UserTimePref, String>,
+    onTimeSelected: (UserTimePref, String) -> Unit
+) {
     for (timePrefType in UserTimePref.entries) {
         TimePickerRow(
             modifier = modifier,
             text = timePrefType.questionDescription,
-            userID = userID,
-            timePrefType = timePrefType,
-            sharedPref = sharedPref
+            initialTime = timePreferences[timePrefType] ?: "",
+            onTimeSelected = { newTime -> onTimeSelected(timePrefType, newTime) }
         )
     }
 }
@@ -151,10 +206,11 @@ fun CreatePersonaButtons() {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        personas.forEach(){ persona ->
+        personas.forEach { persona ->
             item {
                 PersonaButton(persona)
             }
         }
     }
 }
+

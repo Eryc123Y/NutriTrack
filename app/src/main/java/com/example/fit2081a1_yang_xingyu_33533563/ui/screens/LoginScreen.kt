@@ -144,7 +144,10 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
             // Login Button
             Button(
                 onClick = {
-                    if (phoneNumber == TESTPASSWORD) {
+                    if (userID.isEmpty()) {
+                        // Show error for empty user ID
+                        Toast.makeText(context, "Please select your ID", Toast.LENGTH_SHORT).show()
+                    } else if (phoneNumber == TESTPASSWORD) {
                         prefManager.setCurrentUser(userID)
                         onNavigateToHome()
                     } else {
