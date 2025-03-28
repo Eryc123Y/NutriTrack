@@ -28,7 +28,6 @@ enum class FoodCategory(val foodName: String) {
     EGGS("Eggs"),
     NUTS_SEEDS("Nuts/Seeds"),
 }
-// todo: use sharedPreference to manage user status
 @Composable
 fun CheckboxWithText(
     text: String,

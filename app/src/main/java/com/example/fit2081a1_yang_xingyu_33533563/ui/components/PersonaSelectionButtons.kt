@@ -22,12 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.Persona
-import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
-
-
-
-
-
 
 @Composable
 fun PersonaButton(persona: Persona) {
@@ -51,17 +45,16 @@ fun PersonaButton(persona: Persona) {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonaSelectionDropdownField(prefManager: SharedPreferencesManager, userID: String) {
-    var userPersona by remember { mutableStateOf(prefManager.getUserPersona(userID)) }
+fun PersonaSelectionDropdownField( selectedPersona: String, onPersonaSelected: (String) -> Unit, modifier: Modifier = Modifier ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it },
-        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+        modifier = modifier.fillMaxWidth().padding(bottom = 4.dp)
     ) {
         OutlinedTextField(
-            value = userPersona,
-            onValueChange = {userPersona = it},
+            value = selectedPersona,
+            onValueChange = {},
             readOnly = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -73,17 +66,17 @@ fun PersonaSelectionDropdownField(prefManager: SharedPreferencesManager, userID:
             label = { Text("Select your Persona") },
             placeholder = { Text("Select your Persona") }
         )
+
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { expanded = false }
         ) {
             Persona.entries.forEach { persona ->
                 DropdownMenuItem(
                     text = { Text(persona.personaName) },
                     onClick = {
-                        userPersona = persona.personaName
+                        onPersonaSelected(persona.personaName)
                         expanded = false
-                        prefManager.setUserPersona(userID, persona.personaName)
                     }
                 )
             }
