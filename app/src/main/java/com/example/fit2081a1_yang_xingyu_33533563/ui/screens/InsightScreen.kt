@@ -9,15 +9,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.ScoreInterface
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.ScoreProgressBarRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TotalScoreCard
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 
 @Preview(showBackground = true)
@@ -48,27 +53,32 @@ fun InsightsScreen(
         ) {
             val context = LocalContext.current
             val prefManager = SharedPreferencesManager(context)
+            val userID = prefManager.getCurrentUser() ?: ""
+
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val userID = prefManager.getCurrentUser()
-                ScoreInterface()
+                // circular progress card for total score
+                TotalScoreCard(userID, context)
+
+                // Category scores title
+                Text(
+                    text = "Score Categories",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                // Display all scores except total (which is already shown in the card)
+                val scoreList = ScoreTypes.entries.filter { it != ScoreTypes.TOTAL }
+                for (scoreType in scoreList) {
+                    ScoreProgressBarRow(scoreType)
+                }
             }
         }
     }
-}
-
-@Composable
-fun ScoreProgressBars() {
-
-}
-
-@Composable
-fun ShareAndImproveDiet() {
-
 }
