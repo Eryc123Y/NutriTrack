@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.getUserFromCSV
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.User

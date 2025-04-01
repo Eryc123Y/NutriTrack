@@ -81,7 +81,7 @@ fun HomeScreen(
                 QuestionnaireStatusSection(onNavigate = onNavigate)
                 NutritionMixImage()
                 var score = retrieveUserScore(context, userId.toString(), ScoreTypes.TOTAL)
-                MyScoreDisplay(score.toInt())
+                MyScoreDisplay(score.toInt(), onNavigate = onNavigate)
                 FoodQualityScoreInfo()
             }
         }
@@ -166,7 +166,7 @@ fun NutritionMixImage() {
 }
 
 @Composable
-fun MyScoreDisplay(score: Int) {
+fun MyScoreDisplay(score: Int, onNavigate: (String) -> Unit) {
     // First row with title and "See all scores" button
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -179,7 +179,7 @@ fun MyScoreDisplay(score: Int) {
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        TextButton(onClick = {}) {
+        TextButton(onClick = { onNavigate(Screen.Insights.route) }) {
             Text(
                 text = "See all scores",
                 fontSize = 16.sp
