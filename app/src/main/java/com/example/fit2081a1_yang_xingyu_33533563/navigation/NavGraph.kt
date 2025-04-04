@@ -53,8 +53,8 @@ fun AppNavigation() {
         // default transition
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
-        popEnterTransition = { slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(300)) },
-        popExitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(300)) }
+        popEnterTransition = { slideInHorizontally(initialOffsetX = { -1200 }, animationSpec = tween(300)) },
+        popExitTransition = { slideOutHorizontally(targetOffsetX = { 1200 }, animationSpec = tween(300)) }
 
         // previously used transitions, only put it here for future reference
 //        enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(300)) },

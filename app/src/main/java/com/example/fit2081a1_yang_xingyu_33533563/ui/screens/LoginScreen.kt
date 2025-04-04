@@ -47,10 +47,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.getLoginValidationData
 fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
     var userID by remember { mutableStateOf("")}
     var phoneNumber by remember { mutableStateOf("") }
-    //########################
-    //# Delete this when done#
-    //########################
-    val TESTPASSWORD = ""
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager(context)
     val logInButtonShape = MaterialTheme.shapes.medium
@@ -147,7 +143,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
                     if (userID.isEmpty()) {
                         // Show error for empty user ID
                         Toast.makeText(context, "Please select your ID", Toast.LENGTH_SHORT).show()
-                    } else if (phoneNumber == TESTPASSWORD) {
+                    } else if (phoneNumber == userValidationMap[userID]) {
                         prefManager.setCurrentUser(userID)
                         onNavigateToHome()
                     } else {
