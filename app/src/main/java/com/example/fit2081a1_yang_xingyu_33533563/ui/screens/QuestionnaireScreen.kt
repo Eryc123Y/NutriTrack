@@ -60,7 +60,8 @@ fun QuestionnaireScreen(
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager(context)
     val userID = prefManager.getCurrentUser()
-    val pagerState = rememberPagerState { 4 } // 4 pages: food categories, persona, time prefs, summary
+    // We store only 4 pages: food categories, persona, time prefs, summary
+    val pagerState = rememberPagerState { 4 }
     val coroutineScope = rememberCoroutineScope()
 
     // Food category state
