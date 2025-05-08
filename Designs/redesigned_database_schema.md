@@ -12,7 +12,6 @@ erDiagram
         string selectedPersonaId FK "Nullable FK to PersonaEntity"
         boolean currentLoggedInUser
     }
-
     PersonaEntity {
         string personaId PK
         string displayName
@@ -22,23 +21,23 @@ erDiagram
     FoodCategoryDefinitionEntity {
         string foodCategoryKey PK "e.g., FRUIT, VEGETABLE"
         string displayName
-        string description NL "Nullable"
-        int displayOrder NL "Nullable"
+        string description "Nullable"
+        int displayOrder "Nullable"
     }
 
     ScoreTypeDefinitionEntity {
         string scoreTypeKey PK "e.g., TOTAL_SCORE, VEG_SCORE"
         string displayName
         float maxScore
-        string description NL "Nullable"
-        int displayOrder NL "Nullable"
+        string description "Nullable"
+        int displayOrder "Nullable"
     }
 
     TimePreferenceDefinitionEntity {
         string timePrefKey PK "e.g., BIGGEST_MEAL, SLEEP_TIME"
         string displayName
         string questionDescription
-        int displayOrder NL "Nullable"
+        int displayOrder "Nullable"
     }
 
     UserFoodCategoryPreferenceEntity {
@@ -59,7 +58,7 @@ erDiagram
         int id PK "Auto-generated"
         string userId FK "FK to UserEntity"
         string timePrefKey FK "FK to TimePreferenceDefinitionEntity"
-        string timeValue NL "Nullable, e.g., 08:00"
+        string timeValue "Nullable, e.g., 08:00"
     }
 
     UserEntity ||--o| PersonaEntity : "selects (optional)"
