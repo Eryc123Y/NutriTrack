@@ -37,16 +37,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.FoodCategory
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Persona
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.CheckboxWithText
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategory
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaButton
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaSelectionDropdownField
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimePickerRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
+import kotlin.collections.filter
 import kotlin.collections.forEach
 import kotlin.collections.set
 
