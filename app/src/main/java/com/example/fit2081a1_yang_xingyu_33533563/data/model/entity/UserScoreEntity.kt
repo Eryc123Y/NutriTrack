@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 /**
  * Represents a specific nutrition score for a user.
  * Each user can have multiple scores (one for each ScoreType).
+ * We normalised the scoreType in the DB for possible future extension of ScoreType.
  */
 @Entity(
     tableName = "user_scores",

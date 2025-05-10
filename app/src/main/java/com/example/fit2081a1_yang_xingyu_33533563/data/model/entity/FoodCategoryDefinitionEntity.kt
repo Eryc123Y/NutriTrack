@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Defines the available food categories in the system.
+ * Defines the available food categories lookup table.
  */
 @Entity(tableName = "food_category_definitions")
 data class FoodCategoryDefinitionEntity(
@@ -12,4 +12,5 @@ data class FoodCategoryDefinitionEntity(
     val displayName: String,             // e.g., "Fruit", "Vegetables"
     val description: String? = null,
     val displayOrder: Int? = null        // For ordering in UI if needed
+    // todo: delete display order from db?
 ) 

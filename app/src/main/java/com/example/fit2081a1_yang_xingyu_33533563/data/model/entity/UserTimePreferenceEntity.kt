@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey
 
 /**
  * Represents a user's preferences for specific time-related questions.
+ * We choose not to normalise time preferences by adding a new lookup table, as
+ * these are user-specific and not expected to change frequently.
  */
 @Entity(
     tableName = "user_time_preferences",
