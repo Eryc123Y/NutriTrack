@@ -23,5 +23,5 @@ interface PersonaDao {
     fun getAllPersonas(): Flow<List<PersonaEntity>>
 
     @Query("SELECT * FROM personas WHERE personaId = :personaId")
-    fun getPersonaById(personaId: String): Flow<PersonaEntity>
+    fun getPersonaById(personaId: String): Flow<PersonaEntity?>
 } 

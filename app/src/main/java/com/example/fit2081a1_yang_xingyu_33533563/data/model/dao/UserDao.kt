@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
-
 @Dao
 interface UserDao {
     @Insert
@@ -23,7 +22,7 @@ interface UserDao {
     fun getAllUsers(): Flow<List<UserEntity>>
 
     @Query("SELECT * FROM users WHERE userId = :userId")
-    suspend fun getUserById(userId: String): Flow<UserEntity>
+    fun getUserById(userId: String): Flow<UserEntity?>
 
     @Query("SELECT credential FROM users WHERE userId = :userId")
     suspend fun getCredentialByUserId(userId: String): String?
