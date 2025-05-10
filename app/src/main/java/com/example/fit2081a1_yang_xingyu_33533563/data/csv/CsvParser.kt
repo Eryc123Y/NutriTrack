@@ -1,12 +1,11 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.csv
 
-import android.R.attr.phoneNumber
 import android.content.Context
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.Gender
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.NutritionScores
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.User
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserInfo
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Gender
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserInfo
 import java.io.BufferedReader
 import java.io.IOException
 

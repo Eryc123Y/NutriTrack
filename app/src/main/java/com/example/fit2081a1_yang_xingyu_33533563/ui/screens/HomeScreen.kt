@@ -1,6 +1,5 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
-import android.R.attr.fontWeight
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager

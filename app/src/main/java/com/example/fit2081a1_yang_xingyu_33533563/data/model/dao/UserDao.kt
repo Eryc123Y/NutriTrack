@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.data.dao
+package com.example.fit2081a1_yang_xingyu_33533563.data.model.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -6,7 +6,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserEntity
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
 
 @Dao
 interface UserDao {

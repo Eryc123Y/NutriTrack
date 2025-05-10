@@ -3,10 +3,12 @@ package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,16 +32,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.getUserFromCSV
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.User
+import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.ScoreProgressBarRow
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.ScoreText
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TotalScoreCard
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.generateSharedText
-import com.example.fit2081a1_yang_xingyu_33533563.util.retrieveUserScore
+import com.example.fit2081a1_yang_xingyu_33533563.util.getColorforScore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

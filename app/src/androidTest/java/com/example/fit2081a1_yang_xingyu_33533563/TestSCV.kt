@@ -3,10 +3,9 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.csv
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.Gender
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Gender
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

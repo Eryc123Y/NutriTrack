@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.data.model
+package com.example.fit2081a1_yang_xingyu_33533563.data.legacy
 
 /**
  * Enum class representing the different types of nutrition scores tracked in the app.

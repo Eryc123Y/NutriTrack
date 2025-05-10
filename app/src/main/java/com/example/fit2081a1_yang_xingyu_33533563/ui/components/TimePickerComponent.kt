@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserTimePref
 
 @Composable
 fun TimePickerComponent(

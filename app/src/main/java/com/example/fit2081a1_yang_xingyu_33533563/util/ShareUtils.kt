@@ -1,6 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.util
 
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.NutritionScores
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
 
 /**
  * A function to generate a shared text string for sharing.

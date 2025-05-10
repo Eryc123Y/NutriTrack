@@ -2,7 +2,7 @@ package com.example.fit2081a1_yang_xingyu_33533563.util
 
 import android.content.Context
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.readColumn
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserInfo
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserInfo
 
 
 /**

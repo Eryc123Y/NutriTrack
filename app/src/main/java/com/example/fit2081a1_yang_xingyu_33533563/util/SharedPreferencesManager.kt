@@ -3,9 +3,9 @@ package com.example.fit2081a1_yang_xingyu_33533563.util
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.NutritionScores
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.UserTimePref
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategory
 
 /**

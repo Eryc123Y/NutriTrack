@@ -1,7 +1,7 @@
 package com.example.fit2081a1_yang_xingyu_33533563.util
 
 import androidx.compose.ui.graphics.Color
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.ScoreTypes
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 
 fun getGradientColorsForScore(score: Int): List<Color> {
     return when {
