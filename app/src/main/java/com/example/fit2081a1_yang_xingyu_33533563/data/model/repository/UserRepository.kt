@@ -25,4 +25,12 @@ class UserRepository(private val userDao: UserDao) {
     suspend fun deleteUser(user: UserEntity) {
         userDao.delete(user)
     }
+
+    suspend fun getCredentialByUserId(userId: String): String? {
+        return userDao.getCredentialByUserId(userId)
+    }
+
+    suspend fun isUserLoggedIn(userId: String): Boolean {
+        return userDao.isUserLoggedIn(userId)
+    }
 } 

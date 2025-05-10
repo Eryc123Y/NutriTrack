@@ -28,5 +28,6 @@ data class UserEntity(
     val phoneNumber: String,             // from csv
     val gender: String,                  // from csv (needs TypeConverter: Male/Female)
     val selectedPersonaId: String? = null, // Foreign key to PersonaEntity
-    val currentLoggedInUser: Boolean = false // true if this is the currently active user
+    val isCurrentLoggedIn: Boolean = false, // true if this is the currently active user
+    val credential: String? = null, // to be used for login, set upon registration
 )
