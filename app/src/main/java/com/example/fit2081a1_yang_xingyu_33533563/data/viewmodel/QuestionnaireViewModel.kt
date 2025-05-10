@@ -18,6 +18,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
 
 class QuestionnaireViewModel(
     private val foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository,
@@ -25,7 +29,6 @@ class QuestionnaireViewModel(
     private val personaRepository: PersonaRepository,
     private val userTimePreferenceRepository: UserTimePreferenceRepository,
     private val userRepository: UserRepository
-
 ) : ViewModel() {
 
     init {
@@ -36,20 +39,18 @@ class QuestionnaireViewModel(
     }
 
     // Food Categories Functions
-    val allFoodCategories: StateFlow<List<FoodCategoryDefinitionEntity>> =
-        foodCategoryDefinitionRepository.getAllFoodCategories()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allFoodCategories: LiveData<List<FoodCategoryDefinitionEntity>> = foodCategoryDefinitionRepository.getAllFoodCategories().asLiveData()
 
     // MutableStateFlow to hold the selected food category keys
     // This is used to track the currently selected food categories, e.g., for creating
     // UI components.
-    private val _selectedFoodCategoryKeys = MutableStateFlow<Set<String>>(emptySet())
+    private val _selectedFoodCategoryKeys = MutableLiveData<Set<String>>(emptySet())
     // StateFlow to expose the selected food category keys
-    val selectedFoodCategoryKeys: StateFlow<Set<String>> = _selectedFoodCategoryKeys.asStateFlow()
+    val selectedFoodCategoryKeys: LiveData<Set<String>> = _selectedFoodCategoryKeys
 
     // Function to toggle the selection state of a food category
     fun toggleFoodCategory(categoryKey: String, isSelected: Boolean) {
-        val currentSelection = _selectedFoodCategoryKeys.value.toMutableSet()
+        val currentSelection = _selectedFoodCategoryKeys.value?.toMutableSet() ?: mutableSetOf()
         if (isSelected) {
             currentSelection.add(categoryKey)
         } else {
@@ -59,13 +60,11 @@ class QuestionnaireViewModel(
     }
 
     // Persona Page Functions
-    val allPersonas: StateFlow<List<PersonaEntity>> =
-        personaRepository.getAllPersonas()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allPersonas: LiveData<List<PersonaEntity>> = personaRepository.getAllPersonas().asLiveData()
 
     // Persona selected, used for populating UI
-    private val _selectedPersonaId = MutableStateFlow<String?>(null)
-    val selectedPersonaId: StateFlow<String?> = _selectedPersonaId.asStateFlow()
+    private val _selectedPersonaId = MutableLiveData<String?>()
+    val selectedPersonaId: LiveData<String?> = _selectedPersonaId
 
     // Function to select a persona
     fun selectPersona(personaId: String) {
@@ -74,48 +73,45 @@ class QuestionnaireViewModel(
 
     // --- Time Preferences ---
     // Holding individual time strings, combine them into UserTimePreferenceEntity on save
-    private val _biggestMealTime = MutableStateFlow<String?>(null)
-    val biggestMealTime: StateFlow<String?> = _biggestMealTime.asStateFlow()
+    private val _biggestMealTime = MutableLiveData<String?>()
+    val biggestMealTime: LiveData<String?> = _biggestMealTime
 
-    private val _sleepTime = MutableStateFlow<String?>(null)
-    val sleepTime: StateFlow<String?> = _sleepTime.asStateFlow()
+    private val _sleepTime = MutableLiveData<String?>()
+    val sleepTime: LiveData<String?> = _sleepTime
 
-    private val _wakeUpTime = MutableStateFlow<String?>(null)
-    val wakeUpTime: StateFlow<String?> = _wakeUpTime.asStateFlow()
+    private val _wakeUpTime = MutableLiveData<String?>()
+    val wakeUpTime: LiveData<String?> = _wakeUpTime
 
     fun updateBiggestMealTime(time: String?) { _biggestMealTime.value = time }
     fun updateSleepTime(time: String?) { _sleepTime.value = time }
     fun updateWakeUpTime(time: String?) { _wakeUpTime.value = time }
 
     // --- Saving ---
-    private val _saveStatus = MutableStateFlow<String?>(null) // e.g., "Success", "Error: ..."
-    val saveStatus: StateFlow<String?> = _saveStatus.asStateFlow()
+    private val _saveStatus = MutableLiveData<String?>()
+    val saveStatus: LiveData<String?> = _saveStatus
 
     fun saveAllPreferences(userId: String) {
         viewModelScope.launch {
+            if (userId.isBlank()) {
+                _saveStatus.postValue("Error: User ID is missing.")
+                return@launch
+            }
             try {
-                // 1. Save Food Category Preferences
-                // Clear existing ones first if that's the desired behavior
                 userFoodCategoryPreferenceRepository.deleteAllPreferencesForUser(userId)
-                _selectedFoodCategoryKeys.value.forEach { key ->
+                _selectedFoodCategoryKeys.value?.forEach { key ->
                     userFoodCategoryPreferenceRepository.insert(
                         UserFoodPreferenceEntity(userId = userId, foodCategoryKey = key, isChecked = true)
                     )
                 }
 
-                // 2. Save Selected Persona (update UserEntity)
                 _selectedPersonaId.value?.let { personaId ->
+                    // Assuming userRepository.getUserById() returns Flow, if it returns LiveData, adapt
                     userRepository.getUserById(userId).firstOrNull()?.let { user ->
                         userRepository.updateUser(user.copy(selectedPersonaId = personaId))
-                    }
+                    } ?: _saveStatus.postValue("Error: User not found for saving persona.")
                 }
-
-                // 3. Save Time Preferences
-                // Check if a preference already exists for the user to decide insert vs update
-                // For simplicity, this example assumes inserting a new one or updating if one exists.
-                // A more robust way is to fetch existing, update, or insert new.
-                // Let's assume an existing one should be deleted first for simplicity here, or use an upsert.
-                userTimePreferenceRepository.deleteAllPreferencesForUser(userId) // Simplification
+                
+                userTimePreferenceRepository.deleteAllPreferencesForUser(userId)
                 userTimePreferenceRepository.insert(
                     UserTimePreferenceEntity(
                         userId = userId,
@@ -124,9 +120,9 @@ class QuestionnaireViewModel(
                         wakeUpTime = _wakeUpTime.value
                     )
                 )
-                _saveStatus.value = "Preferences saved successfully!"
+                _saveStatus.postValue("Preferences saved successfully!")
             } catch (e: Exception) {
-                _saveStatus.value = "Error saving preferences: ${e.message}"
+                _saveStatus.postValue("Error saving preferences: ${e.message}")
             }
         }
     }
@@ -139,23 +135,42 @@ class QuestionnaireViewModel(
      */
     fun loadUserPreferences(userId: String) {
         viewModelScope.launch {
-            // Load food categories
             val foodPrefs = userFoodCategoryPreferenceRepository.getPreferencesByUserId(userId).firstOrNull()
-            _selectedFoodCategoryKeys.value = foodPrefs?.filter { it.isChecked }?.map { it.foodCategoryKey }?.toSet() ?: emptySet()
+            _selectedFoodCategoryKeys.postValue(foodPrefs?.filter { it.isChecked }?.map { it.foodCategoryKey }?.toSet() ?: emptySet())
 
-            // Load persona
             val user = userRepository.getUserById(userId).firstOrNull()
-            _selectedPersonaId.value = user?.selectedPersonaId
-
-            // Load time preferences
+            _selectedPersonaId.postValue(user?.selectedPersonaId)
+            
             val timePref = userTimePreferenceRepository.getPreference(userId).firstOrNull()
-            _biggestMealTime.value = timePref?.biggestMealTime
-            _sleepTime.value = timePref?.sleepTime
-            _wakeUpTime.value = timePref?.wakeUpTime
+            _biggestMealTime.postValue(timePref?.biggestMealTime)
+            _sleepTime.postValue(timePref?.sleepTime)
+            _wakeUpTime.postValue(timePref?.wakeUpTime)
         }
     }
 
     fun clearSaveStatus() {
         _saveStatus.value = null
+    }
+
+    class QuestionnaireViewModelFactory(
+        private val foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository,
+        private val userFoodCategoryPreferenceRepository: UserFoodCategoryPreferenceRepository,
+        private val personaRepository: PersonaRepository,
+        private val userTimePreferenceRepository: UserTimePreferenceRepository,
+        private val userRepository: UserRepository
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(QuestionnaireViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return QuestionnaireViewModel(
+                    foodCategoryDefinitionRepository,
+                    userFoodCategoryPreferenceRepository,
+                    personaRepository,
+                    userTimePreferenceRepository,
+                    userRepository
+                ) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

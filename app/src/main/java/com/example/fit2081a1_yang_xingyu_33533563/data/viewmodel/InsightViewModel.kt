@@ -1,71 +1,91 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ScoreTypeDefinitionRepository
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+    import androidx.lifecycle.*
+    import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ScoreTypeDefinitionRepository
+    import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
+    import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
+    import kotlinx.coroutines.flow.firstOrNull
+    import kotlinx.coroutines.launch
 
-// Helper data class for richer UI display
-data class DisplayableScore(
-    val scoreTypeKey: String,
-    val displayName: String,
-    val scoreValue: Float,
-    val maxScore: Float,
-    val description: String?
-)
+    class InsightsViewModel(
+        private val userScoreRepository: UserScoreRepository,
+        private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository,
+        private val userRepository: UserRepository
+    ) : ViewModel() {
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class InsightsViewModel(
-    private val userScoreRepository: UserScoreRepository,
-    private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository,
-    private val userRepository: UserRepository // If user-specific info is needed on this screen
-    // Assuming currentUserId is provided or observed from AuthViewModel
-) : ViewModel() {
+        // A helper data class for displaying scores
+        data class DisplayableScore(
+            // Key for matching with UserScoreEntity
+            val scoreTypeKey: String,
+            val displayName: String,
+            val scoreValue: Float,
+            val maxScore: Float,
+            val description: String?
+        )
 
-    private val _userIdFlow = MutableStateFlow<String?>(null)
+        private val _userId = MutableLiveData<String?>()
+        val userId: LiveData<String?> = _userId
 
-    fun setUserId(userId: String?) {
-        _userIdFlow.value = userId
-    }
+        private val _displayableScores = MutableLiveData<List<DisplayableScore>>(emptyList())
+        val displayableScores: LiveData<List<DisplayableScore>> = _displayableScores
 
-    val displayableScores: StateFlow<List<DisplayableScore>> = _userIdFlow.flatMapLatest { userId ->
-        if (userId == null) {
-            flowOf(emptyList())
-        } else {
-            combine(
-                userScoreRepository.getScoresByUserId(userId),
-                scoreTypeDefinitionRepository.getAllScoreTypes()
-            ) { userScores, scoreDefinitions ->
-                userScores.mapNotNull { userScore ->
-                    scoreDefinitions.find { it.scoreTypeKey == userScore.scoreTypeKey }
-                        ?.let { definition ->
-                            DisplayableScore(
-                                scoreTypeKey = userScore.scoreTypeKey,
-                                displayName = definition.displayName,
-                                scoreValue = userScore.scoreValue,
-                                maxScore = definition.maxScore,
-                                description = definition.description
-                            )
-                        }
+        private val _isLoading = MutableLiveData<Boolean>(false)
+        val isLoading: LiveData<Boolean> = _isLoading
+
+        fun setUserId(userId: String?) {
+            _userId.value = userId
+            userId?.let { loadScoresForUser(it) }
+        }
+
+        private fun loadScoresForUser(userId: String) {
+            viewModelScope.launch {
+                _isLoading.value = true
+                try {
+                    val userScores = userScoreRepository
+                        .getScoresByUserId(userId).firstOrNull() ?: emptyList()
+                    val scoreDefinitions = scoreTypeDefinitionRepository
+                        .getAllScoreTypes().firstOrNull() ?: emptyList()
+
+                    val displayScores = userScores.mapNotNull { userScore ->
+                        scoreDefinitions.find { it.scoreTypeKey == userScore.scoreTypeKey }
+                            ?.let { definition ->
+                                DisplayableScore(
+                                    scoreTypeKey = userScore.scoreTypeKey,
+                                    displayName = definition.displayName,
+                                    scoreValue = userScore.scoreValue,
+                                    maxScore = definition.maxScore,
+                                    description = definition.description
+                                )
+                            }
+                    }
+                    _displayableScores.postValue(displayScores)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    _displayableScores.postValue(emptyList())
+                } finally {
+                    _isLoading.value = false
                 }
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // You might also expose raw scores or definitions if needed
-    // val userScores: StateFlow<List<UserScoreEntity>> = ...
-    // val scoreDefinitions: StateFlow<List<ScoreTypeDefinitionEntity>> = ...
+        // Function to manually trigger score refresh
+        fun refreshScores(userId: String) {
+            loadScoresForUser(userId)
+        }
 
-    // Example function to trigger score calculation or refresh if needed
-    fun refreshScores(userId: String) {
-        viewModelScope.launch {
-            // Logic to re-calculate or fetch latest scores if applicable
-            // For now, relying on Flow to update automatically
-            // This function can be used if scores are calculated on demand
+        class InsightsViewModelFactory(
+            private val userScoreRepository: UserScoreRepository,
+            private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository,
+            private val userRepository: UserRepository
+        )
+            : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(InsightsViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return InsightsViewModel(userScoreRepository, scoreTypeDefinitionRepository,
+                        userRepository) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
         }
     }
-}
