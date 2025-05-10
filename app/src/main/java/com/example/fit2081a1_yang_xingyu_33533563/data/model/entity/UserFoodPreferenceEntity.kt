@@ -27,7 +27,7 @@ import androidx.room.PrimaryKey
     ],
     indices = [Index(value = ["userId", "foodCategoryKey"], unique = true)]
 )
-data class UserFoodCategoryPreferenceEntity(
+data class UserFoodPreferenceEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: String,
     val foodCategoryKey: String, // Foreign key to FoodCategoryDefinitionEntity
