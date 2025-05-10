@@ -27,6 +27,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -57,6 +63,12 @@ fun HomeScreen(
     val prefManager = SharedPreferencesManager(context)
     val userId = prefManager.getCurrentUser()
     val scrollState = rememberScrollState()
+    var score by remember { mutableFloatStateOf(0f) }
+    
+    LaunchedEffect(userId) {
+        score = retrieveUserScore(context, userId.toString(), ScoreTypes.TOTAL)
+    }
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -80,7 +92,6 @@ fun HomeScreen(
                 GreetingSection(userId = userId.toString())
                 QuestionnaireStatusSection(onNavigate = onNavigate)
                 NutritionMixImage()
-                var score = retrieveUserScore(context, userId.toString(), ScoreTypes.TOTAL)
                 MyScoreDisplay(score.toInt(), onNavigate = onNavigate)
                 FoodQualityScoreInfo()
             }

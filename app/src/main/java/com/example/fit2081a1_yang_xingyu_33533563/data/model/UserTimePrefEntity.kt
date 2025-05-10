@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * Represents a user's preference for a specific time-related question.
+ * Represents a user's preferences for specific time-related questions.
  */
 @Entity(
     tableName = "user_time_preferences",
@@ -16,19 +16,14 @@ import androidx.room.PrimaryKey
             parentColumns = ["userId"],
             childColumns = ["userId"],
             onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = TimePreferenceDefinitionEntity::class,
-            parentColumns = ["timePrefKey"],
-            childColumns = ["timePrefKey"],
-            onDelete = ForeignKey.RESTRICT
         )
     ],
-    indices = [Index(value = ["userId", "timePrefKey"], unique = true)]
+    indices = [Index(value = ["userId"], unique = true)]
 )
 data class UserTimePreferenceEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: String,                  // Foreign key to UserEntity
-    val timePrefKey: String,             // Foreign key to TimePreferenceDefinitionEntity
-    val timeValue: String?               // The actual time string, e.g., "08:00"
+    val biggestMealTime: String? = null, // Time of biggest meal (e.g., "08:00")
+    val sleepTime: String? = null,       // Time user goes to sleep (e.g., "23:00")
+    val wakeUpTime: String? = null       // Time user wakes up (e.g., "07:00")
 )
