@@ -3,10 +3,10 @@ package com.example.fit2081a1_yang_xingyu_33533563.util
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.FoodCategory
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategory
 
 /**
  * Created by Xingyu Yang
@@ -15,11 +15,18 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategory
  */
 class SharedPreferencesManager(context: Context) {
 
+    private val ADMIN_CREDENTIAL = "dollar-entry-apples"
+
     enum class PreferenceKey(val key: String) {
         PREFERENCES_FILE("shared_preferences"),
         CURRENT_USER_ID("currentUserID"),
         KNOWN_USERS("known_users"),
-        USER_PREFIX("user_")
+        USER_PREFIX("user_"),
+        ADMIN_CODE("admin_code"),
+    }
+
+    init {
+        saveAdminCode(ADMIN_CREDENTIAL)
     }
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
@@ -115,9 +122,19 @@ class SharedPreferencesManager(context: Context) {
                 .forEach { remove(it) }
         }
     }
-
+    // todo: remove view model related methods from shared preferences manager
     // Just logout (remove current user reference)
     fun logout() {
         sharedPreferences.edit() { remove(PreferenceKey.CURRENT_USER_ID.key) }
     }
+
+    private fun saveAdminCode(adminCode: String) {
+        sharedPreferences.edit() { putString(PreferenceKey.ADMIN_CODE.key, adminCode) }
+    }
+
+    fun getAdminCode(): String? {
+        return sharedPreferences.getString(PreferenceKey.ADMIN_CODE.key, null)
+    }
+
+
 }
