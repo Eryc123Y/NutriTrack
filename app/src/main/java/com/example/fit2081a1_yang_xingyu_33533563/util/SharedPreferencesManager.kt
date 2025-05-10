@@ -29,6 +29,16 @@ class SharedPreferencesManager(context: Context) {
         saveAdminCode(ADMIN_CREDENTIAL)
     }
 
+    companion object {
+        @Volatile
+        private var instance: SharedPreferencesManager? = null
+        fun getInstance(context: Context): SharedPreferencesManager {
+            return instance ?: synchronized(this) {
+                instance ?: SharedPreferencesManager(context).also { instance = it }
+            }
+        }
+    }
+
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
         PreferenceKey.PREFERENCES_FILE.key, Context.MODE_PRIVATE
     )
