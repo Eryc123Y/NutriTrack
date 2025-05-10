@@ -10,7 +10,7 @@ class UserRepository(private val userDao: UserDao) {
         return userDao.getAllUsers()
     }
 
-    suspend fun getUserById(userId: String): Flow<UserEntity> {
+    fun getUserById(userId: String): Flow<UserEntity?> {
         return userDao.getUserById(userId)
     }
 
