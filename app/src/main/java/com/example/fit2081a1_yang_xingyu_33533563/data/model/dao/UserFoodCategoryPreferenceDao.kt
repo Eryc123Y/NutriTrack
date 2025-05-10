@@ -1,30 +1,31 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.model.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserFoodCategoryPreferenceEntity
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserFoodPreferenceEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserFoodCategoryPreferenceDao {
     @Insert
-    fun insert(preference: UserFoodCategoryPreferenceEntity)
+    fun insert(preference: UserFoodPreferenceEntity)
 
     @Update
-    fun update(preference: UserFoodCategoryPreferenceEntity)
+    fun update(preference: UserFoodPreferenceEntity)
 
     @Delete
-    fun delete(preference: UserFoodCategoryPreferenceEntity)
+    fun delete(preference: UserFoodPreferenceEntity)
 
     @Query("SELECT * FROM user_food_category_preferences WHERE userId = :userId")
-    fun getPreferencesByUserId(userId: String): LiveData<List<UserFoodCategoryPreferenceEntity>>
+    fun getPreferencesByUserId(userId: String): Flow<List<UserFoodPreferenceEntity>>
 
     @Query("SELECT * FROM user_food_category_preferences WHERE userId = :userId AND foodCategoryKey = :categoryKey")
-    fun getPreference(userId: String, categoryKey: String): LiveData<UserFoodCategoryPreferenceEntity>
+    fun getPreference(userId: String, categoryKey: String):
+            Flow<UserFoodPreferenceEntity>
 
     @Query("DELETE FROM user_food_category_preferences WHERE userId = :userId")
-    fun deleteAllPreferencesForUser(userId: String)
+    suspend fun deleteAllPreferencesForUser(userId: String)
 } 

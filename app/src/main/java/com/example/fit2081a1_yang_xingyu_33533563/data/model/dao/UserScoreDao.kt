@@ -1,33 +1,33 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.model.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserScoreEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserScoreDao {
     @Insert
-    fun insert(userScore: UserScoreEntity)
+    suspend fun insert(userScore: UserScoreEntity)
 
     @Update
-    fun update(userScore: UserScoreEntity)
+    suspend fun update(userScore: UserScoreEntity)
 
     @Delete
-    fun delete(userScore: UserScoreEntity)
+    suspend fun delete(userScore: UserScoreEntity)
 
     @Query("SELECT * FROM user_scores")
-    fun getAllUserScores(): LiveData<List<UserScoreEntity>>
+    fun getAllUserScores(): Flow<List<UserScoreEntity>>
 
     @Query("SELECT * FROM user_scores WHERE userId = :userId")
-    fun getScoresByUserId(userId: String): LiveData<List<UserScoreEntity>>
+    fun getScoresByUserId(userId: String): Flow<List<UserScoreEntity>>
 
     @Query("SELECT * FROM user_scores WHERE userId = :userId AND scoreTypeKey = :scoreTypeKey")
-    fun getScore(userId: String, scoreTypeKey: String): LiveData<UserScoreEntity>
+    fun getScore(userId: String, scoreTypeKey: String): Flow<UserScoreEntity>
 
     @Query("DELETE FROM user_scores WHERE userId = :userId")
-    fun deleteAllScoresForUser(userId: String)
+    suspend fun deleteAllScoresForUser(userId: String)
 } 

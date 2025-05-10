@@ -1,33 +1,60 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.model.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserTimePreferenceEntity
+import kotlinx.coroutines.flow.Flow
 
+/**
+ * Data Access Object (DAO) for user time preferences.
+ *
+ * This interface defines methods for interacting with the user_time_preferences table in the database.
+ */
 @Dao
 interface UserTimePreferenceDao {
+
     @Insert
-    fun insert(timePreference: UserTimePreferenceEntity)
+    suspend fun insert(timePreference: UserTimePreferenceEntity)
 
     @Update
-    fun update(timePreference: UserTimePreferenceEntity)
+    suspend fun update(timePreference: UserTimePreferenceEntity)
 
     @Delete
-    fun delete(timePreference: UserTimePreferenceEntity)
+    suspend fun delete(timePreference: UserTimePreferenceEntity)
 
     @Query("SELECT * FROM user_time_preferences")
-    fun getAllTimePreferences(): LiveData<List<UserTimePreferenceEntity>>
+    fun getAllTimePreferences(): Flow<List<UserTimePreferenceEntity>>
+
+    /**
+     * Get all time preferences for a specific user by userId.
+     */
+    @Query("SELECT * FROM user_time_preferences WHERE userId = :userId")
+    fun getPreferencesByUserId(userId: String): Flow<List<UserTimePreferenceEntity>>
+
+    /**
+     * Get the biggest meal time for a specific user by userId.
+     */
+    @Query("SELECT biggestMealTime FROM user_time_preferences WHERE userId = :userId")
+    fun getBiggestMealTime(userId: String): Flow<String?>
+
+    /**
+     * Get the sleep time for a specific user by userId.
+     */
+    @Query("SELECT sleepTime FROM user_time_preferences WHERE userId = :userId")
+    fun getSleepTime(userId: String): Flow<String?>
+
+    /**
+     * Get the wake-up time for a specific user by userId.
+     */
+    @Query("SELECT wakeUpTime FROM user_time_preferences WHERE userId = :userId")
+    fun getWakeUpTime(userId: String): Flow<String?>
 
     @Query("SELECT * FROM user_time_preferences WHERE userId = :userId")
-    fun getPreferencesByUserId(userId: String): LiveData<List<UserTimePreferenceEntity>>
-
-    @Query("SELECT * FROM user_time_preferences WHERE userId = :userId")
-    fun getPreference(userId: String): LiveData<UserTimePreferenceEntity>
+    fun getPreference(userId: String): Flow<UserTimePreferenceEntity>
 
     @Query("DELETE FROM user_time_preferences WHERE userId = :userId")
-    fun deleteAllPreferencesForUser(userId: String)
+    suspend fun deleteAllPreferencesForUser(userId: String)
 } 
