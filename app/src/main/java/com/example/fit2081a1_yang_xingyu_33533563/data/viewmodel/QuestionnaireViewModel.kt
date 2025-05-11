@@ -31,11 +31,17 @@ class QuestionnaireViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
+    /**
+     * Optionally preload user preferences when a valid userId is available.
+     * Call [loadUserPreferences] explicitly from the UI layer once you know the
+     * currently-logged-in user rather than forcing it at construction time to
+     * avoid null crashes.
+     */
     init {
-        // Load user preferences when the ViewModel is created from the DB
-        viewModelScope.launch {
-            loadUserPreferences(_selectedPersonaId.value!!)
-        }
+        /* No-op for now – wait until a userId is supplied. */
+        // viewModelScope.launch {
+        //     loadUserPreferences(_selectedPersonaId.value!!)   // <- !! on a null value
+        // }
     }
 
     // Food Categories Functions
