@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.CoachScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.HomeScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.InsightsScreen
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.InsightScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
@@ -85,7 +85,7 @@ fun AppNavigation() {
         }
         //InsightScreen
         composable("insights") {
-            InsightsScreen(
+            InsightScreen(
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
