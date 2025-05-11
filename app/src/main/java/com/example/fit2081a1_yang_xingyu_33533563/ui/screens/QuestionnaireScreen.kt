@@ -59,7 +59,7 @@ fun QuestionnaireScreen(
     onSaveComplete: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val prefManager = SharedPreferencesManager(context)
+    val prefManager = SharedPreferencesManager.getInstance(context)
     val userID = prefManager.getCurrentUser()
     // We store only 4 pages: food categories, persona, time prefs, summary
     val pagerState = rememberPagerState { 4 }

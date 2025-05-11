@@ -48,7 +48,7 @@ fun LoginScreen(onNavigateToHome: () -> Unit = {}) {
     var userID by remember { mutableStateOf("")}
     var phoneNumber by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val prefManager = SharedPreferencesManager(context)
+    val prefManager = SharedPreferencesManager.getInstance(context)
     val logInButtonShape = MaterialTheme.shapes.medium
     val userValidationMap = getLoginValidationData(LocalContext.current)
 

@@ -68,7 +68,7 @@ fun ScoreProgressIndicator(context: Context, scoreType: ScoreTypes, userID: Stri
 @Composable
 fun ScoreProgressBarRow(scoreType: ScoreTypes) {
     val context = LocalContext.current
-    val prefManager = SharedPreferencesManager(context)
+    val prefManager = SharedPreferencesManager.getInstance(context)
     val userID = prefManager.getCurrentUser()
     val score = retrieveUserScore(context, userID.toString(), scoreType).toInt()
 

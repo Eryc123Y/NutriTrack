@@ -44,7 +44,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val prefManager = SharedPreferencesManager(context)
+    val prefManager = SharedPreferencesManager.getInstance(context)
     var currentUser = prefManager.getCurrentUser()
 
     NavHost(

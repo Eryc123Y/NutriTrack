@@ -58,7 +58,7 @@ fun HomeScreen(
     onNavigate: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val prefManager = SharedPreferencesManager(context)
+    val prefManager = SharedPreferencesManager.getInstance(context)
     val userId = prefManager.getCurrentUser()
     val scrollState = rememberScrollState()
     var score by remember { mutableFloatStateOf(0f) }
