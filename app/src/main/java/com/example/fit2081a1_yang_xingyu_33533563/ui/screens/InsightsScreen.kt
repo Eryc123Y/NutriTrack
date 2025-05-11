@@ -105,12 +105,12 @@ fun InsightScreen(
         ) {
             if (isLoading) {
                 // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+//                Box(
+//                    modifier = Modifier.fillMaxSize(),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    CircularProgressIndicator()
+//                }
             } else {
                 Column(
                     modifier = Modifier
