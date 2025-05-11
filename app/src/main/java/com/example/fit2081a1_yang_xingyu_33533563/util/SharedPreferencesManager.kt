@@ -15,18 +15,12 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
  */
 class SharedPreferencesManager(context: Context) {
 
-    private val ADMIN_CREDENTIAL = "dollar-entry-apples"
-
     enum class PreferenceKey(val key: String) {
         PREFERENCES_FILE("shared_preferences"),
         CURRENT_USER_ID("currentUserID"),
         KNOWN_USERS("known_users"),
         USER_PREFIX("user_"),
         ADMIN_CODE("admin_code"),
-    }
-
-    init {
-        saveAdminCode(ADMIN_CREDENTIAL)
     }
 
     companion object {
@@ -138,13 +132,10 @@ class SharedPreferencesManager(context: Context) {
         sharedPreferences.edit() { remove(PreferenceKey.CURRENT_USER_ID.key) }
     }
 
-    private fun saveAdminCode(adminCode: String) {
-        sharedPreferences.edit() { putString(PreferenceKey.ADMIN_CODE.key, adminCode) }
+    fun saveAdminCode(adminCode: String) {
+        // Use the lazy-initialized sharedPreferences object
+        sharedPreferences.edit {
+            putString("admin_code", adminCode)
+        } // or editor.commit()
     }
-
-    fun getAdminCode(): String? {
-        return sharedPreferences.getString(PreferenceKey.ADMIN_CODE.key, null)
-    }
-
-
 }
