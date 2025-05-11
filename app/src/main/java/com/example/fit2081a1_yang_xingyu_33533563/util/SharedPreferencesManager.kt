@@ -20,7 +20,6 @@ class SharedPreferencesManager(context: Context) {
         CURRENT_USER_ID("currentUserID"),
         KNOWN_USERS("known_users"),
         USER_PREFIX("user_"),
-        ADMIN_CODE("admin_code"),
     }
 
     companion object {
