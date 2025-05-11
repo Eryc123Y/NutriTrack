@@ -49,7 +49,7 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "welcome",
+        startDestination = Screen.Welcome.route,
         // default transition
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
@@ -62,13 +62,13 @@ fun AppNavigation() {
 
     ) {
         //Welcome
-        composable("welcome") {
+        composable(Screen.Welcome.route) {
             WelcomeScreen(onNavigateToLogin = {
                 navController.navigate(Screen.Login.route)
             })
         }
         //LoginScreen
-        composable("login") {
+        composable(Screen.Login.route) {
             LoginScreen(onNavigateToHome = {
                 if (prefManager.getKnownUsers().contains(currentUser)) {
                     navController.navigate(Screen.Home.route)
@@ -78,35 +78,35 @@ fun AppNavigation() {
             })
         }
         //HomeScreen
-        composable("home") {
+        composable(Screen.Home.route) {
             HomeScreen(
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
         //InsightScreen
-        composable("insights") {
+        composable(Screen.Insights.route) {
             InsightScreen(
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
 
         //QuestionnaireScreen
-        composable("questionnaire") {
+        composable(Screen.Questionnaire.route) {
             QuestionnaireScreen(
                 onBackClick = { navController.popBackStack() },
                 onSaveComplete = {}
             )
         }
 
-        // not implemented in A1
-        composable("nutricoach") {
+        //NutriCoachScreen
+        composable(Screen.NutriCoach.route) {
             CoachScreen(
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
 
-        // not implemented in A1
-        composable("settings") {
+        //SettingsScreen
+        composable(Screen.Settings.route) {
             SettingsScreen(
                 onNavigate = { route -> navController.navigate(route) }
             )
