@@ -22,7 +22,7 @@ class PersonaRepository(private val personaDao: PersonaDao) {
         return personaDao.getAllPersonas()
     }
 
-    fun getPersonaById(personaId: String): Flow<PersonaEntity> {
+    fun getPersonaById(personaId: String): Flow<PersonaEntity?> {
         return personaDao.getPersonaById(personaId)
     }
 } 
