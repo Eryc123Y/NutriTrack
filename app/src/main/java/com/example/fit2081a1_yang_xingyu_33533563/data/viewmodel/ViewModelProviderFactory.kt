@@ -10,6 +10,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepo
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
+import kotlin.jvm.java
 
 /**
  * A generic ViewModelProvider Factory that can create ViewModels with dependencies.

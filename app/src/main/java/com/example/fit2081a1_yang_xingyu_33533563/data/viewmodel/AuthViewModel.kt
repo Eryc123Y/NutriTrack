@@ -1,7 +1,8 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
-import android.content.Context
+// import android.content.Context // Not used directly, SharedPreferencesManager handles context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
@@ -11,10 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
+// Removed LiveData imports
+// import androidx.lifecycle.LiveData
+// import androidx.lifecycle.MutableLiveData
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository // Keep if ProfileViewModelFactory is kept, otherwise remove
 
 /**
  * A view model class for managing authentication-related data and operations.
@@ -24,26 +25,26 @@ class AuthViewModel(
     private val sharedPreferencesManager: SharedPreferencesManager
 ) : ViewModel() {
     // MutableStateFlow to hold the current user entity. Can be updated and observed.
-    private val _currentUser = MutableLiveData<UserEntity?>()
-    val currentUser: LiveData<UserEntity?> = _currentUser
+    private val _currentUser = MutableStateFlow<UserEntity?>(null)
+    val currentUser: StateFlow<UserEntity?> = _currentUser.asStateFlow()
 
     // MutableStateFlow to hold the current user ID.
-    private val _currentUserId = MutableLiveData<String?>()
-    val currentUserId: LiveData<String?> = _currentUserId
+    private val _currentUserId = MutableStateFlow<String?>(null)
+    val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
 
     // MutableStateFlow to hold the login status.
     private val _isLoggedIn = MutableStateFlow<Boolean>(false)
-    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
     // MutableStateFlow to hold the loading status. This is used to indicate whether a
     // loading operation is in progress, helping to improve UI responsiveness and avoid
     // threading issues.
     private val _isLoading = MutableStateFlow<Boolean>(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // MutableStateFlow to hold any authentication error messages.
-    private val _authError = MutableLiveData<String?>()
-    val authError: LiveData<String?> = _authError
+    private val _authError = MutableStateFlow<String?>(null)
+    val authError: StateFlow<String?> = _authError.asStateFlow()
 
     // loading the current user when the ViewModel is created. This is nullable if no
     // any user is stored in the shared preferences.
@@ -53,65 +54,110 @@ class AuthViewModel(
 
     private fun loadCurrentUser() {
         viewModelScope.launch {
-            val StoredUserId = sharedPreferencesManager.getCurrentUser()
-            _currentUserId.postValue(StoredUserId) // Use postValue if from background thread, setValue if from main
-            StoredUserId?.let { id ->
-                // Assuming userRepository.getUserById() returns Flow; adapt if it returns LiveData directly
-                userRepository.getUserById(id).firstOrNull()?.let { user ->
-                     _currentUser.postValue(user)
-                } ?: _currentUser.postValue(null) // Ensure LiveData is updated if user not found
-            } ?: _currentUser.postValue(null)
-        }
-    }
-
-    fun login(userId: String /*, password or other credentials */) {
-        viewModelScope.launch {
-            val user = userRepository.getUserById(userId).firstOrNull() 
-            if (user != null) {
-                sharedPreferencesManager.setCurrentUser(userId)
-                _currentUser.postValue(user)
-                _currentUserId.postValue(userId)
-                _authError.postValue(null)
-            } else {
-                _authError.postValue("Invalid credentials or user not found.")
-                _currentUser.postValue(null)
-                _currentUserId.postValue(null)
+            _isLoading.value = true
+            try {
+                val storedUserId = sharedPreferencesManager.getCurrentUser()
+                _currentUserId.value = storedUserId
+                if (storedUserId != null) {
+                    userRepository.getUserById(storedUserId).firstOrNull()?.let { user ->
+                        _currentUser.value = user
+                        _isLoggedIn.value = true
+                    } ?: run {
+                        // User ID in prefs but not in DB, treat as logged out
+                        _currentUser.value = null
+                        _isLoggedIn.value = false
+                        sharedPreferencesManager.logout() // Clear inconsistent state
+                    }
+                } else {
+                    _currentUser.value = null
+                    _isLoggedIn.value = false
+                }
+            } catch (e: Exception) {
+                _authError.value = "Error loading current user: ${e.message}"
+                _currentUser.value = null
+                _currentUserId.value = null
+                _isLoggedIn.value = false
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
-    fun register(name: String, userId: String, phone: String, gender: String /*, other details */) {
+    fun login(userId: String) {
         viewModelScope.launch {
-            val existingUser = userRepository.getUserById(userId).firstOrNull()
-            if (existingUser == null) {
-                val newUser = UserEntity(
-                    userId = userId,
-                    name = name,
-                    phoneNumber = phone,
-                    gender = gender,
-                    isCurrentLoggedIn = true 
-                )
-                userRepository.insertUser(newUser) // Ensure this is suspend
-                sharedPreferencesManager.setCurrentUser(userId)
-                _currentUser.postValue(newUser)
-                _currentUserId.postValue(userId)
-                _authError.postValue(null)
-            } else {
-                _authError.postValue("User ID already exists.")
+            _isLoading.value = true
+            _authError.value = null
+            try {
+                val user = userRepository.getUserById(userId).firstOrNull()
+                if (user != null) {
+                    sharedPreferencesManager.setCurrentUser(userId)
+                    _currentUser.value = user
+                    _currentUserId.value = userId
+                    _isLoggedIn.value = true
+                } else {
+                    _authError.value = "Invalid credentials or user not found."
+                    _currentUser.value = null
+                    _currentUserId.value = null
+                    _isLoggedIn.value = false
+                }
+            } catch (e: Exception) {
+                _authError.value = "Login error: ${e.message}"
+                 _isLoggedIn.value = false
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun register(name: String, userId: String, phone: String, gender: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _authError.value = null
+            try {
+                val existingUser = userRepository.getUserById(userId).firstOrNull()
+                if (existingUser == null) {
+                    val newUser = UserEntity(
+                        userId = userId,
+                        name = name,
+                        phoneNumber = phone,
+                        gender = gender,
+                        isCurrentLoggedIn = true // This field might be redundant if _isLoggedIn is the source of truth
+                    )
+                    userRepository.insertUser(newUser)
+                    sharedPreferencesManager.setCurrentUser(userId)
+                    _currentUser.value = newUser
+                    _currentUserId.value = userId
+                    _isLoggedIn.value = true
+                } else {
+                    _authError.value = "User ID already exists."
+                }
+            } catch (e: Exception) {
+                _authError.value = "Registration error: ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
     fun logout() {
         viewModelScope.launch {
-            sharedPreferencesManager.logout()
-            _currentUser.postValue(null)
-            _currentUserId.postValue(null)
+            _isLoading.value = true
+            try {
+                sharedPreferencesManager.logout()
+                _currentUser.value = null
+                _currentUserId.value = null
+                _isLoggedIn.value = false
+            } catch (e: Exception) {
+                // Log or handle error if SharedPreferences fails, though unlikely
+                _authError.value = "Logout error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
     fun clearAuthError() {
-        _authError.value = null // Can use .value if sure it's called from main thread
+        _authError.value = null
     }
 
     class ProfileViewModelFactory(

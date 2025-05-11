@@ -1,7 +1,5 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,6 +7,9 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntit
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
@@ -17,65 +18,69 @@ class ProfileViewModel(
     private val personaRepository: PersonaRepository
 ) : ViewModel() {
 
-    private val _userIdLiveData = MutableLiveData<String?>()
+    private val _userIdStateFlow = MutableStateFlow<String?>(null)
+    // Not directly exposed, used internally to trigger loads
 
-    private val _currentUser = MutableLiveData<UserEntity?>()
-    val currentUser: LiveData<UserEntity?> = _currentUser
+    private val _currentUser = MutableStateFlow<UserEntity?>(null)
+    val currentUser: StateFlow<UserEntity?> = _currentUser.asStateFlow()
 
-    private val _selectedPersona = MutableLiveData<PersonaEntity?>()
-    val selectedPersona: LiveData<PersonaEntity?> = _selectedPersona
+    private val _selectedPersona = MutableStateFlow<PersonaEntity?>(null)
+    val selectedPersona: StateFlow<PersonaEntity?> = _selectedPersona.asStateFlow()
 
-    private val _updateStatus = MutableLiveData<String?>()
-    val updateStatus: LiveData<String?> = _updateStatus
+    private val _updateStatus = MutableStateFlow<String?>(null)
+    val updateStatus: StateFlow<String?> = _updateStatus.asStateFlow()
 
     fun setUserId(userId: String?) {
-        if (_userIdLiveData.value != userId) {
-            _userIdLiveData.value = userId
+        if (_userIdStateFlow.value != userId) {
+            _userIdStateFlow.value = userId
             loadUserData()
         }
     }
 
     private fun loadUserData() {
         viewModelScope.launch {
-            val userId = _userIdLiveData.value
+            val userId = _userIdStateFlow.value
             if (userId != null) {
                 try {
                     val user = userRepository.getUserById(userId).firstOrNull()
-                    _currentUser.postValue(user)
+                    _currentUser.value = user
 
                     // Load persona if user has selected one
                     if (user?.selectedPersonaId != null) {
                         val persona = personaRepository.getPersonaById(user.selectedPersonaId).firstOrNull()
-                        _selectedPersona.postValue(persona)
+                        _selectedPersona.value = persona
                     } else {
-                        _selectedPersona.postValue(null)
+                        _selectedPersona.value = null
                     }
                 } catch (e: Exception) {
-                    _currentUser.postValue(null)
-                    _selectedPersona.postValue(null)
+                    _currentUser.value = null
+                    _selectedPersona.value = null
+                    // Consider propagating error to UI via another StateFlow if needed
                 }
             } else {
-                _currentUser.postValue(null)
-                _selectedPersona.postValue(null)
+                _currentUser.value = null
+                _selectedPersona.value = null
             }
         }
     }
 
     fun updateUserProfile(userId: String, newName: String, newPhone: String, newGender: String) {
         viewModelScope.launch {
-            val user = currentUser.value
+            // Use _currentUser.value directly as it reflects the latest loaded state
+            val user = _currentUser.value
             if (user != null && user.userId == userId) {
                 val updatedUser = user.copy(name = newName, phoneNumber = newPhone, gender = newGender)
                 try {
                     userRepository.updateUser(updatedUser)
-                    _updateStatus.postValue("Profile updated successfully.")
-                    // Refresh user data
+                    _updateStatus.value = "Profile updated successfully."
+                    // Refresh user data by re-triggering loadUserData
+                    // This ensures currentUser and selectedPersona are updated
                     loadUserData()
                 } catch (e: Exception) {
-                    _updateStatus.postValue("Error updating profile: ${e.message}")
+                    _updateStatus.value = "Error updating profile: ${e.message}"
                 }
             } else {
-                _updateStatus.postValue("Error: User not loaded or ID mismatch.")
+                _updateStatus.value = "Error: User not loaded or ID mismatch."
             }
         }
     }
