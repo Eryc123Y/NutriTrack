@@ -22,7 +22,7 @@ class SharedPreferencesManagerTest {
         context.getSharedPreferences("shared_preferences", Context.MODE_PRIVATE)
             .edit().clear().apply()
 
-        prefManager = SharedPreferencesManager(context)
+        prefManager = SharedPreferencesManager.getInstance(context)
     }
 
     @Test
