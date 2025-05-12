@@ -19,13 +19,13 @@ interface UserFoodCategoryPreferenceDao {
     @Delete
     fun delete(preference: UserFoodPreferenceEntity)
 
-    @Query("SELECT * FROM user_food_category_preferences WHERE userId = :userId")
+    @Query("SELECT * FROM user_food_category_preferences WHERE foodPrefUserId = :userId")
     fun getPreferencesByUserId(userId: String): Flow<List<UserFoodPreferenceEntity>>
 
-    @Query("SELECT * FROM user_food_category_preferences WHERE userId = :userId AND foodCategoryKey = :categoryKey")
+    @Query("SELECT * FROM user_food_category_preferences WHERE foodPrefUserId = :userId AND foodPrefCategoryKey = :categoryKey")
     fun getPreference(userId: String, categoryKey: String):
             Flow<UserFoodPreferenceEntity>
 
-    @Query("DELETE FROM user_food_category_preferences WHERE userId = :userId")
+    @Query("DELETE FROM user_food_category_preferences WHERE foodPrefUserId = :userId")
     suspend fun deleteAllPreferencesForUser(userId: String)
 } 

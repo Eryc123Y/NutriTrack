@@ -22,12 +22,12 @@ interface UserScoreDao {
     @Query("SELECT * FROM user_scores")
     fun getAllUserScores(): Flow<List<UserScoreEntity>>
 
-    @Query("SELECT * FROM user_scores WHERE userId = :userId")
+    @Query("SELECT * FROM user_scores WHERE scoreUserId = :userId")
     fun getScoresByUserId(userId: String): Flow<List<UserScoreEntity>>
 
-    @Query("SELECT * FROM user_scores WHERE userId = :userId AND scoreTypeKey = :scoreTypeKey")
+    @Query("SELECT * FROM user_scores WHERE scoreUserId = :userId AND scoreTypeKey = :scoreTypeKey")
     fun getScore(userId: String, scoreTypeKey: String): Flow<UserScoreEntity>
 
-    @Query("DELETE FROM user_scores WHERE userId = :userId")
+    @Query("DELETE FROM user_scores WHERE scoreUserId = :userId")
     suspend fun deleteAllScoresForUser(userId: String)
 } 

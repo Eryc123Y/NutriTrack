@@ -46,8 +46,8 @@ class ProfileViewModel(
                     _currentUser.value = user
 
                     // Load persona if user has selected one
-                    if (user?.selectedPersonaId != null) {
-                        val persona = personaRepository.getPersonaById(user.selectedPersonaId).firstOrNull()
+                    if (user?.userPersonaId != null) {
+                        val persona = personaRepository.getPersonaById(user.userPersonaId).firstOrNull()
                         _selectedPersona.value = persona
                     } else {
                         _selectedPersona.value = null
@@ -69,7 +69,7 @@ class ProfileViewModel(
             // Use _currentUser.value directly as it reflects the latest loaded state
             val user = _currentUser.value
             if (user != null && user.userId == userId) {
-                val updatedUser = user.copy(name = newName, phoneNumber = newPhone, gender = newGender)
+                val updatedUser = user.copy(userName = newName, userPhoneNumber = newPhone, userGender = newGender)
                 try {
                     userRepository.updateUser(updatedUser)
                     _updateStatus.value = "Profile updated successfully."

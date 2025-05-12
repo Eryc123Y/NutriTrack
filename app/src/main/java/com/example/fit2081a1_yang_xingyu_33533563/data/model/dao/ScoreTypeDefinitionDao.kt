@@ -19,9 +19,9 @@ interface ScoreTypeDefinitionDao {
     @Delete
     suspend fun delete(scoreType: ScoreTypeDefinitionEntity)
 
-    @Query("SELECT * FROM score_type_definitions ORDER BY displayOrder ASC")
+    @Query("SELECT * FROM score_type_definitions")
     fun getAllScoreTypes(): Flow<List<ScoreTypeDefinitionEntity>>
 
-    @Query("SELECT * FROM score_type_definitions WHERE scoreTypeKey = :scoreTypeKey")
+    @Query("SELECT * FROM score_type_definitions WHERE scoreDefId = :scoreTypeKey")
     fun getScoreTypeByKey(scoreTypeKey: String): Flow<ScoreTypeDefinitionEntity>
 } 

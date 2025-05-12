@@ -31,30 +31,30 @@ interface UserTimePreferenceDao {
     /**
      * Get all time preferences for a specific user by userId.
      */
-    @Query("SELECT * FROM user_time_preferences WHERE userId = :userId")
+    @Query("SELECT * FROM user_time_preferences WHERE timePrefUserId = :userId")
     fun getPreferencesByUserId(userId: String): Flow<List<UserTimePreferenceEntity>>
 
     /**
      * Get the biggest meal time for a specific user by userId.
      */
-    @Query("SELECT biggestMealTime FROM user_time_preferences WHERE userId = :userId")
+    @Query("SELECT biggestMealTime FROM user_time_preferences WHERE timePrefUserId = :userId")
     fun getBiggestMealTime(userId: String): Flow<String?>
 
     /**
      * Get the sleep time for a specific user by userId.
      */
-    @Query("SELECT sleepTime FROM user_time_preferences WHERE userId = :userId")
+    @Query("SELECT sleepTime FROM user_time_preferences WHERE timePrefUserId = :userId")
     fun getSleepTime(userId: String): Flow<String?>
 
     /**
      * Get the wake-up time for a specific user by userId.
      */
-    @Query("SELECT wakeUpTime FROM user_time_preferences WHERE userId = :userId")
+    @Query("SELECT wakeUpTime FROM user_time_preferences WHERE timePrefUserId = :userId")
     fun getWakeUpTime(userId: String): Flow<String?>
 
-    @Query("SELECT * FROM user_time_preferences WHERE userId = :userId")
+    @Query("SELECT * FROM user_time_preferences WHERE timePrefUserId = :userId")
     fun getPreference(userId: String): Flow<UserTimePreferenceEntity>
 
-    @Query("DELETE FROM user_time_preferences WHERE userId = :userId")
+    @Query("DELETE FROM user_time_preferences WHERE timePrefUserId = :userId")
     suspend fun deleteAllPreferencesForUser(userId: String)
 } 

@@ -118,9 +118,9 @@ class AuthViewModel(
                 if (existingUser == null) {
                     val newUser = UserEntity(
                         userId = userId,
-                        name = name,
-                        phoneNumber = phone,
-                        gender = gender,
+                        userName = name,
+                        userPhoneNumber = phone,
+                        userGender = gender,
                         isCurrentLoggedIn = true // This field might be redundant if _isLoggedIn is the source of truth
                     )
                     userRepository.insertUser(newUser)

@@ -19,9 +19,9 @@ interface FoodCategoryDefinitionDao {
     @Delete
     suspend fun delete(foodCategory: FoodCategoryDefinitionEntity)
 
-    @Query("SELECT * FROM food_category_definitions ORDER BY displayOrder ASC")
+    @Query("SELECT * FROM food_category_definitions")
     fun getAllFoodCategories(): Flow<List<FoodCategoryDefinitionEntity>>
 
-    @Query("SELECT * FROM food_category_definitions WHERE foodCategoryKey = :categoryKey")
+    @Query("SELECT * FROM food_category_definitions WHERE foodDefId = :categoryKey")
     fun getFoodCategoryByKey(categoryKey: String): Flow<FoodCategoryDefinitionEntity>
 } 

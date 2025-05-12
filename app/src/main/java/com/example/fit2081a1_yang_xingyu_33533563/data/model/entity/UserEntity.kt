@@ -16,17 +16,17 @@ import androidx.room.PrimaryKey
         ForeignKey(
             entity = PersonaEntity::class,
             parentColumns = ["personaId"],
-            childColumns = ["selectedPersonaId"],
-            onDelete = ForeignKey.SET_NULL // If a persona is deleted, the user's personaId becomes null
+            childColumns = ["userPersonaId"],
+            onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index(value = ["selectedPersonaId"])]
+    indices = [Index(value = ["userPersona"])]
 )
 data class UserEntity(
     @PrimaryKey val userId: String,      // from csv or generated
-    val name: String,                    // To be chosen upon registration or from CSV
-    val phoneNumber: String,             // from csv
-    val gender: String,                  // from csv (needs TypeConverter: Male/Female)
-    val selectedPersonaId: String? = null, // Foreign key to PersonaEntity
-    val hashedCredential: String? = null, // to be used for login, set upon registration
+    val userName: String,                    // To be chosen upon registration or from CSV
+    val userPhoneNumber: String,             // from csv
+    val userGender: String,                  // from csv (needs TypeConverter: Male/Female)
+    val userPersonaId: String? = null, // Foreign key to PersonaEntity
+    val userHashedCredential: String? = null, // to be used for login, set upon registration
 )

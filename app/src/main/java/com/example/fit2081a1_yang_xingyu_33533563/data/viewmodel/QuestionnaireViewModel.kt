@@ -104,13 +104,13 @@ class QuestionnaireViewModel(
                 userFoodCategoryPreferenceRepository.deleteAllPreferencesForUser(userId)
                 _selectedFoodCategoryKeys.value.forEach { key ->
                     userFoodCategoryPreferenceRepository.insert(
-                        UserFoodPreferenceEntity(userId = userId, foodCategoryKey = key, isChecked = true)
+                        UserFoodPreferenceEntity(foodPrefUserId = userId, foodPrefCategoryKey = key, foodPrefCheckedStatus = true)
                     )
                 }
 
                 _selectedPersonaId.value?.let { personaId ->
                     userRepository.getUserById(userId).firstOrNull()?.let { user ->
-                        userRepository.updateUser(user.copy(selectedPersonaId = personaId))
+                        userRepository.updateUser(user.copy(userPersonaId = personaId))
                     } ?: run {
                         _saveStatus.value = "Error: User not found for saving persona."
                         // Potentially return or handle error more gracefully
@@ -120,7 +120,7 @@ class QuestionnaireViewModel(
                 userTimePreferenceRepository.deleteAllPreferencesForUser(userId)
                 userTimePreferenceRepository.insert(
                     UserTimePreferenceEntity(
-                        userId = userId,
+                        timePrefUserId = userId,
                         biggestMealTime = _biggestMealTime.value,
                         sleepTime = _sleepTime.value,
                         wakeUpTime = _wakeUpTime.value
@@ -137,10 +137,10 @@ class QuestionnaireViewModel(
         viewModelScope.launch {
             try {
                 val foodPrefs = userFoodCategoryPreferenceRepository.getPreferencesByUserId(userId).firstOrNull()
-                _selectedFoodCategoryKeys.value = foodPrefs?.filter { it.isChecked }?.map { it.foodCategoryKey }?.toSet() ?: emptySet()
+                _selectedFoodCategoryKeys.value = foodPrefs?.filter { it.foodPrefCheckedStatus }?.map { it.foodPrefCategoryKey }?.toSet() ?: emptySet()
 
                 val user = userRepository.getUserById(userId).firstOrNull()
-                _selectedPersonaId.value = user?.selectedPersonaId
+                _selectedPersonaId.value = user?.userPersonaId
             
                 val timePref = userTimePreferenceRepository.getPreference(userId).firstOrNull()
                 _biggestMealTime.value = timePref?.biggestMealTime

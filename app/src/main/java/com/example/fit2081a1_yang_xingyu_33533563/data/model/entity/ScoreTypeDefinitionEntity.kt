@@ -8,9 +8,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "score_type_definitions")
 data class ScoreTypeDefinitionEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val displayName: String,
-    val maxScore: Float,
-    val description: String? = null,
-    val displayOrder: Int? = null
+    @PrimaryKey(autoGenerate = true) val scoreDefId: Int = 0,
+    val scoreTypeName: String,
+    val scoreMaximum: Float,
 ) 

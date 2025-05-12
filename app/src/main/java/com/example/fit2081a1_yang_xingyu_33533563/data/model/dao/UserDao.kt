@@ -18,15 +18,15 @@ interface UserDao {
     @Delete
     suspend fun delete(user: UserEntity)
 
+    @Query("SELECT userHashedCredential FROM users WHERE userId = :userId")
+    suspend fun getHashedCredentialByUserId(userId: String): String?
+
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<UserEntity>>
 
     @Query("SELECT * FROM users WHERE userId = :userId")
     fun getUserById(userId: String): Flow<UserEntity?>
 
-    @Query("SELECT credential FROM users WHERE userId = :userId")
-    suspend fun getCredentialByUserId(userId: String): String?
 
-    @Query("SELECT isCurrentLoggedIn FROM users WHERE userId = :userId")
-    suspend fun isUserLoggedIn(userId: String): Boolean
+
 } 
