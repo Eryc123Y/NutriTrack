@@ -8,9 +8,6 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "food_category_definitions")
 data class FoodCategoryDefinitionEntity(
-    @PrimaryKey val foodCategoryKey: String, // e.g., "FRUIT", "VEGETABLE"
-    val displayName: String,             // e.g., "Fruit", "Vegetables"
-    val description: String? = null,
-    val displayOrder: Int? = null        // For ordering in UI if needed
-    // todo: delete display order from db?
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val foodCategoryName: String,
 ) 

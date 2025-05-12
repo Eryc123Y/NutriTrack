@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "personas")
 data class PersonaEntity(
-    @PrimaryKey val personaId: String, // A unique ID for the persona, e.g., "BALANCED_EATER"
-    val displayName: String,        // User-friendly name, e.g., "Balanced Eater"
-    val description: String? = null // Optional detailed description of the persona
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val displayName: String,
+    val description: String? = null
 ) 
