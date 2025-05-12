@@ -10,5 +10,5 @@ import androidx.room.PrimaryKey
 data class ScoreTypeDefinitionEntity(
     @PrimaryKey(autoGenerate = true) val scoreDefId: Int = 0,
     val scoreTypeName: String,
-    val scoreMaximum: Float,
+    val scoreMaximum: Int,
 ) 
