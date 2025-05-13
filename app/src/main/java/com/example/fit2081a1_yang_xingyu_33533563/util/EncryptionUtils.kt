@@ -1,46 +1,51 @@
 package com.example.fit2081a1_yang_xingyu_33533563.util
 
 import android.util.Base64
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
-import javax.crypto.spec.SecretKeySpec
+import java.security.SecureRandom
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 
+private const val PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256"
+private const val SALT_BYTES = 16
+private const val ITERATIONS = 120000
+private const val KEY_LENGTH = 256
 
-private const val ALGORITHM = "AES"
-private const val TRANSFORMATION = "AES"
-
-// Generate a new AES key
-fun generateKey(): SecretKey {
-    val keyGen = KeyGenerator.getInstance(ALGORITHM)
-    keyGen.init(256) // AES-256
-    return keyGen.generateKey()
+// Generate cryptographically secure salt
+fun generateSalt(): ByteArray {
+    val random = SecureRandom()
+    return ByteArray(SALT_BYTES).apply {
+        random.nextBytes(this)
+    }
 }
 
-// Encrypt a plain text using the provided key
-fun encrypt(key: SecretKey, data: String): String {
-    val cipher = Cipher.getInstance(TRANSFORMATION)
-    cipher.init(Cipher.ENCRYPT_MODE, key)
-    val encryptedBytes = cipher.doFinal(data.toByteArray())
-    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+// Hash password with salt using PBKDF2
+fun hashPassword(password: String, salt: ByteArray = generateSalt()): String {
+    val factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM)
+    val spec = PBEKeySpec(
+        password.toCharArray(),
+        salt,
+        ITERATIONS,
+        KEY_LENGTH
+    )
+    val hash = factory.generateSecret(spec).encoded
+    return "${Base64.encodeToString(salt, Base64.NO_WRAP)}:${Base64.encodeToString(hash, Base64.NO_WRAP)}"
 }
 
-// Decrypt an encrypted text using the provided key
-fun decrypt(key: SecretKey, encryptedData: String): String {
-    val cipher = Cipher.getInstance(TRANSFORMATION)
-    cipher.init(Cipher.DECRYPT_MODE, key)
-    val decodedBytes = Base64.decode(encryptedData, Base64.DEFAULT)
-    val decryptedBytes = cipher.doFinal(decodedBytes)
-    return String(decryptedBytes)
-}
+// Verify password against stored hash
+fun verifyPassword(password: String, storedHash: String): Boolean {
+    val parts = storedHash.split(":")
+    require(parts.size == 2) { "Invalid hash format" }
 
-// Convert a string key to SecretKey
-fun stringToSecretKey(key: String): SecretKey {
-    val decodedKey = Base64.decode(key, Base64.DEFAULT)
-    return SecretKeySpec(decodedKey, 0, decodedKey.size, ALGORITHM)
-}
+    val salt = Base64.decode(parts[0], Base64.NO_WRAP)
+    val originalHash = Base64.decode(parts[1], Base64.NO_WRAP)
 
-// Convert a SecretKey to string
-fun secretKeyToString(key: SecretKey): String {
-    return Base64.encodeToString(key.encoded, Base64.DEFAULT)
+    val factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM)
+    val spec = PBEKeySpec(
+        password.toCharArray(),
+        salt,
+        ITERATIONS,
+        KEY_LENGTH
+    )
+    val testHash = factory.generateSecret(spec).encoded
+    return originalHash.contentEquals(testHash)
 }
