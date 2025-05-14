@@ -50,11 +50,12 @@ import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getGradientColorsForScore
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
+import androidx.compose.runtime.collectAsState
 
-
-@Preview(showSystemUi = true)
 @Composable
 fun HomeScreen(
+    profileViewModel: ProfileViewModel,
     onNavigate: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -63,7 +64,11 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     var score by remember { mutableFloatStateOf(0f) }
     
+    // Use ProfileViewModel to get user info
+    val userInfo = profileViewModel.userInfo.collectAsState().value
+    
     LaunchedEffect(userId) {
+        profileViewModel.loadUserInfo(userId)
         score = retrieveUserScore(context, userId.toString(), ScoreTypes.TOTAL)
     }
 

@@ -101,8 +101,6 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
                 onNavigateToLogin = {
                     navController.navigate(Screen.Login.route)
                 },
-                onBackClick = { navController.popBackStack() },
-
             )
 
         }
