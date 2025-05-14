@@ -26,7 +26,7 @@ data class UserEntity(
     @PrimaryKey val userId: String,      // from csv or generated
     val userName: String? = null,                    // To be chosen upon registration or from CSV
     val userPhoneNumber: String,             // from csv
-    val userGender: String,                  // from csv (needs TypeConverter: Male/Female)
+    val userGender: String?,                  // from csv (needs TypeConverter: Male/Female)
     val userPersonaId: String? = null, // Foreign key to PersonaEntity
     val userHashedCredential: String? = null, // to be used for login, set upon registration
     val userIsRegistered: Boolean = false, // to be set to true upon registration

@@ -34,6 +34,10 @@ class UserRepository(private val userDao: UserDao) {
         return userDao.getUserIsRegistered(userId)
     }
 
+    suspend fun getUserGender(userId: String): String? {
+        return userDao.getUserGender(userId)
+    }
+
     suspend fun updateUserIsRegistered(userId: String) {
         userDao.updateUserIsRegistered(userId)
     }

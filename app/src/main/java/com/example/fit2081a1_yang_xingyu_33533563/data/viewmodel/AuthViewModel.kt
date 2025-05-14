@@ -118,24 +118,24 @@ class AuthViewModel(
         }
     }
 
-    fun register(name: String, userId: String, phone: String,
-                 gender: String, password: String) {
+    fun register(name: String, userId: String, phone: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _authError.value = null
             try {
-                val existingUser = userRepository.getUserById(userId).firstOrNull()
-                if (existingUser == null) {
+                val isUserRegistered = userRepository.getUserIsRegistered(userId)
+                if (isUserRegistered == false) {
+                    val userGender = userRepository.getUserGender(userId)
                     val newUser = UserEntity(
                         userId = userId,
                         userName = name,
                         userPhoneNumber = phone,
-                        userGender = gender,
                         userHashedCredential = hashPassword(password),
-                        userIsRegistered = true
+                        userIsRegistered = true,
+                        userGender = userGender
                     )
 
-                    userRepository.insertUser(newUser)
+                    userRepository.updateUser(newUser)
                     sharedPreferencesManager.setCurrentUser(userId)
                     _currentUser.value = newUser
                     _currentUserId.value = userId

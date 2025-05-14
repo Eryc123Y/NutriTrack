@@ -28,6 +28,10 @@ interface UserDao {
     @Query("UPDATE users SET userIsRegistered = 1 WHERE userId = :userId")
     suspend fun updateUserIsRegistered(userId: String)
 
+    // get userGender
+    @Query("SELECT userGender FROM users WHERE userId = :userId")
+    suspend fun getUserGender(userId: String): String?
+
     // update userHashedCredential
     @Query("UPDATE users SET userHashedCredential = :hashedCredential WHERE userId = :userId")
     suspend fun updateUserHashedCredential(userId: String, hashedCredential: String)
