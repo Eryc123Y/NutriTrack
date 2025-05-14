@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository // Keep if ProfileViewModelFactory is kept, otherwise remove
+import com.example.fit2081a1_yang_xingyu_33533563.util.hashPassword
 
 /**
  * A view model class for managing authentication-related data and operations.
@@ -116,7 +117,8 @@ class AuthViewModel(
         }
     }
 
-    fun register(name: String, userId: String, phone: String, gender: String) {
+    fun register(name: String, userId: String, phone: String,
+                 gender: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _authError.value = null
@@ -128,7 +130,10 @@ class AuthViewModel(
                         userName = name,
                         userPhoneNumber = phone,
                         userGender = gender,
+                        userHashedCredential = hashPassword(password),
+                        userIsRegistered = true
                     )
+
                     userRepository.insertUser(newUser)
                     sharedPreferencesManager.setCurrentUser(userId)
                     _currentUser.value = newUser
