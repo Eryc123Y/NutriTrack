@@ -1,6 +1,5 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
-// import android.content.Context // Not used directly, SharedPreferencesManager handles context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,9 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-// Removed LiveData imports
-// import androidx.lifecycle.LiveData
-// import androidx.lifecycle.MutableLiveData
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository // Keep if ProfileViewModelFactory is kept, otherwise remove
 
 /**
@@ -31,6 +27,9 @@ class AuthViewModel(
     // MutableStateFlow to hold the current user ID.
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+
+    private val _userIds = MutableStateFlow<List<String>>(emptyList())
+    val userIds: StateFlow<List<String>> = _userIds.asStateFlow()
 
     // MutableStateFlow to hold the login status.
     private val _isLoggedIn = MutableStateFlow<Boolean>(false)
@@ -83,7 +82,15 @@ class AuthViewModel(
         }
     }
 
-    fun login(userId: String) {
+    fun loadAllUserIds() {
+        viewModelScope.launch {
+            userRepository.getAllUsers().collect { users ->
+                _userIds.value = users.map { it.userId }
+            }
+        }
+    }
+
+    fun login(userId: String, value: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _authError.value = null
@@ -121,7 +128,6 @@ class AuthViewModel(
                         userName = name,
                         userPhoneNumber = phone,
                         userGender = gender,
-                        isCurrentLoggedIn = true // This field might be redundant if _isLoggedIn is the source of truth
                     )
                     userRepository.insertUser(newUser)
                     sharedPreferencesManager.setCurrentUser(userId)
