@@ -18,6 +18,10 @@ class ScoreTypeDefinitionRepository(private val scoreTypeDefinitionDao: ScoreTyp
         scoreTypeDefinitionDao.delete(scoreType)
     }
 
+    suspend fun getScoreTypeKeyByName(scoreTypeName: String): Int {
+        return scoreTypeDefinitionDao.getScoreTypeKeyByName(scoreTypeName)
+    }
+
     fun getAllScoreTypes(): Flow<List<ScoreTypeDefinitionEntity>> {
         return scoreTypeDefinitionDao.getAllScoreTypes()
     }
@@ -25,4 +29,6 @@ class ScoreTypeDefinitionRepository(private val scoreTypeDefinitionDao: ScoreTyp
     fun getScoreTypeByKey(scoreTypeKey: String): Flow<ScoreTypeDefinitionEntity> {
         return scoreTypeDefinitionDao.getScoreTypeByKey(scoreTypeKey)
     }
+
+
 } 

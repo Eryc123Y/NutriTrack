@@ -27,9 +27,10 @@ import androidx.room.Index
         )
     ],
     primaryKeys = ["scoreUserId", "scoreTypeKey"],
+    indices = [Index(value = ["scoreTypeKey"])]
 )
 data class UserScoreEntity(
     val scoreUserId: String, // Foreign key to UserEntity
-    val scoreTypeKey: String, // Foreign key to ScoreTypeDefinitionEntity
+    val scoreTypeKey: Int, // Foreign key to ScoreTypeDefinitionEntity
     val scoreValue: Float
 )

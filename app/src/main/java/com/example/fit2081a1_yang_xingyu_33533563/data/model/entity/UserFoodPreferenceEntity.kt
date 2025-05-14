@@ -21,11 +21,12 @@ import androidx.room.Index
         ForeignKey(
             entity = FoodCategoryDefinitionEntity::class,
             parentColumns = ["foodDefId"],
-            childColumns = ["foodCategoryKey"],
+            childColumns = ["foodPrefCategoryKey"],
             onDelete = ForeignKey.RESTRICT
         )
     ],
-    primaryKeys = ["foodPrefUserId", "foodCategoryKey"],
+    primaryKeys = ["foodPrefUserId", "foodPrefCategoryKey"],
+    indices = [Index(value = ["foodPrefCategoryKey"])]
 )
 data class UserFoodPreferenceEntity(
     val foodPrefUserId: String, // Foreign key to UserEntity

@@ -24,4 +24,7 @@ interface ScoreTypeDefinitionDao {
 
     @Query("SELECT * FROM score_type_definitions WHERE scoreDefId = :scoreTypeKey")
     fun getScoreTypeByKey(scoreTypeKey: String): Flow<ScoreTypeDefinitionEntity>
+
+    @Query("SELECT scoreDefId FROM score_type_definitions WHERE scoreTypeName = :scoreTypeName")
+    suspend fun getScoreTypeKeyByName(scoreTypeName: String): Int
 } 

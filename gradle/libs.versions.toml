@@ -1,5 +1,6 @@
 [versions]
 agp = "8.10.0"
+androidxLifecycleViewmodelCompose = "2.7.1"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -12,6 +13,9 @@ lifecycleViewmodelCompose = "2.9.0"
 lifecycleViewmodelComposeVersion = "2.6.2"
 navigationCompose = "2.8.9"
 roomCommonJvm = "2.7.1"
+roomCompilerVersion = "2.7.1"
+roomKtx = "2.7.1"
+roomRuntime = "2.7.1"
 roomRuntimeAndroid = "2.7.1"
 
 [libraries]
@@ -20,7 +24,10 @@ androidx-lifecycle-common-java8 = { module = "androidx.lifecycle:lifecycle-commo
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleViewmodelCompose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-lifecycle-viewmodel-compose-v262 = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelComposeVersion" }
+androidx-lifecycle-viewmodel-compose-v271 = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodelCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -36,6 +43,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
 androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompilerVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

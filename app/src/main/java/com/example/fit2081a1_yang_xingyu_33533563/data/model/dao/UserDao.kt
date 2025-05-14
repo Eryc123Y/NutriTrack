@@ -21,12 +21,21 @@ interface UserDao {
     @Query("SELECT userHashedCredential FROM users WHERE userId = :userId")
     suspend fun getHashedCredentialByUserId(userId: String): String?
 
+    @Query("SELECT userIsRegistered FROM users WHERE userId = :userId")
+    suspend fun getUserIsRegistered(userId: String): Boolean?
+
+    // update userIsRegistered to true
+    @Query("UPDATE users SET userIsRegistered = 1 WHERE userId = :userId")
+    suspend fun updateUserIsRegistered(userId: String)
+
+    // update userHashedCredential
+    @Query("UPDATE users SET userHashedCredential = :hashedCredential WHERE userId = :userId")
+    suspend fun updateUserHashedCredential(userId: String, hashedCredential: String)
+
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<UserEntity>>
 
     @Query("SELECT * FROM users WHERE userId = :userId")
     fun getUserById(userId: String): Flow<UserEntity?>
-
-
 
 } 

@@ -29,4 +29,18 @@ class UserRepository(private val userDao: UserDao) {
     suspend fun getHashedCredentialByUserId(userId: String): String? {
         return userDao.getHashedCredentialByUserId(userId)
     }
+
+    suspend fun getUserIsRegistered(userId: String): Boolean? {
+        return userDao.getUserIsRegistered(userId)
+    }
+
+    suspend fun updateUserIsRegistered(userId: String) {
+        userDao.updateUserIsRegistered(userId)
+    }
+
+    suspend fun updateUserHashedCredential(userId: String, hashedCredential: String) {
+        userDao.updateUserHashedCredential(userId, hashedCredential)
+    }
+
+
 } 
