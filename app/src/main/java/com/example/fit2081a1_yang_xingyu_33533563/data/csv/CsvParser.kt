@@ -55,7 +55,7 @@ fun getUserFromCSV(context: Context, userId: String, filePath: String = "testUse
     try {
         val userID = UserInfo.USERID.infoName
         val gender = UserInfo.GENDER.infoName
-        val phoneNumber = UserInfo.PHONENUMBER.infoName
+        val phoneNumber = UserInfo.PHONE_NUMBER.infoName
 
         context.assets.open(filePath).use { inputStream ->
             val reader = inputStream.reader()

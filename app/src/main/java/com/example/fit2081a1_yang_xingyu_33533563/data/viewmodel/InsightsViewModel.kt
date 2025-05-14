@@ -22,11 +22,9 @@ class InsightsViewModel(
 
     // A helper data class for displaying scores - remains the same
     data class DisplayableScore(
-        val scoreTypeKey: String,
         val displayName: String,
         val scoreValue: Float,
-        val maxScore: Float,
-        val description: String?
+        val maxScore: Int,
     )
 
     private val _userId = MutableStateFlow<String?>(null)
@@ -61,14 +59,12 @@ class InsightsViewModel(
                     .getAllScoreTypes().firstOrNull() ?: emptyList()
 
                 val newDisplayScores = userScores.mapNotNull { userScore ->
-                    scoreDefinitions.find { it.scoreTypeKey == userScore.scoreTypeKey }
+                    scoreDefinitions.find { it.scoreDefId == userScore.scoreTypeKey }
                         ?.let { definition ->
                             DisplayableScore(
-                                scoreTypeKey = userScore.scoreTypeKey,
-                                displayName = definition.displayName,
+                                displayName = definition.scoreTypeName,
                                 scoreValue = userScore.scoreValue,
-                                maxScore = definition.maxScore,
-                                description = definition.description
+                                maxScore = definition.scoreMaximum
                             )
                         }
                 }

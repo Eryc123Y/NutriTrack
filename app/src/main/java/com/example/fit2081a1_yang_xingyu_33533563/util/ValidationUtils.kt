@@ -16,7 +16,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserInfo
  */
 fun getLoginValidationData(
     context: Context,
-    targetColumn: String = UserInfo.PHONENUMBER.infoName,
+    targetColumn: String = UserInfo.PHONE_NUMBER.infoName,
     filePath: String = "testUsers.csv"
 ): Map<String, Any> {
     var userData = mapOf<String, Any>()

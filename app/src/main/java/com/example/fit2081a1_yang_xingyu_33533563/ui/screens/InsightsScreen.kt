@@ -35,6 +35,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.csv.getUserFromCSV
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.ScoreText
@@ -46,11 +47,10 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.getColorforScore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-@Preview(showBackground = true)
 @Composable
 fun InsightScreen(
-    onNavigate: (String) -> Unit = {},
-    onBackClick: () -> Unit = {}
+    viewModel: InsightsViewModel,
+    onNavigate: (String) -> Unit
 ) {
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager(context)
@@ -89,7 +89,7 @@ fun InsightScreen(
             TopNavigationBar(
                 title = "Insights: Food Score",
                 showBackButton = false,
-                onBackButtonClick = onBackClick
+                onBackButtonClick = { onNavigate(Screen.Home.route) }
             )
         },
         bottomBar = {

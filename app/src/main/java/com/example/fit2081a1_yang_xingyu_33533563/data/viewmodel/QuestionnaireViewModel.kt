@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.jvm.java
 
 class QuestionnaireViewModel(
     private val foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository,
@@ -150,6 +151,21 @@ class QuestionnaireViewModel(
                 // Handle exceptions during loading, e.g., update a status StateFlow
                  _saveStatus.value = "Error loading preferences: ${e.message}"
             }
+        }
+    }
+
+    inline fun<reified T> test(t:T){
+
+        var klass = T::class.java
+        when(klass.name) {
+
+        }
+    }
+
+    fun<T> test(t_class:Class<T>){
+        var klass = t_class
+        when(klass.name) {
+
         }
     }
 

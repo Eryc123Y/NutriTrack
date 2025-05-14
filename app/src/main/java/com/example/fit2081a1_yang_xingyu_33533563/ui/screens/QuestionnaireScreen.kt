@@ -25,6 +25,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.FoodCategory
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Persona
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.CheckboxWithText
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaButton
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaSelectionDropdownField
@@ -51,10 +54,10 @@ import kotlin.collections.filter
 import kotlin.collections.forEach
 import kotlin.collections.set
 
-@Preview(showSystemUi = true)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun QuestionnaireScreen(
+    viewModel: QuestionnaireViewModel,
     onBackClick: () -> Unit = {},
     onSaveComplete: () -> Unit = {}
 ) {
@@ -65,19 +68,13 @@ fun QuestionnaireScreen(
     val pagerState = rememberPagerState { 4 }
     val coroutineScope = rememberCoroutineScope()
 
-    // Food category state
-    val checkedState = remember {
-        mutableStateMapOf<FoodCategory, Boolean>().apply {
-            FoodCategory.entries.forEach { category ->
-                this[category] = prefManager.getCheckboxState(userID.toString(), category)
-            }
-        }
-    }
+    // Food category state - now using ViewModel
+    val allFoodCategories = viewModel.allFoodCategories.collectAsState().value
+    val selectedFoodCategoryKeys = viewModel.selectedFoodCategoryKeys.collectAsState().value
 
-    // Persona state
-    val selectedPersona = remember {
-        mutableStateOf(prefManager.getUserPersona(userID.toString()))
-    }
+    // Persona state - now using ViewModel
+    val allPersonas = viewModel.allPersonas.collectAsState().value
+    val selectedPersonaId = viewModel.selectedPersonaId.collectAsState().value
 
     // Time preferences state
     val timePreferences = remember {
@@ -86,6 +83,11 @@ fun QuestionnaireScreen(
                 this[timePref] = prefManager.getTimePref(userID.toString(), timePref)
             }
         }
+    }
+
+    // Effect to load user preferences when the screen is first displayed
+    LaunchedEffect(userID) {
+        viewModel.loadUserPreferences(userID.toString())
     }
 
     Scaffold(
@@ -115,12 +117,12 @@ fun QuestionnaireScreen(
                 ) { page ->
                     when (page) {
                         0 -> FoodCategoryPage(
-                            checkedState = checkedState,
-                            onCheckedChange = { category, checked -> checkedState[category] = checked }
+                            checkedState = selectedFoodCategoryKeys,
+                            onCheckedChange = { category, checked -> viewModel.updateFoodCategory(category, checked) }
                         )
                         1 -> PersonaPage(
-                            selectedPersona = selectedPersona.value,
-                            onPersonaSelected = { selectedPersona.value = it }
+                            selectedPersona = selectedPersonaId,
+                            onPersonaSelected = { viewModel.updatePersona(it) }
                         )
                         2 -> TimingsPage(
                             timePreferences = timePreferences,
@@ -129,13 +131,13 @@ fun QuestionnaireScreen(
                             }
                         )
                         3 -> SummaryPage(
-                            checkedState = checkedState,
-                            selectedPersona = selectedPersona.value,
+                            checkedState = selectedFoodCategoryKeys,
+                            selectedPersona = selectedPersonaId,
                             timePreferences = timePreferences,
                             onSaveClick = {
                                 // Save all preferences at once
-                                prefManager.setCheckboxState(userID.toString(), checkedState)
-                                prefManager.setUserPersona(userID.toString(), selectedPersona.value)
+                                prefManager.setCheckboxState(userID.toString(), selectedFoodCategoryKeys)
+                                prefManager.setUserPersona(userID.toString(), selectedPersonaId)
                                 timePreferences.forEach { (timePref, time) ->
                                     prefManager.setTimePref(userID.toString(), timePref, time)
                                 }

@@ -12,8 +12,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val app = application as NutriTrackApp
             FIT2081A1Theme {
-                AppNavigation()
+                // Init ViewModelFactory
+                val viewModelProviderFactory = app.viewModelProviderFactory
+                AppNavigation(viewModelProviderFactory)
             }
         }
     }

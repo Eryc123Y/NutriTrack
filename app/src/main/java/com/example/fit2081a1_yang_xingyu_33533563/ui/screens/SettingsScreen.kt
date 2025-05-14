@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 
 /**
  * Created by Eric
@@ -24,13 +25,14 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 
 /**
  * Composable function for the Settings screen
+ * @param profileViewModel ViewModel for managing profile data
  * @param onNavigate callback function for navigating to other screens
  * @param onBackClick callback function for navigating back to the previous screen
  * @return Unit
  */
-@Preview(showSystemUi = true)
 @Composable
 fun SettingsScreen(
+    profileViewModel: ProfileViewModel,
     onNavigate: (String) -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
