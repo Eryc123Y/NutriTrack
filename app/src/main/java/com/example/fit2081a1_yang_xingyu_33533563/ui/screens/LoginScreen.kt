@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification.AuthenticationButton
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification.UserIdDropdown
 
 
@@ -94,8 +95,8 @@ fun LoginScreen(
             OutlinedTextField(
                 value = passwordState.value,
                 onValueChange = { passwordState.value = it },
-                label = { Text("Phone number") },
-                placeholder = { Text("Enter your phone number") },
+                label = { Text("Password") },
+                placeholder = { Text("Enter your password") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
@@ -114,35 +115,22 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Login Button
-            Button(
-                onClick = { viewModel.login(userIdState.value, passwordState.value) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                enabled = !isLoading && userIdState.value.isNotBlank()
-                        && passwordState.value.isNotBlank(),
-            ) {
-                if (isLoading) {
-                    ShowLoadingEffect()
-                } else {
-                    Text("Login")
-                }
-            }
+            AuthenticationButton(
+                text = "Log in",
+                onClick = {
+                    viewModel.login(userIdState.value, passwordState.value)
+                },
+                isLoading = isLoading,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             // Register Button
-            Button(
+            AuthenticationButton(
+                text = "Register",
                 onClick = onNavigateToRegisterScreen,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-
-            ) {
-                if (isLoading) {
-                    ShowLoadingEffect()
-                } else {
-                    Text("Register")
-                }
-            }
+                isLoading = false,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             // Show error message if any
             errorMessage?.let { message ->

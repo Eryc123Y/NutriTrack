@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository // Keep if ProfileViewModelFactory is kept, otherwise remove
 import com.example.fit2081a1_yang_xingyu_33533563.util.hashPassword
+import com.example.fit2081a1_yang_xingyu_33533563.util.verifyPassword
 
 /**
  * A view model class for managing authentication-related data and operations.
@@ -92,26 +93,38 @@ class AuthViewModel(
         }
     }
 
-    fun login(userId: String, value: String) {
+    fun login(userId: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _authError.value = null
             try {
                 val user = userRepository.getUserById(userId).firstOrNull()
+
                 if (user != null) {
-                    sharedPreferencesManager.setCurrentUser(userId)
-                    _currentUser.value = user
-                    _currentUserId.value = userId
-                    _isLoggedIn.value = true
+                    // Get the hashed credential from the database
+                    val storedHash = user.userHashedCredential
+
+                    // Verify the provided password against the stored hash
+                    if (storedHash != null && verifyPassword(password, storedHash)) {
+                        // if password is correct
+                        sharedPreferencesManager.setCurrentUser(userId)
+                        _currentUser.value = user
+                        _currentUserId.value = userId
+                        _isLoggedIn.value = true
+                    } else {
+                        // Invalid password
+                        _authError.value = "Invalid password."
+                        _isLoggedIn.value = false
+                    }
                 } else {
-                    _authError.value = "Invalid credentials or user not found."
+                    _authError.value = "User not found, please register."
                     _currentUser.value = null
                     _currentUserId.value = null
                     _isLoggedIn.value = false
                 }
             } catch (e: Exception) {
                 _authError.value = "Login error: ${e.message}"
-                 _isLoggedIn.value = false
+                _isLoggedIn.value = false
             } finally {
                 _isLoading.value = false
             }
@@ -148,6 +161,35 @@ class AuthViewModel(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun validateRegistrationInput(
+        name: String,
+        userId: String,
+        phone: String,
+        password: String,
+        confirmPassword: String
+    ): Boolean {
+        when {
+            name.isBlank() || userId.isBlank() || phone.isBlank() ||
+                    password.isBlank() -> {
+                _authError.value = "All fields are required"
+                return false
+            }
+            password != confirmPassword -> {
+                _authError.value = "Passwords do not match"
+                return false
+            }
+            password.length < 6 -> {
+                _authError.value = "Password must be at least 6 characters"
+                return false
+            }
+            phone != _currentUser.value?.userPhoneNumber -> {
+                _authError.value = "Phone number does not match"
+                return false
+            }
+            else -> return true
         }
     }
 

@@ -10,11 +10,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ViewModelProviderFactory
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.CoachScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.HomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.InsightScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
+import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.RegisterScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
@@ -41,7 +47,13 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
  * @return Unit
  */
 @Composable
-fun AppNavigation() {
+fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
+    // create ViewModel instances
+    val authViewModel = viewModelProviderFactory.create(AuthViewModel::class.java)
+    val insightsViewModel = viewModelProviderFactory.create(InsightsViewModel::class.java)
+    val profileViewModel = viewModelProviderFactory.create(ProfileViewModel::class.java)
+    val questionnaireViewModel = viewModelProviderFactory.create(QuestionnaireViewModel::class.java)
+
     val navController = rememberNavController()
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager.getInstance(context)
@@ -69,23 +81,42 @@ fun AppNavigation() {
         }
         //LoginScreen
         composable(Screen.Login.route) {
-            LoginScreen(onNavigateToHome = {
-                if (prefManager.getKnownUsers().contains(currentUser)) {
-                    navController.navigate(Screen.Home.route)
-                } else {
-                    navController.navigate(Screen.Questionnaire.route)
-                }
-            })
+            LoginScreen(
+                viewModel = authViewModel,
+                onNavigateToHome = {
+                    if (prefManager.getKnownUsers().contains(currentUser)) {
+                        navController.navigate(Screen.Home.route)
+                    } else {
+                        navController.navigate(Screen.Questionnaire.route)
+                    }
+                },
+                onNavigateToRegisterScreen = {
+                    navController.navigate(Screen.Register.route)
+                },
+            )
+        }
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                viewModel = authViewModel,
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route)
+                },
+                onBackClick = { navController.popBackStack() },
+
+            )
+
         }
         //HomeScreen
         composable(Screen.Home.route) {
             HomeScreen(
+                profileViewModel = profileViewModel,
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
         //InsightScreen
         composable(Screen.Insights.route) {
             InsightScreen(
+                viewModel = insightsViewModel,
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
@@ -93,6 +124,7 @@ fun AppNavigation() {
         //QuestionnaireScreen
         composable(Screen.Questionnaire.route) {
             QuestionnaireScreen(
+                viewModel = questionnaireViewModel,
                 onBackClick = { navController.popBackStack() },
                 onSaveComplete = {}
             )
@@ -108,6 +140,7 @@ fun AppNavigation() {
         //SettingsScreen
         composable(Screen.Settings.route) {
             SettingsScreen(
+                profileViewModel = profileViewModel,
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
