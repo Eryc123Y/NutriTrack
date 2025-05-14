@@ -50,6 +50,7 @@ class AuthViewModel(
     // any user is stored in the shared preferences.
     init {
         loadCurrentUser()
+        loadAllUserIds()
     }
 
     private fun loadCurrentUser() {
