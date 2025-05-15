@@ -18,7 +18,7 @@ class ScoreTypeDefinitionRepository(private val scoreTypeDefinitionDao: ScoreTyp
         scoreTypeDefinitionDao.delete(scoreType)
     }
 
-    suspend fun getScoreTypeKeyByName(scoreTypeName: String): Int {
+    suspend fun getScoreTypeKeyByName(scoreTypeName: String): String {
         return scoreTypeDefinitionDao.getScoreTypeKeyByName(scoreTypeName)
     }
 

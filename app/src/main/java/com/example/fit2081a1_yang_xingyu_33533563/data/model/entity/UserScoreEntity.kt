@@ -31,6 +31,6 @@ import androidx.room.Index
 )
 data class UserScoreEntity(
     val scoreUserId: String, // Foreign key to UserEntity
-    val scoreTypeKey: Int, // Foreign key to ScoreTypeDefinitionEntity
+    val scoreTypeKey: String, // Foreign key to ScoreTypeDefinitionEntity
     val scoreValue: Float
 )

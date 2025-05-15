@@ -40,7 +40,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
@@ -55,22 +54,23 @@ import androidx.compose.runtime.collectAsState
 
 @Composable
 fun HomeScreen(
-    profileViewModel: ProfileViewModel,
+    viewModel: ProfileViewModel,
     onNavigate: (String) -> Unit = {}
 ) {
+
     val context = LocalContext.current
-    val prefManager = SharedPreferencesManager.getInstance(context)
-    val userId = prefManager.getCurrentUser()
-    val scrollState = rememberScrollState()
-    var score by remember { mutableFloatStateOf(0f) }
-    
-    // Use ProfileViewModel to get user info
-    val userInfo = profileViewModel.userInfo.collectAsState().value
-    
-    LaunchedEffect(userId) {
-        profileViewModel.loadUserInfo(userId)
-        score = retrieveUserScore(context, userId.toString(), ScoreTypes.TOTAL)
+    val prefManager = remember { SharedPreferencesManager.getInstance(context) }
+    val currentUserIdFromPrefs = remember { prefManager.getCurrentUser() }
+
+    LaunchedEffect(currentUserIdFromPrefs) {
+        currentUserIdFromPrefs?.let { userId ->
+            viewModel.setUserId(userId)
+        }
     }
+
+    val scrollState = rememberScrollState()
+    val score = viewModel.userTotalScore.collectAsState().value
+    val user by viewModel.currentUser.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -92,10 +92,10 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
-                GreetingSection(userId = userId.toString())
+                GreetingSection(userId = user?.userId ?: currentUserIdFromPrefs ?: "Guest")
                 QuestionnaireStatusSection(onNavigate = onNavigate)
                 NutritionMixImage()
-                MyScoreDisplay(score.toInt(), onNavigate = onNavigate)
+                MyScoreDisplay(score?.toInt() ?: 0, onNavigate = onNavigate)
                 FoodQualityScoreInfo()
             }
         }

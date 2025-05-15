@@ -3,10 +3,15 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserScoreEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +20,10 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val userRepository: UserRepository,
-    private val personaRepository: PersonaRepository
+    private val personaRepository: PersonaRepository,
+    private val userScoreRepository: UserScoreRepository,
+    private val userTimePreferenceRepository: UserTimePreferenceRepository,
+    private val sharedPreferencesManager: SharedPreferencesManager
 ) : ViewModel() {
 
     private val _userIdStateFlow = MutableStateFlow<String?>(null)
@@ -30,11 +38,20 @@ class ProfileViewModel(
     private val _updateStatus = MutableStateFlow<String?>(null)
     val updateStatus: StateFlow<String?> = _updateStatus.asStateFlow()
 
+    private val _userTotalScore = MutableStateFlow<Float?>(null)
+    val userTotalScore: StateFlow<Float?> = _userTotalScore.asStateFlow()
+
+
     fun setUserId(userId: String?) {
         if (_userIdStateFlow.value != userId) {
             _userIdStateFlow.value = userId
             loadUserData()
+            userId?.let { getUserScores(it, ScoreTypes.TOTAL.scoreId) }
         }
+    }
+
+    fun getUserId(): String? {
+        return _userIdStateFlow.value
     }
 
     private fun loadUserData() {
@@ -64,6 +81,13 @@ class ProfileViewModel(
         }
     }
 
+    fun getUserScores(userId: String, scoreKey: String) {
+        viewModelScope.launch {
+            _userTotalScore.value = userScoreRepository.getScore(userId, scoreKey)
+        }
+
+    }
+
     fun updateUserProfile(userId: String, newName: String, newPhone: String, newGender: String) {
         viewModelScope.launch {
             // Use _currentUser.value directly as it reflects the latest loaded state
@@ -91,12 +115,17 @@ class ProfileViewModel(
 
     class ProfileViewModelFactory(
         private val userRepository: UserRepository,
-        private val personaRepository: PersonaRepository
+        private val personaRepository: PersonaRepository,
+        private val userScoreRepository: UserScoreRepository,
+        private val userTimePreferenceRepository: UserTimePreferenceRepository,
+        private val sharedPreferencesManager: SharedPreferencesManager
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return ProfileViewModel(userRepository, personaRepository) as T
+                return ProfileViewModel(userRepository, personaRepository,
+                    userScoreRepository, userTimePreferenceRepository,
+                    sharedPreferencesManager) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

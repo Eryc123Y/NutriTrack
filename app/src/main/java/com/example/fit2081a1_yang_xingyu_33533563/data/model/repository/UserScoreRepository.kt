@@ -18,6 +18,7 @@ class UserScoreRepository(private val userScoreDao: UserScoreDao) {
         userScoreDao.delete(userScore)
     }
 
+
     fun getAllUserScores(): Flow<List<UserScoreEntity>> {
         return userScoreDao.getAllUserScores()
     }
@@ -26,7 +27,7 @@ class UserScoreRepository(private val userScoreDao: UserScoreDao) {
         return userScoreDao.getScoresByUserId(userId)
     }
 
-    fun getScore(userId: String, scoreTypeKey: String): Flow<UserScoreEntity> {
+    suspend fun getScore(userId: String, scoreTypeKey: String): Float {
         return userScoreDao.getScore(userId, scoreTypeKey)
     }
 

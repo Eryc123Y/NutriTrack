@@ -19,21 +19,22 @@ enum class ScoreTypes(
     // The maximum possible score for this type.
     val maxScore: Int,
     // The user-friendly display name for this score type.
-    val displayName: String
+    val displayName: String,
+    val scoreId: String
 ) {
-    TOTAL("HEIFAtotalscoreMale", "HEIFAtotalscoreFemale", 100, "Total Food Quality Score"),
-    VEGETABLES("VegetablesHEIFAscoreMale", "VegetablesHEIFAscoreFemale", 10, "Vegetables"),
-    FRUITS("FruitHEIFAscoreMale", "FruitHEIFAscoreFemale", 10, "Fruits"),
-    GRAINS_CEREALS("GrainsandcerealsHEIFAscoreMale", "GrainsandcerealsHEIFAscoreFemale", 10, "Grains & Cereals"),
-    WHOLE_GRAINS("WholegrainsHEIFAscoreMale", "WholegrainsHEIFAscoreFemale", 10, "Whole Grains"),
-    MEAT_ALTERNATIVES("MeatandalternativesHEIFAscoreMale", "MeatandalternativesHEIFAscoreFemale", 10, "Meat & Alternatives"),
-    DAIRY("DairyandalternativesHEIFAscoreMale", "DairyandalternativesHEIFAscoreFemale", 10, "Dairy"),
-    WATER("WaterHEIFAscoreMale", "WaterHEIFAscoreFemale", 5, "Water"),
-    UNSATURATED_FATS("UnsaturatedFatHEIFAscoreMale", "UnsaturatedFatHEIFAscoreFemale", 10, "Unsaturated Fats"),
-    SODIUM("SodiumHEIFAscoreMale", "SodiumHEIFAscoreFemale", 10, "Sodium"),
-    SUGAR("SugarHEIFAscoreMale", "SugarHEIFAscoreFemale", 10, "Sugar"),
-    ALCOHOL("AlcoholHEIFAscoreMale", "AlcoholHEIFAscoreFemale", 5, "Alcohol"),
-    DISCRETIONARY("DiscretionaryHEIFAscoreMale", "DiscretionaryHEIFAscoreFemale", 10, "Discretionary Foods");
+    TOTAL("HEIFAtotalscoreMale", "HEIFAtotalscoreFemale", 100, "Total Food Quality Score", "1"),
+    VEGETABLES("VegetablesHEIFAscoreMale", "VegetablesHEIFAscoreFemale", 10, "Vegetables", "2"),
+    FRUITS("FruitHEIFAscoreMale", "FruitHEIFAscoreFemale", 10, "Fruits", "3"),
+    GRAINS_CEREALS("GrainsandcerealsHEIFAscoreMale", "GrainsandcerealsHEIFAscoreFemale", 10, "Grains & Cereals", "4"),
+    WHOLE_GRAINS("WholegrainsHEIFAscoreMale", "WholegrainsHEIFAscoreFemale", 10, "Whole Grains", "5"),
+    MEAT_ALTERNATIVES("MeatandalternativesHEIFAscoreMale", "MeatandalternativesHEIFAscoreFemale", 10, "Meat & Alternatives", "6"),
+    DAIRY("DairyandalternativesHEIFAscoreMale", "DairyandalternativesHEIFAscoreFemale", 10, "Dairy", "7"),
+    WATER("WaterHEIFAscoreMale", "WaterHEIFAscoreFemale", 5, "Water", "8"),
+    UNSATURATED_FATS("UnsaturatedFatHEIFAscoreMale", "UnsaturatedFatHEIFAscoreFemale", 10, "Unsaturated Fats", "9"),
+    SODIUM("SodiumHEIFAscoreMale", "SodiumHEIFAscoreFemale", 10, "Sodium", "10"),
+    SUGAR("SugarHEIFAscoreMale", "SugarHEIFAscoreFemale", 10, "Sugar", "11"),
+    ALCOHOL("AlcoholHEIFAscoreMale", "AlcoholHEIFAscoreFemale", 5, "Alcohol", "12"),
+    DISCRETIONARY("DiscretionaryHEIFAscoreMale", "DiscretionaryHEIFAscoreFemale", 10, "Discretionary Foods", "13"),;
 
     /**
      * Returns the appropriate CSV column name for the given gender.

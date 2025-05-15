@@ -8,7 +8,8 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "score_type_definitions")
 data class ScoreTypeDefinitionEntity(
-    @PrimaryKey(autoGenerate = true) val scoreDefId: Int = 0,
+    @PrimaryKey
+    val scoreDefId: String,
     val scoreTypeName: String,
     val scoreMaximum: Int,
 ) 

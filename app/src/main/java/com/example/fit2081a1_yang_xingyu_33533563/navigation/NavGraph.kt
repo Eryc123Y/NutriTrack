@@ -107,7 +107,7 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
         //HomeScreen
         composable(Screen.Home.route) {
             HomeScreen(
-                profileViewModel = profileViewModel,
+                viewModel = profileViewModel,
                 onNavigate = { route -> navController.navigate(route) }
             )
         }

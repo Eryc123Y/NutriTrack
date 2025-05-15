@@ -35,7 +35,8 @@ class ViewModelProviderFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
-                ProfileViewModel(userRepository, personaRepository) as T
+                ProfileViewModel(userRepository, personaRepository, userScoreRepository, 
+                    userTimePreferenceRepository, sharedPreferencesManager) as T
             }
             modelClass.isAssignableFrom(QuestionnaireViewModel::class.java) -> {
                 QuestionnaireViewModel(foodCategoryDefinitionRepository,

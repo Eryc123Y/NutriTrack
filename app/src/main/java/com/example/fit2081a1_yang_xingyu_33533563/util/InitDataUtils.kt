@@ -259,6 +259,7 @@ object InitDataUtils {
     ) {
         ScoreTypes.entries.forEach { scoreType ->
             val scoreTypeDefinition = ScoreTypeDefinitionEntity(
+                scoreDefId = scoreType.scoreId,
                 scoreTypeName = scoreType.displayName,
                 scoreMaximum = scoreType.maxScore
             )

@@ -25,8 +25,9 @@ interface UserScoreDao {
     @Query("SELECT * FROM user_scores WHERE scoreUserId = :userId")
     fun getScoresByUserId(userId: String): Flow<List<UserScoreEntity>>
 
-    @Query("SELECT * FROM user_scores WHERE scoreUserId = :userId AND scoreTypeKey = :scoreTypeKey")
-    fun getScore(userId: String, scoreTypeKey: String): Flow<UserScoreEntity>
+    // Get a specific score for a user by scoreTypeKey
+    @Query("SELECT scoreValue FROM user_scores WHERE scoreUserId = :userId AND scoreTypeKey = :scoreTypeKey")
+    suspend fun getScore(userId: String, scoreTypeKey: String): Float
 
     @Query("DELETE FROM user_scores WHERE scoreUserId = :userId")
     suspend fun deleteAllScoresForUser(userId: String)
