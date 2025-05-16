@@ -108,6 +108,9 @@ fun QuestionnaireScreen(
     val sleepTime by viewModel.sleepTime.collectAsState()
     val wakeUpTime by viewModel.wakeUpTime.collectAsState()
     
+    // Time validation error
+    val timeValidationError by viewModel.timeValidationError.collectAsState()
+    
     // Save status
     val saveStatus by viewModel.saveStatus.collectAsState()
 
@@ -201,7 +204,8 @@ fun QuestionnaireScreen(
                                             UserTimePref.SLEEP -> viewModel.updateSleepTime(newTime)
                                             UserTimePref.WAKEUP -> viewModel.updateWakeUpTime(newTime)
                                         }
-                                    }
+                                    },
+                                    timeValidationError = timeValidationError
                                 )
                                 3 -> SummaryPage(
                                     checkedState = selectedFoodCategoryKeys,
@@ -229,10 +233,7 @@ fun QuestionnaireScreen(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(
                                     page = pagerState.currentPage - 1,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessLow
-                                    )
+                                    animationSpec = AnimationUtils.smoothSpringSpec
                                 )
                             }
                         },
@@ -271,10 +272,7 @@ fun QuestionnaireScreen(
                                 if (pagerState.currentPage < 3) {
                                     pagerState.animateScrollToPage(
                                         page = pagerState.currentPage + 1,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        )
+                                        animationSpec = AnimationUtils.smoothSpringSpec
                                     )
                                 } else {
                                     viewModel.saveAllPreferences(userID.toString())
@@ -321,8 +319,10 @@ fun FoodCategoryPage(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                items(allFoodCategories.size) { index ->
-                    val category = allFoodCategories[index]
+                items(
+                    items = allFoodCategories,
+                    key = { category -> category.foodDefId }
+                ) { category ->
                     val isSelected = selectedFoodKeys[category.foodDefId] ?: false
                     FoodCategoryCard(
                         category = category,
@@ -368,8 +368,10 @@ fun PersonaPage(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(personas.size) { index ->
-                    val persona = personas[index]
+                items(
+                    items = personas,
+                    key = { persona -> persona.personaID }
+                ) { persona ->
                     PersonaCard(
                         persona = persona,
                         isSelected = selectedPersona == persona.personaID,
@@ -384,7 +386,8 @@ fun PersonaPage(
 @Composable
 fun TimingsPage(
     timePreferences: Map<UserTimePref, String>,
-    onTimeSelected: (UserTimePref, String) -> Unit
+    onTimeSelected: (UserTimePref, String) -> Unit,
+    timeValidationError: String? = null
 ) {
     Column(
         modifier = Modifier
@@ -447,12 +450,22 @@ fun TimingsPage(
                     initialTime = timePreferences[UserTimePref.SLEEP] ?: "",
                     onTimeSelected = { time -> onTimeSelected(UserTimePref.SLEEP, time) }
                 )
+                
+                // Display time validation error if any
+                timeValidationError?.let { error ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = error,
+                        style = TextStyle(fontSize = 14.sp),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
         
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "These preferences help us suggest meals at optimal times based on your daily schedule.",
+            text = "These preferences help us suggest meals at optimal times based on your daily schedule.\nNote: Wake up time should be before biggest meal time, which should be before sleep time.",
             style = TextStyle(fontSize = 14.sp, fontStyle = FontStyle.Italic),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

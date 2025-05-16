@@ -21,6 +21,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.combine
 import kotlin.jvm.java
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class QuestionnaireViewModel(
     private val foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository,
@@ -74,23 +77,92 @@ class QuestionnaireViewModel(
     private val _wakeUpTime = MutableStateFlow<String?>(null)
     val wakeUpTime: StateFlow<String?> = _wakeUpTime.asStateFlow()
 
-    fun updateBiggestMealTime(time: String?) { _biggestMealTime.value = time }
-    fun updateSleepTime(time: String?) { _sleepTime.value = time }
-    fun updateWakeUpTime(time: String?) { _wakeUpTime.value = time }
+    // Track time validation errors
+    private val _timeValidationError = MutableStateFlow<String?>(null)
+    val timeValidationError: StateFlow<String?> = _timeValidationError.asStateFlow()
+
+    fun updateBiggestMealTime(time: String?) { 
+        _biggestMealTime.value = time
+        validateTimesLogic()
+    }
+    
+    fun updateSleepTime(time: String?) { 
+        _sleepTime.value = time
+        validateTimesLogic()
+    }
+    
+    fun updateWakeUpTime(time: String?) { 
+        _wakeUpTime.value = time
+        validateTimesLogic()
+    }
+    
+    // Time formatter for parsing the time strings
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    
+    /**
+     * Validates if the times are in logical order:
+     * - Wake up time should be before biggest meal time
+     * - Biggest meal time should be before sleep time
+     */
+    private fun validateTimesLogic() {
+        _timeValidationError.value = null
+        
+        val wakeUpTime = _wakeUpTime.value
+        val biggestMealTime = _biggestMealTime.value
+        val sleepTime = _sleepTime.value
+        
+        if (wakeUpTime.isNullOrBlank() || biggestMealTime.isNullOrBlank() || sleepTime.isNullOrBlank()) {
+            // Not all times are set yet, don't validate
+            return
+        }
+        
+        try {
+            val wakeUpLocalTime = LocalTime.parse(wakeUpTime, timeFormatter)
+            val biggestMealLocalTime = LocalTime.parse(biggestMealTime, timeFormatter)
+            val sleepLocalTime = LocalTime.parse(sleepTime, timeFormatter)
+            
+            // Validate wake up time is before biggest meal time
+            if (wakeUpLocalTime.isAfter(biggestMealLocalTime)) {
+                _timeValidationError.value = "Wake up time must be before your biggest meal time"
+                return
+            }
+            
+            // Validate biggest meal time is before sleep time
+            if (biggestMealLocalTime.isAfter(sleepLocalTime)) {
+                _timeValidationError.value = "Your biggest meal time must be before sleep time"
+                return
+            }
+            
+        } catch (e: DateTimeParseException) {
+            _timeValidationError.value = "Invalid time format provided"
+        }
+    }
 
     // Validation State
     val isQuestionnaireValid: StateFlow<Boolean> = combine(
-        _foodCategoryKeyBooleanMap,
-        _selectedPersonaId,
-        _biggestMealTime,
-        _sleepTime,
-        _wakeUpTime
-    ) { foodCategories, personaId, biggestMeal, sleep, wakeUp ->
+        listOf(
+            _foodCategoryKeyBooleanMap,
+            _selectedPersonaId,
+            _biggestMealTime,
+            _sleepTime,
+            _wakeUpTime,
+            _timeValidationError
+        )
+    ) { values ->
+        val foodCategories = values[0] as Map<String, Boolean>
+        val personaId = values[1] as String?
+        val biggestMeal = values[2] as String?
+        val sleep = values[3] as String?
+        val wakeUp = values[4] as String?
+        val timeError = values[5] as String?
+
         val isFoodValid = foodCategories.any { it.value } // At least one selected
         val isPersonaValid = !personaId.isNullOrBlank()
         val areTimesValid = !biggestMeal.isNullOrBlank() && 
                             !sleep.isNullOrBlank() && 
-                            !wakeUp.isNullOrBlank()
+                            !wakeUp.isNullOrBlank() &&
+                            timeError == null
+                            
         isFoodValid && isPersonaValid && areTimesValid
     }.stateIn(
         scope = viewModelScope,
@@ -111,7 +183,11 @@ class QuestionnaireViewModel(
     fun saveAllPreferences(userId: String) {
         viewModelScope.launch {
             if (!isQuestionnaireValid.value) {
-                _saveStatus.value = "Please ensure all questionnaire sections are completed correctly."
+                _saveStatus.value = if (_timeValidationError.value != null) {
+                    _timeValidationError.value
+                } else {
+                    "Please ensure all questionnaire sections are completed correctly."
+                }
                 return@launch
             }
             if (userId.isBlank()) {
@@ -184,6 +260,9 @@ class QuestionnaireViewModel(
                 _biggestMealTime.value = timePref?.biggestMealTime
                 _sleepTime.value = timePref?.sleepTime
                 _wakeUpTime.value = timePref?.wakeUpTime
+                
+                // Validate loaded times
+                validateTimesLogic()
             } catch (e: Exception) {
                 // Handle exceptions during loading, e.g., update a status StateFlow
                  _saveStatus.value = "Error loading preferences: ${e.message}"
@@ -193,6 +272,10 @@ class QuestionnaireViewModel(
 
     fun clearSaveStatus() {
         _saveStatus.value = null
+    }
+    
+    fun clearTimeValidationError() {
+        _timeValidationError.value = null
     }
 
     class QuestionnaireViewModelFactory(
