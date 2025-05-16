@@ -52,6 +52,7 @@ class AuthViewModel(
     // loading the current user when the ViewModel is created. This is nullable if no
     // any user is stored in the shared preferences.
     init {
+        resetUserStatus()
         loadCurrentUser()
         loadAllUserIds()
     }
@@ -65,7 +66,7 @@ class AuthViewModel(
                 if (storedUserId != null) {
                     userRepository.getUserById(storedUserId).firstOrNull()?.let { user ->
                         _currentUser.value = user
-                        _isLoggedIn.value = true
+                        //_isLoggedIn.value = true
                         _currentUserPhoneNumber.value = user.userPhoneNumber
                     } ?: run {
                         // User ID in prefs but not in DB, treat as logged out
@@ -105,10 +106,10 @@ class AuthViewModel(
 
                 if (user != null) {
                     // Get the hashed credential from the database
-                    val storedHash = user.userHashedCredential
+                    val hashedPassword = user.userHashedCredential
 
                     // Verify the provided password against the stored hash
-                    if (storedHash != null && verifyPassword(password, storedHash)) {
+                    if (hashedPassword != null && verifyPassword(password, hashedPassword)) {
                         // if password is correct
                         sharedPreferencesManager.setCurrentUser(userId)
                         _currentUser.value = user
@@ -195,6 +196,30 @@ class AuthViewModel(
                 return false
             }
             else -> return true
+        }
+    }
+
+    /**
+     * A function to reset related status after a user quit the app but not logout
+     * In this case, the user will need to re-login, but shared preferences still preserve the
+     * current user ID
+     */
+    fun resetUserStatus() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _isLoggedIn.value = false
+            try {
+                _currentUser.value = null
+                _currentUserId.value = null
+                _isLoggedIn.value = false
+                _currentUserPhoneNumber.value = null
+                _authError.value = null
+            } catch (e: Exception) {
+                // Log or handle error if SharedPreferences fails, though unlikely
+                _authError.value = "Reset user status error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 

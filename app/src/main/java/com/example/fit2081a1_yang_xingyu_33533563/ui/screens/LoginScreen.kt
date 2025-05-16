@@ -53,6 +53,11 @@ fun LoginScreen(
     val logInButtonShape = MaterialTheme.shapes.medium
 
     // observing the login status, if the user is logged in, navigate to the home screen
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            onNavigateToHome()
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -67,7 +72,7 @@ fun LoginScreen(
             Image(
                 painter = painterResource(
                     id = R.drawable.logo),
-                contentDescription = "FIT2081 Logo",
+                contentDescription = "NutriTrack Logo",
                 modifier = Modifier.size(200.dp)
             )
 
@@ -114,11 +119,9 @@ fun LoginScreen(
                 text = "Log in",
                 onClick = {
                     viewModel.login(userIdState.value, passwordState.value)
-                    if (isLoggedIn) {
-                        onNavigateToHome()
-                    } else {
-                        errorMessage = "Login failed. Please check your credentials or register."
-                    }
+                    // The LaunchedEffect above will handle navigation when isLoggedIn becomes true.
+                    // We can choose to clear the error message here or let the viewModel handle it.
+                    // For now, let the errorMessage be updated if login fails via the authError flow.
                 },
                 isLoading = isLoading,
                 modifier = Modifier.padding(bottom = 16.dp)
