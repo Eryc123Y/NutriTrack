@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "food_category_definitions")
 data class FoodCategoryDefinitionEntity(
-    @PrimaryKey(autoGenerate = true) val foodDefId: Int = 0,
+    @PrimaryKey
+    val foodDefId: String,
     val foodCategoryName: String,
 ) 

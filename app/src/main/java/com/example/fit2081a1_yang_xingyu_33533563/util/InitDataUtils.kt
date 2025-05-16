@@ -248,6 +248,7 @@ object InitDataUtils {
     ) {
         FoodCategory.entries.forEach { foodCategory ->
             val foodCategoryDefinition = FoodCategoryDefinitionEntity(
+                foodDefId = foodCategory.foodDefId,
                 foodCategoryName = foodCategory.foodName
             )
             foodCategoryDefinitionRepository.insert(foodCategoryDefinition)
