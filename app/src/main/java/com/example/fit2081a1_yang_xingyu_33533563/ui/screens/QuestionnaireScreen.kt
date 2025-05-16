@@ -27,7 +27,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -48,9 +49,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimePickerRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
-import kotlin.collections.filter
-import kotlin.collections.forEach
-import kotlin.collections.set
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -59,33 +57,54 @@ fun QuestionnaireScreen(
     onBackClick: () -> Unit = {},
     onSaveComplete: () -> Unit = {}
 ) {
+
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager.getInstance(context)
     val userID = prefManager.getCurrentUser()
+    
     // We store only 4 pages: food categories, persona, time prefs, summary
     val pagerState = rememberPagerState { 4 }
     val coroutineScope = rememberCoroutineScope()
 
-    // Food category state - now using ViewModel
+    // Food category state - using ViewModel
     val allFoodCategories = viewModel.allFoodCategories.collectAsState().value
-    val selectedFoodCategoryKeys = viewModel.selectedFoodCategoryKeys.collectAsState().value
+    val selectedFoodCategoryKeys = viewModel.foodCategoryKeyBooleanMap.collectAsState().value
 
-    // Persona state - now using ViewModel
+    // Persona state - using ViewModel
     val allPersonas = viewModel.allPersonas.collectAsState().value
-    val selectedPersonaId = viewModel.selectedPersonaId.collectAsState().value
+    val selectedPersonaId = viewModel.selectedPersonaId.collectAsState().value ?: ""
 
-    // Time preferences state
+    // Time preferences state - using ViewModel
+    val biggestMealTime by viewModel.biggestMealTime.collectAsState()
+    val sleepTime by viewModel.sleepTime.collectAsState()
+    val wakeUpTime by viewModel.wakeUpTime.collectAsState()
+    
+    // Save status
+    val saveStatus by viewModel.saveStatus.collectAsState()
+    
+    // Map time preferences to UserTimePref enum
     val timePreferences = remember {
-        mutableStateMapOf<UserTimePref, String>().apply {
-            UserTimePref.entries.forEach { timePref ->
-                this[timePref] = prefManager.getTimePref(userID.toString(), timePref)
-            }
-        }
+        mapOf(
+            UserTimePref.BIGGEST_MEAL to (biggestMealTime ?: ""),
+            UserTimePref.SLEEP to (sleepTime ?: ""),
+            UserTimePref.WAKEUP to (wakeUpTime ?: "")
+        )
     }
 
     // Effect to load user preferences when the screen is first displayed
     LaunchedEffect(userID) {
         viewModel.loadUserPreferences(userID.toString())
+    }
+    
+    // Effect to show toast when save status changes
+    LaunchedEffect(saveStatus) {
+        saveStatus?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            if (it.startsWith("Preferences saved")) {
+                onSaveComplete()
+            }
+            viewModel.clearSaveStatus()
+        }
     }
 
     Scaffold(
@@ -115,17 +134,22 @@ fun QuestionnaireScreen(
                 ) { page ->
                     when (page) {
                         0 -> FoodCategoryPage(
-                            checkedState = selectedFoodCategoryKeys,
-                            onCheckedChange = { category, checked -> viewModel.updateFoodCategory(category, checked) }
+                            selectedFoodKeys = selectedFoodCategoryKeys,
+                            onCheckedChange = { category, checked ->
+                                viewModel.toggleFoodCategory(category.foodDefId, checked) }
                         )
                         1 -> PersonaPage(
                             selectedPersona = selectedPersonaId,
-                            onPersonaSelected = { viewModel.updatePersona(it) }
+                            onPersonaSelected = { viewModel.selectPersona(it) }
                         )
                         2 -> TimingsPage(
                             timePreferences = timePreferences,
                             onTimeSelected = { timePrefType, newTime ->
-                                timePreferences[timePrefType] = newTime
+                                when (timePrefType) {
+                                    UserTimePref.BIGGEST_MEAL -> viewModel.updateBiggestMealTime(newTime)
+                                    UserTimePref.SLEEP -> viewModel.updateSleepTime(newTime)
+                                    UserTimePref.WAKEUP -> viewModel.updateWakeUpTime(newTime)
+                                }
                             }
                         )
                         3 -> SummaryPage(
@@ -133,19 +157,7 @@ fun QuestionnaireScreen(
                             selectedPersona = selectedPersonaId,
                             timePreferences = timePreferences,
                             onSaveClick = {
-                                // Save all preferences at once
-                                prefManager.setCheckboxState(userID.toString(), selectedFoodCategoryKeys)
-                                prefManager.setUserPersona(userID.toString(), selectedPersonaId)
-                                timePreferences.forEach { (timePref, time) ->
-                                    prefManager.setTimePref(userID.toString(), timePref, time)
-                                }
-
-                                Toast.makeText(
-                                    context,
-                                    "Your preferences have been saved",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onSaveComplete()
+                                viewModel.saveAllPreferences(userID.toString())
                             }
                         )
                     }
@@ -210,7 +222,7 @@ fun QuestionnaireScreen(
 
 @Composable
 fun FoodCategoryPage(
-    checkedState: Map<FoodCategory, Boolean>,
+    selectedFoodKeys: Map<String, Boolean>,
     onCheckedChange: (FoodCategory, Boolean) -> Unit
 ) {
     Column(
@@ -222,7 +234,7 @@ fun FoodCategoryPage(
         QuestionnaireTextRow("Tick all the food categories you can eat", 18)
         Spacer(modifier = Modifier.height(16.dp))
         CheckboxContainer(
-            checkedState = checkedState,
+            checkedState = selectedFoodKeys,
             onCheckedChange = onCheckedChange
         )
     }
@@ -275,7 +287,7 @@ fun TimingsPage(
 
 @Composable
 fun SummaryPage(
-    checkedState: Map<FoodCategory, Boolean>,
+    checkedState: Map<String, Boolean>,
     selectedPersona: String,
     timePreferences: Map<UserTimePref, String>,
     onSaveClick: () -> Unit
@@ -299,7 +311,9 @@ fun SummaryPage(
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-            val selectedCategories = checkedState.filter { it.value }.keys.map { it.foodName }
+            val selectedCategories = checkedState.keys.map { key -> 
+                FoodCategory.entries.find { it.foodDefId == key }?.foodName ?: key
+            }
             Text(
                 text = if (selectedCategories.isNotEmpty())
                     selectedCategories.joinToString(", ")
@@ -345,7 +359,7 @@ fun SummaryPage(
 
 @Composable
 fun CheckboxContainer(
-    checkedState: Map<FoodCategory, Boolean>,
+    checkedState: Map<String, Boolean>,
     onCheckedChange: (FoodCategory, Boolean) -> Unit
 ) {
     val foodCategories = remember { FoodCategory.entries.toList() }
@@ -356,13 +370,14 @@ fun CheckboxContainer(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(foodCategories.size) { index ->
-            val category = foodCategories[index]
-            CheckboxWithText(
-                text = category.foodName,
-                checked = checkedState[category] == true,
-                onCheckedChange = { checked -> onCheckedChange(category, checked) }
-            )
+        foodCategories.forEachIndexed { index, category ->
+            item {
+                CheckboxWithText(
+                    text = category.foodName,
+                    checked = checkedState[category.foodDefId] == true,
+                    onCheckedChange = { checked -> onCheckedChange(category, checked) }
+                )
+            }
         }
     }
 }

@@ -48,17 +48,13 @@ class QuestionnaireViewModel(
                 initialValue = emptyList()
             )
 
-    private val _selectedFoodCategoryKeys = MutableStateFlow<Set<String>>(emptySet())
-    val selectedFoodCategoryKeys: StateFlow<Set<String>> = _selectedFoodCategoryKeys.asStateFlow()
+    private val _foodCategoryKeyBooleanMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val foodCategoryKeyBooleanMap: StateFlow<Map<String, Boolean>> = _foodCategoryKeyBooleanMap.asStateFlow()
 
-    fun toggleFoodCategory(categoryKey: String, isSelected: Boolean) {
-        val currentSelection = _selectedFoodCategoryKeys.value.toMutableSet()
-        if (isSelected) {
-            currentSelection.add(categoryKey)
-        } else {
-            currentSelection.remove(categoryKey)
-        }
-        _selectedFoodCategoryKeys.value = currentSelection
+    fun toggleFoodCategory(foodId: String, isSelected: Boolean) {
+        val currentMap = _foodCategoryKeyBooleanMap.value.toMutableMap()
+        currentMap[foodId] = isSelected
+        _foodCategoryKeyBooleanMap.value = currentMap
     }
 
     // Persona Page Functions
@@ -103,7 +99,7 @@ class QuestionnaireViewModel(
             }
             try {
                 userFoodCategoryPreferenceRepository.deleteAllPreferencesForUser(userId)
-                _selectedFoodCategoryKeys.value.forEach { key ->
+                _foodCategoryKeyBooleanMap.value.forEach { key ->
                     userFoodCategoryPreferenceRepository.insert(
                         UserFoodPreferenceEntity(foodPrefUserId = userId, foodPrefCategoryKey = key, foodPrefCheckedStatus = true)
                     )
@@ -137,8 +133,11 @@ class QuestionnaireViewModel(
     fun loadUserPreferences(userId: String) {
         viewModelScope.launch {
             try {
-                val foodPrefs = userFoodCategoryPreferenceRepository.getPreferencesByUserId(userId).firstOrNull()
-                _selectedFoodCategoryKeys.value = foodPrefs?.filter { it.foodPrefCheckedStatus }?.map { it.foodPrefCategoryKey }?.toSet() ?: emptySet()
+                val foodPrefs = userFoodCategoryPreferenceRepository
+                    .getPreferencesByUserId(userId).firstOrNull()
+                _foodCategoryKeyBooleanMap.value = foodPrefs?.filter {
+                    it.foodPrefCheckedStatus
+                }?.map { it.foodPrefCategoryKey }?.toSet() ?: emptySet()
 
                 val user = userRepository.getUserById(userId).firstOrNull()
                 _selectedPersonaId.value = user?.userPersonaId
@@ -151,21 +150,6 @@ class QuestionnaireViewModel(
                 // Handle exceptions during loading, e.g., update a status StateFlow
                  _saveStatus.value = "Error loading preferences: ${e.message}"
             }
-        }
-    }
-
-    inline fun<reified T> test(t:T){
-
-        var klass = T::class.java
-        when(klass.name) {
-
-        }
-    }
-
-    fun<T> test(t_class:Class<T>){
-        var klass = t_class
-        when(klass.name) {
-
         }
     }
 
