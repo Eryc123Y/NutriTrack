@@ -121,18 +121,6 @@ fun BottomNavigationBar(
             NavigationBarItem(
                 icon = {
                     Box(contentAlignment = Alignment.Center) {
-                        // Add indicator dot when selected
-                        if (selected) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .padding(top = 2.dp)
-                                    .size(5.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary)
-                            )
-                        }
-                        
                         Icon(
                             imageVector = item.itemIcon,
                             contentDescription = item.itemTitle,
