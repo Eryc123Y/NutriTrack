@@ -11,10 +11,11 @@ fun getGradientColorsForScore(score: Int): List<Color> {
     }
 }
 
-fun getColorforScore(score: Int, scoreType: ScoreTypes): Color {
+fun getColorforScore(score: Int, currentMaxValue: Int): Color {
+    if (currentMaxValue == 0) return Color.Gray
     return when {
-        score / scoreType.maxScore.toFloat() < 0.4 -> Color.Red
-        score / scoreType.maxScore.toFloat() < 0.7 -> Color(0xFFFF8C00)
+        score.toFloat() / currentMaxValue < 0.4 -> Color.Red
+        score.toFloat() / currentMaxValue < 0.7 -> Color(0xFFFF8C00)
         else -> Color(0xFF4CAF50)
     }
 }

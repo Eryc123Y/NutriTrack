@@ -59,47 +59,50 @@ fun ScoreProgressIndicator(context: Context, scoreType: ScoreTypes, userID: Stri
         modifier = modifier
             .height(10.dp),
         trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        color = getColorforScore(scoreValue.toInt(), scoreType),
+        color = getColorforScore(scoreValue.toInt(), scoreType.maxScore),
         gapSize = 0.dp,
         drawStopIndicator = {}
     )
 }
 
 @Composable
-fun ScoreProgressBarRow(scoreType: ScoreTypes) {
-    val context = LocalContext.current
-    val prefManager = SharedPreferencesManager.getInstance(context)
-    val userID = prefManager.getCurrentUser()
-    val score = retrieveUserScore(context, userID.toString(), scoreType).toInt()
-
+fun ScoreProgressBarRow(
+    displayName: String,
+    currentValue: Float,
+    maxValue: Int
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // Category name
         ScoreText(
-            text = scoreType.displayName,
+            text = displayName,
             size = 16,
             weight = "bold",
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        // Progress bar and score value in one consistent row
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            ScoreProgressIndicator(
-                context = context,
-                scoreType = scoreType,
-                userID = userID.toString(),
-                modifier = Modifier.weight(1f)
+            val progress = if (maxValue > 0) currentValue / maxValue.toFloat() else 0f
+            
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(10.dp),
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                color = getColorforScore(currentValue.toInt(), maxValue),
+                gapSize = 0.dp,
+                drawStopIndicator = {}
             )
 
             ScoreText(
-                text = "$score/${scoreType.maxScore}",
+                text = "${currentValue.toInt()}/$maxValue",
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -129,7 +132,7 @@ fun CircularScoreIndicator(
             modifier = Modifier.fillMaxSize(),
             strokeWidth = strokeWidth,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            color = getColorforScore(score, ScoreTypes.TOTAL)
+            color = getColorforScore(score, ScoreTypes.TOTAL.maxScore)
         )
 
         Column(
@@ -158,7 +161,8 @@ fun TotalScoreCard(userID: String, context: Context) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

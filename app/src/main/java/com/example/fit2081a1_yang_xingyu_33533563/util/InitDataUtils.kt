@@ -30,8 +30,8 @@ object InitDataUtils {
      * Check if database initialization is needed by checking if any users exist
      */
     suspend fun isDatabaseInitializationNeeded(userRepository: UserRepository): Boolean {
-        //return userRepository.getAllUsers().first().isEmpty()
-        return true // todo uncomment this line after testing
+        return userRepository.getAllUsers().first().isEmpty()
+        //return true // todo uncomment this line after testing
     }
 
     /**

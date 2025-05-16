@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -300,22 +301,25 @@ fun FoodCategoryPage(
     onCategoryToggle: (String, Boolean) -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
     ) {
         QuestionnaireTextRow("Tick all the food categories you can eat", 18)
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         
         if (allFoodCategories.isEmpty()) {
-            Text("Loading food categories...") // Or some placeholder
+            Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Loading food categories...",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3), // Adjust column count as needed
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                columns = GridCells.Adaptive(minSize = 100.dp),
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(allFoodCategories.size) { index ->
                     val category = allFoodCategories[index]
@@ -466,70 +470,135 @@ fun SummaryPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column {
-            Text(
-                text = "Summary",
-                style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        Text(
+            text = "Summary",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 8.dp).align(Alignment.CenterHorizontally)
+        )
 
-            // Food categories summary
-            Text(
-                text = "Selected Food Categories:",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            val selectedCategories = checkedState.entries.filter { it.value == true}
-                .map { FoodCategory.fromFoodDefId(it.key).foodName }
-            Text(
-                text = if (selectedCategories.isNotEmpty())
-                    selectedCategories.joinToString(", ")
-                else "None selected"
-            )
+        // Food categories summary Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Selected Food Categories",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                val selectedCategories = checkedState.entries
+                    .filter { it.value }
+                    .map { FoodCategory.fromFoodDefId(it.key).foodName }
 
-            // Persona summary
-            Text(
-                text = "Selected Persona:",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            
-            // Convert the persona ID to a name
-            val personaName = if (selectedPersona.isNotEmpty()) {
-                allPersonas.find { it.personaID == selectedPersona }?.personaName ?: selectedPersona
-            } else {
-                "None selected"
-            }
-            Text(text = personaName)
-
-            // Time preferences summary
-            Text(
-                text = "Time Preferences:",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            timePreferences.forEach { (timePref, time) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = timePref.timePrefName)
-                    Text(text = time.ifEmpty { "Not set" })
+                if (selectedCategories.isNotEmpty()) {
+                    selectedCategories.forEach { categoryName ->
+                        Text(
+                            text = "• $categoryName",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "None selected",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontStyle = FontStyle.Italic
+                    )
                 }
             }
         }
 
-        // Save button
-        Button(
-            onClick = onSaveClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp)
+        // Persona summary Card
+        val personaEntity = allPersonas.find { it.personaID == selectedPersona }
+        if (personaEntity != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Selected Persona",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = personaEntity.personaName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    personaEntity.personaDescription?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            }
+        } else if (selectedPersona.isNotEmpty()){
+             Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Selected Persona",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(text = "ID: $selectedPersona (Name not found)", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                     Text(
+                        text = "Selected Persona",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(text = "None selected", style = MaterialTheme.typography.bodyLarge, fontStyle = FontStyle.Italic)
+                }
+            }
+        }
+
+
+        // Time preferences summary Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Text("Save All Preferences")
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Your Preferred Times",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                UserTimePref.entries.forEach { pref ->
+                    val time = timePreferences[pref] ?: ""
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = pref.timePrefName, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = time.ifEmpty { "Not set" },
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontStyle = if (time.isEmpty()) FontStyle.Italic else FontStyle.Normal
+                        )
+                    }
+                    if (pref != UserTimePref.entries.last()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    }
+                }
+            }
         }
     }
 }
