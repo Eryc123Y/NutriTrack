@@ -38,6 +38,10 @@ class UserRepository(private val userDao: UserDao) {
         return userDao.getUserGender(userId)
     }
 
+    suspend fun getUserPhoneNumber(userId: String): String {
+        return userDao.getUserPhoneNumber(userId)
+    }
+
     suspend fun updateUserIsRegistered(userId: String) {
         userDao.updateUserIsRegistered(userId)
     }

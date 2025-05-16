@@ -36,9 +36,16 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
+            if (false) {
+                throw IllegalArgumentException("Context cannot be null when initializing database")
+            }
+            
             return INSTANCE ?: synchronized(this) {
+                val applicationContext = context.applicationContext 
+                    ?: throw IllegalArgumentException("Application context is null")
+                
                 val instance = Room.databaseBuilder(
-                    context.applicationContext,
+                    applicationContext,
                     AppDatabase::class.java,
                     "nutritrack_database"
                 )

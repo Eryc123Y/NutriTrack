@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository // Keep if ProfileViewModelFactory is kept, otherwise remove
 import com.example.fit2081a1_yang_xingyu_33533563.util.hashPassword
 import com.example.fit2081a1_yang_xingyu_33533563.util.verifyPassword
 
@@ -29,6 +28,9 @@ class AuthViewModel(
     // MutableStateFlow to hold the current user ID.
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+
+    private val _currentUserPhoneNumber = MutableStateFlow<String?>(null)
+    val currentUserPhoneNumber: StateFlow<String?> = _currentUserPhoneNumber.asStateFlow()
 
     private val _userIds = MutableStateFlow<List<String>>(emptyList())
     val userIds: StateFlow<List<String>> = _userIds.asStateFlow()
@@ -64,6 +66,7 @@ class AuthViewModel(
                     userRepository.getUserById(storedUserId).firstOrNull()?.let { user ->
                         _currentUser.value = user
                         _isLoggedIn.value = true
+                        _currentUserPhoneNumber.value = user.userPhoneNumber
                     } ?: run {
                         // User ID in prefs but not in DB, treat as logged out
                         _currentUser.value = null
@@ -181,12 +184,14 @@ class AuthViewModel(
                 _authError.value = "Passwords do not match"
                 return false
             }
-            password.length < 6 -> {
+            password.length < 0 -> {
+                // todo: add regex for password
                 _authError.value = "Password must be at least 6 characters"
                 return false
             }
-            phone != _currentUser.value?.userPhoneNumber -> {
-                _authError.value = "Phone number does not match"
+            phone != _currentUserPhoneNumber.value -> {
+                _authError.value = "Phone number does not match, should be " +
+                        "${_currentUserPhoneNumber.value}"
                 return false
             }
             else -> return true
@@ -201,6 +206,8 @@ class AuthViewModel(
                 _currentUser.value = null
                 _currentUserId.value = null
                 _isLoggedIn.value = false
+                _currentUserPhoneNumber.value = null
+                _authError.value = null
             } catch (e: Exception) {
                 // Log or handle error if SharedPreferences fails, though unlikely
                 _authError.value = "Logout error: ${e.message}"
@@ -212,6 +219,21 @@ class AuthViewModel(
 
     fun clearAuthError() {
         _authError.value = null
+    }
+
+    fun loadUserPhoneNumber(userId: String) {
+        viewModelScope.launch {
+            try {
+                val user = userRepository.getUserById(userId).firstOrNull()
+                if (user != null) {
+                    _currentUserPhoneNumber.value = user.userPhoneNumber
+                } else {
+                    _authError.value = "User ID not found."
+                }
+            } catch (e: Exception) {
+                _authError.value = "Error loading user phone number: ${e.message}"
+            }
+        }
     }
 
     class ProfileViewModelFactory(

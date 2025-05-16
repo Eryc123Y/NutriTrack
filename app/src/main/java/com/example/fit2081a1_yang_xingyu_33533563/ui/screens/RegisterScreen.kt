@@ -38,11 +38,12 @@ fun RegisterScreen(
 ) {
     val userIdState = remember { mutableStateOf("") }
     val phoneNumberState = remember { mutableStateOf("") }
+    val userNameState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val confirmPasswordState = remember { mutableStateOf("") }
     val isLoading = viewModel.isLoading.collectAsState().value
     val isLoggedIn = viewModel.isLoggedIn.collectAsState().value
-    val errorMessage = viewModel.authError.collectAsState().value
+    var errorMessage = viewModel.authError.collectAsState().value
 
     val logInButtonShape = MaterialTheme.shapes.medium
 
@@ -51,9 +52,10 @@ fun RegisterScreen(
         viewModel.clearAuthError()
     }
 
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
-            onNavigateToLogin()
+    // Observe the login userId state, and update its phone number for registration confirmation
+    LaunchedEffect(userIdState.value) {
+        if (userIdState.value.isNotBlank()) {
+            viewModel.loadUserPhoneNumber(userIdState.value)
         }
     }
 
@@ -64,7 +66,7 @@ fun RegisterScreen(
         Column(modifier = Modifier.fillMaxSize()
             .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Register",
@@ -83,6 +85,12 @@ fun RegisterScreen(
             RegistrationTextField(
                 fieldName = "Phone Number",
                 fieldValue = phoneNumberState,
+                isPassword = false
+            )
+
+            RegistrationTextField(
+                fieldName = "User Name",
+                fieldValue = userNameState,
                 isPassword = false
             )
 
@@ -117,12 +125,27 @@ fun RegisterScreen(
 
             AuthenticationButton(
                 text = "Register",
-                onClick = { viewModel.register(
-                    name = userIdState.value,
-                    userId = userIdState.value,
-                    phone = phoneNumberState.value,
-                    password = passwordState.value
-                ) },
+                onClick = {
+                    if (viewModel.validateRegistrationInput(
+                            name = userNameState.value,
+                            userId = userIdState.value,
+                            phone = phoneNumberState.value,
+                            password = passwordState.value,
+                            confirmPassword = confirmPasswordState.value
+                        )) {
+                        viewModel.register(
+                            name = userNameState.value,
+                            userId = userIdState.value,
+                            phone = phoneNumberState.value,
+                            password = passwordState.value
+                        )
+                        if (isLoggedIn) {
+                            onNavigateToLogin()
+                        } else {
+                            errorMessage = "Registration failed. Please check your credentials."
+                        }
+                    }
+                },
                 isLoading = isLoading,
             )
 

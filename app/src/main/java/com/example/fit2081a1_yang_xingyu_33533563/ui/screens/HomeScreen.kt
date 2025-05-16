@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
+import android.R.attr.fontWeight
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,9 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -43,8 +42,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
-import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
@@ -62,6 +59,7 @@ fun HomeScreen(
     val prefManager = remember { SharedPreferencesManager.getInstance(context) }
     val currentUserIdFromPrefs = remember { prefManager.getCurrentUser() }
 
+    // listen to the current user id from shared preferences and initialise the view model
     LaunchedEffect(currentUserIdFromPrefs) {
         currentUserIdFromPrefs?.let { userId ->
             viewModel.setUserId(userId)
@@ -92,7 +90,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
-                GreetingSection(userId = user?.userId ?: currentUserIdFromPrefs ?: "Guest")
+                GreetingSection(viewModel.getUserName().toString())
                 QuestionnaireStatusSection(onNavigate = onNavigate)
                 NutritionMixImage()
                 MyScoreDisplay(score?.toInt() ?: 0, onNavigate = onNavigate)
@@ -106,7 +104,7 @@ fun HomeScreen(
  * Composable function for the greeting section
  */
 @Composable
-fun GreetingSection(userId: String) {
+fun GreetingSection(userName: String) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(
             text = "Hello,",
@@ -116,7 +114,7 @@ fun GreetingSection(userId: String) {
         // User greeting
         val gradientColors = listOf(Color.Cyan, Color.Blue)
         Text(
-            text = "User_$userId",
+            text = userName,
             style = TextStyle(
                 fontSize = 32.sp,
                 brush = Brush.linearGradient(colors = gradientColors)

@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "personas")
 data class PersonaEntity(
-    @PrimaryKey(autoGenerate = true) val personaID: Int = 0,
+    @PrimaryKey val personaID: String, // String ID from the enum
     val personaName: String,
     val personaDescription: String? = null
 ) 

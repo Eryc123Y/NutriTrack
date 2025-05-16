@@ -104,27 +104,20 @@ object InitDataUtils {
             context.assets.open("testUsers.csv").use { inputStream ->
                 val bufferedReader = BufferedReader(inputStream.reader())
                 val lines = bufferedReader.readLines()
-                val header = lines[0].split(",").map { it.trim() }
+                val header = lines[0].split(",")
                 
                 // Find column indices
                 val userIdIndex = header.indexOf(UserInfo.USERID.infoName)
                 val phoneNumberIndex = header.indexOf(UserInfo.PHONE_NUMBER.infoName)
                 val genderIndex = header.indexOf(UserInfo.GENDER.infoName)
                 
-                if (userIdIndex == -1 || phoneNumberIndex == -1 || genderIndex == -1) {
-                    throw IllegalArgumentException("Required columns not found in CSV")
-                }
-                
                 // Process each line (skip header)
                 for (i in 1 until lines.size) {
-                    val values = lines[i].split(",").map { it.trim() }
+                    val values = lines[i].split(",")
                     
                     val userId = values[userIdIndex]
                     val phoneNumber = values[phoneNumberIndex]
                     val gender = values[genderIndex]
-                    
-                    // Skip if we've already processed this user ID
-                    if (userId in userIds) continue
                     
                     // Create and insert user entity
                     val userEntity = UserEntity(
@@ -161,7 +154,7 @@ object InitDataUtils {
             FoodCategory.entries.forEach { foodCategory ->
                 val preference = UserFoodPreferenceEntity(
                     foodPrefUserId = userId,
-                    foodPrefCategoryKey = foodCategory.name, // Using enum name as key
+                    foodPrefCategoryKey = foodCategory.foodDefId, // Using foodDefId as key instead of enum name
                     foodPrefCheckedStatus = false // Default to unchecked
                 )
                 userFoodCategoryPreferenceRepository.insert(preference)
@@ -273,6 +266,7 @@ object InitDataUtils {
     ) {
         Persona.entries.forEach { personaType ->
             val personaDefinition = PersonaEntity(
+                personaID = personaType.personaId,
                 personaName = personaType.personaName,
                 personaDescription = personaType.personaDescription
             )

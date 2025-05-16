@@ -1,8 +1,14 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
 import android.widget.Toast
+import androidx.compose.animation.core.EaseOutQuint
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +23,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -41,14 +49,19 @@ import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.FoodCategory
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Persona
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.CheckboxWithText
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PageTransitionEffect
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaButton
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaSelectionDropdownField
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimePickerRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.util.AnimationUtils
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.pageTransition
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.rememberCustomPagerFlingBehavior
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -63,8 +76,25 @@ fun QuestionnaireScreen(
     val userID = prefManager.getCurrentUser()
     
     // We store only 4 pages: food categories, persona, time prefs, summary
-    val pagerState = rememberPagerState { 4 }
+    val pageCount = 4
+    val pagerState = rememberPagerState { pageCount }
     val coroutineScope = rememberCoroutineScope()
+
+    // Sync animations with frame rate for smoother transitions
+    AnimationUtils.SyncAnimationsWithFrames()
+    
+    // Measure frame time to adaptively adjust animation complexity
+    val frameMetrics = AnimationUtils.MeasureFrameTime()
+    
+    // Custom fling behavior for smoother paging with spring physics
+    val flingBehavior = rememberCustomPagerFlingBehavior(pagerState)
+    
+    // Choose your page transition effect based on device performance
+    val transitionEffect = if (frameMetrics.canHandleComplexAnimations) {
+        PageTransitionEffect.DEPTH // More complex animation for powerful devices
+    } else {
+        PageTransitionEffect.FADE // Simpler animation for less powerful devices
+    }
 
     // Food category state - using ViewModel
     val allFoodCategories = viewModel.allFoodCategories.collectAsState().value
@@ -81,9 +111,12 @@ fun QuestionnaireScreen(
     
     // Save status
     val saveStatus by viewModel.saveStatus.collectAsState()
+
+    // is questionnaire completed
+    val isQuestionnaireCompleted by viewModel.isQuestionnaireCompleted.collectAsState()
     
-    // Map time preferences to UserTimePref enum
-    val timePreferences = remember {
+    // Map time preferences to UserTimePref enum - update when any time value changes
+    val timePreferences = remember(biggestMealTime, sleepTime, wakeUpTime) {
         mapOf(
             UserTimePref.BIGGEST_MEAL to (biggestMealTime ?: ""),
             UserTimePref.SLEEP to (sleepTime ?: ""),
@@ -93,6 +126,8 @@ fun QuestionnaireScreen(
 
     // Effect to load user preferences when the screen is first displayed
     LaunchedEffect(userID) {
+        // Wait for the next frame before loading data to ensure UI is ready
+        AnimationUtils.waitForNextFrame()
         viewModel.loadUserPreferences(userID.toString())
     }
     
@@ -100,9 +135,6 @@ fun QuestionnaireScreen(
     LaunchedEffect(saveStatus) {
         saveStatus?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            if (it.startsWith("Preferences saved")) {
-                onSaveComplete()
-            }
             viewModel.clearSaveStatus()
         }
     }
@@ -125,43 +157,61 @@ fun QuestionnaireScreen(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                // Pager content
+                // Enhanced pager with custom animations
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
-                ) { page ->
-                    when (page) {
-                        0 -> FoodCategoryPage(
-                            selectedFoodKeys = selectedFoodCategoryKeys,
-                            onCheckedChange = { category, checked ->
-                                viewModel.toggleFoodCategory(category.foodDefId, checked) }
-                        )
-                        1 -> PersonaPage(
-                            selectedPersona = selectedPersonaId,
-                            onPersonaSelected = { viewModel.selectPersona(it) }
-                        )
-                        2 -> TimingsPage(
-                            timePreferences = timePreferences,
-                            onTimeSelected = { timePrefType, newTime ->
-                                when (timePrefType) {
-                                    UserTimePref.BIGGEST_MEAL -> viewModel.updateBiggestMealTime(newTime)
-                                    UserTimePref.SLEEP -> viewModel.updateSleepTime(newTime)
-                                    UserTimePref.WAKEUP -> viewModel.updateWakeUpTime(newTime)
-                                }
+                        .fillMaxWidth(),
+                    pageSpacing = 8.dp,
+                    flingBehavior = flingBehavior as TargetedFlingBehavior,
+                    pageContent = { page ->
+                        // Add a content container with custom page transition
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 8.dp)
+                                .pageTransition(page, pagerState, transitionEffect)
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(8.dp)
+                        ) {
+                            when (page) {
+                                0 -> FoodCategoryPage(
+                                    selectedFoodKeys = selectedFoodCategoryKeys,
+                                    onCheckedChange = { category, checked ->
+                                        viewModel.toggleFoodCategory(category.foodDefId, checked) }
+                                )
+                                1 -> PersonaPage(
+                                    selectedPersona = selectedPersonaId,
+                                    onPersonaSelected = { viewModel.selectPersona(it) },
+                                    personas = allPersonas
+                                )
+                                2 -> TimingsPage(
+                                    timePreferences = timePreferences,
+                                    onTimeSelected = { timePrefType, newTime ->
+                                        when (timePrefType) {
+                                            UserTimePref.BIGGEST_MEAL -> viewModel.updateBiggestMealTime(newTime)
+                                            UserTimePref.SLEEP -> viewModel.updateSleepTime(newTime)
+                                            UserTimePref.WAKEUP -> viewModel.updateWakeUpTime(newTime)
+                                        }
+                                    }
+                                )
+                                3 -> SummaryPage(
+                                    checkedState = selectedFoodCategoryKeys,
+                                    selectedPersona = selectedPersonaId,
+                                    timePreferences = timePreferences,
+                                    onSaveClick = {
+                                        viewModel.saveAllPreferences(userID.toString())
+                                    },
+                                    allPersonas = allPersonas
+                                )
                             }
-                        )
-                        3 -> SummaryPage(
-                            checkedState = selectedFoodCategoryKeys,
-                            selectedPersona = selectedPersonaId,
-                            timePreferences = timePreferences,
-                            onSaveClick = {
-                                viewModel.saveAllPreferences(userID.toString())
-                            }
-                        )
+                        }
                     }
-                }
+                )
 
                 // Navigation buttons
                 Row(
@@ -173,7 +223,13 @@ fun QuestionnaireScreen(
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                pagerState.animateScrollToPage(
+                                    page = pagerState.currentPage - 1,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                )
                             }
                         },
                         enabled = pagerState.currentPage > 0
@@ -181,7 +237,7 @@ fun QuestionnaireScreen(
                         Text("Previous")
                     }
 
-                    // Page indicators
+                    // Enhanced page indicators with smoother animations
                     Row(
                         modifier = Modifier
                             .wrapContentWidth()
@@ -193,11 +249,14 @@ fun QuestionnaireScreen(
                                 MaterialTheme.colorScheme.primary
                             else
                                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            
+                            val size = if (pagerState.currentPage == iteration) 12.dp else 8.dp
+                            
                             Box(
                                 modifier = Modifier
                                     .padding(4.dp)
-                                    .size(10.dp)
-                                    .background(color, shape = MaterialTheme.shapes.small)
+                                    .size(size)
+                                    .background(color, shape = CircleShape)
                             )
                         }
                     }
@@ -206,11 +265,19 @@ fun QuestionnaireScreen(
                         onClick = {
                             coroutineScope.launch {
                                 if (pagerState.currentPage < 3) {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                    pagerState.animateScrollToPage(
+                                        page = pagerState.currentPage + 1,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessLow
+                                        )
+                                    )
+                                } else {
+                                    onSaveComplete()
                                 }
                             }
                         },
-                        enabled = pagerState.currentPage < 3
+                        enabled = pagerState.currentPage < 3 || isQuestionnaireCompleted
                     ) {
                         Text("Next")
                     }
@@ -243,7 +310,8 @@ fun FoodCategoryPage(
 @Composable
 fun PersonaPage(
     selectedPersona: String,
-    onPersonaSelected: (String) -> Unit
+    onPersonaSelected: (String) -> Unit,
+    personas: List<PersonaEntity> = emptyList()
 ) {
     Column(
         modifier = Modifier
@@ -259,7 +327,8 @@ fun PersonaPage(
         Spacer(modifier = Modifier.height(8.dp))
         PersonaSelectionDropdownField(
             selectedPersona = selectedPersona,
-            onPersonaSelected = onPersonaSelected
+            onPersonaSelected = onPersonaSelected,
+            personas = personas
         )
     }
 }
@@ -290,7 +359,8 @@ fun SummaryPage(
     checkedState: Map<String, Boolean>,
     selectedPersona: String,
     timePreferences: Map<UserTimePref, String>,
-    onSaveClick: () -> Unit
+    onSaveClick: () -> Unit,
+    allPersonas: List<PersonaEntity> = emptyList()
 ) {
     Column(
         modifier = Modifier
@@ -311,9 +381,8 @@ fun SummaryPage(
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-            val selectedCategories = checkedState.keys.map { key -> 
-                FoodCategory.entries.find { it.foodDefId == key }?.foodName ?: key
-            }
+            val selectedCategories = checkedState.entries.filter { it.value == true}
+                .map { FoodCategory.fromFoodDefId(it.key).foodName }
             Text(
                 text = if (selectedCategories.isNotEmpty())
                     selectedCategories.joinToString(", ")
@@ -326,7 +395,14 @@ fun SummaryPage(
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-            Text(text = selectedPersona.ifEmpty { "None selected" })
+            
+            // Convert the persona ID to a name
+            val personaName = if (selectedPersona.isNotEmpty()) {
+                allPersonas.find { it.personaID == selectedPersona }?.personaName ?: selectedPersona
+            } else {
+                "None selected"
+            }
+            Text(text = personaName)
 
             // Time preferences summary
             Text(

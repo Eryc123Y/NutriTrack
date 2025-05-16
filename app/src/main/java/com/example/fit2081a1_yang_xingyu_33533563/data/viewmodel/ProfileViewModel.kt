@@ -54,6 +54,10 @@ class ProfileViewModel(
         return _userIdStateFlow.value
     }
 
+    fun getUserName(): String? {
+        return _currentUser.value?.userName
+    }
+
     private fun loadUserData() {
         viewModelScope.launch {
             val userId = _userIdStateFlow.value

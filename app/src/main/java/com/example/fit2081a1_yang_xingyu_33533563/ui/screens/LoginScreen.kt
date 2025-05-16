@@ -47,17 +47,12 @@ fun LoginScreen(
     val userIdState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val isLoading = viewModel.isLoading.collectAsState().value
-    val errorMessage = viewModel.authError.collectAsState().value
+    var errorMessage = viewModel.authError.collectAsState().value
     val isLoggedIn = viewModel.isLoggedIn.collectAsState().value
 
     val logInButtonShape = MaterialTheme.shapes.medium
 
     // observing the login status, if the user is logged in, navigate to the home screen
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
-            onNavigateToHome()
-        }
-    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -119,6 +114,11 @@ fun LoginScreen(
                 text = "Log in",
                 onClick = {
                     viewModel.login(userIdState.value, passwordState.value)
+                    if (isLoggedIn) {
+                        onNavigateToHome()
+                    } else {
+                        errorMessage = "Login failed. Please check your credentials or register."
+                    }
                 },
                 isLoading = isLoading,
                 modifier = Modifier.padding(bottom = 16.dp)

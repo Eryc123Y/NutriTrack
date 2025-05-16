@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Persona
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
 
 @Composable
 fun PersonaButton(persona: Persona) {
@@ -43,17 +44,31 @@ fun PersonaButton(persona: Persona) {
         onDismiss = { showDialog = false }
     )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonaSelectionDropdownField( selectedPersona: String, onPersonaSelected: (String) -> Unit, modifier: Modifier = Modifier ) {
+fun PersonaSelectionDropdownField(
+    selectedPersona: String,
+    onPersonaSelected: (String) -> Unit,
+    personas: List<PersonaEntity> = emptyList(),
+    modifier: Modifier = Modifier
+) {
     var expanded by remember { mutableStateOf(false) }
+    
+    // Find the selected persona name based on ID
+    val displayName = remember(selectedPersona, personas) {
+        // Direct string comparison since personaID is now a String
+        personas.find { it.personaID == selectedPersona }?.personaName ?:
+        if (selectedPersona.isNotEmpty()) selectedPersona else ""
+    }
+    
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it },
         modifier = modifier.fillMaxWidth().padding(bottom = 4.dp)
     ) {
         OutlinedTextField(
-            value = selectedPersona,
+            value = displayName,
             onValueChange = {},
             readOnly = true,
             modifier = Modifier
@@ -71,14 +86,27 @@ fun PersonaSelectionDropdownField( selectedPersona: String, onPersonaSelected: (
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            Persona.entries.forEach { persona ->
-                DropdownMenuItem(
-                    text = { Text(persona.personaName) },
-                    onClick = {
-                        onPersonaSelected(persona.personaName)
-                        expanded = false
-                    }
-                )
+            if (personas.isEmpty()) {
+                // Fallback to enum if no personas from database
+                Persona.entries.forEach { persona ->
+                    DropdownMenuItem(
+                        text = { Text(persona.personaName) },
+                        onClick = {
+                            onPersonaSelected(persona.personaId)
+                            expanded = false
+                        }
+                    )
+                }
+            } else {
+                personas.forEach { persona ->
+                    DropdownMenuItem(
+                        text = { Text(persona.personaName) },
+                        onClick = {
+                            onPersonaSelected(persona.personaID)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }

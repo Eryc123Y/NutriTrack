@@ -30,7 +30,10 @@ interface UserDao {
 
     // get userGender
     @Query("SELECT userGender FROM users WHERE userId = :userId")
-    suspend fun getUserGender(userId: String): String?
+    suspend fun getUserGender(userId: String): String
+
+    @Query("SELECT userPhoneNumber FROM users WHERE userId = :userId")
+    suspend fun getUserPhoneNumber(userId: String): String
 
     // update userHashedCredential
     @Query("UPDATE users SET userHashedCredential = :hashedCredential WHERE userId = :userId")
@@ -41,5 +44,6 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE userId = :userId")
     fun getUserById(userId: String): Flow<UserEntity?>
+
 
 } 

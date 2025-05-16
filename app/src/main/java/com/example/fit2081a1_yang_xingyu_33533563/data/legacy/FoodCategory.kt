@@ -9,5 +9,13 @@ enum class FoodCategory(val foodName: String, val foodDefId: String) {
     POULTRY("Poultry", 6.toString()),
     FISH("Fish", 7.toString()),
     EGGS("Eggs", 8.toString()),
-    NUTS_SEEDS("Nuts/Seeds", 9.toString()),
+    NUTS_SEEDS("Nuts/Seeds", 9.toString());
+
+    companion object {
+        fun fromFoodDefId(string: String): FoodCategory {
+            return FoodCategory.entries.firstOrNull { it.foodDefId == string }
+                ?: throw IllegalArgumentException("Invalid foodDefId: $string")
+        }
+
+    }
 }
