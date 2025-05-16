@@ -1,8 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
 import android.widget.Toast
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
@@ -465,7 +463,9 @@ fun TimingsPage(
         
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "These preferences help us suggest meals at optimal times based on your daily schedule.\nNote: Wake up time should be before biggest meal time, which should be before sleep time.",
+            text = "These preferences help us suggest meals at optimal times based on your daily " +
+                    "schedule.\nNote: Wake up time should be before biggest meal time, which " +
+                    "should be before sleep time.",
             style = TextStyle(fontSize = 14.sp, fontStyle = FontStyle.Italic),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
