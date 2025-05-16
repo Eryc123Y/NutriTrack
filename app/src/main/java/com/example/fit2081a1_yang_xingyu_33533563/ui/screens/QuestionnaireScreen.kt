@@ -114,6 +114,8 @@ fun QuestionnaireScreen(
 
     // is questionnaire completed
     val isQuestionnaireCompleted by viewModel.isQuestionnaireCompleted.collectAsState()
+    // Collect validation state
+    val isQuestionnaireValid by viewModel.isQuestionnaireValid.collectAsState()
     
     // Map time preferences to UserTimePref enum - update when any time value changes
     val timePreferences = remember(biggestMealTime, sleepTime, wakeUpTime) {
@@ -155,7 +157,9 @@ fun QuestionnaireScreen(
             color = MaterialTheme.colorScheme.background
         ) {
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp)
             ) {
                 // Enhanced pager with custom animations
                 HorizontalPager(
@@ -170,13 +174,13 @@ fun QuestionnaireScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 8.dp)
+                                .padding(horizontal = 16.dp)
                                 .pageTransition(page, pagerState, transitionEffect)
                                 .background(
                                     MaterialTheme.colorScheme.surface,
                                     shape = MaterialTheme.shapes.medium
                                 )
-                                .padding(8.dp)
+                                .padding(16.dp)
                         ) {
                             when (page) {
                                 0 -> FoodCategoryPage(
@@ -273,13 +277,16 @@ fun QuestionnaireScreen(
                                         )
                                     )
                                 } else {
+                                    viewModel.saveAllPreferences(userID.toString())
                                     onSaveComplete()
                                 }
                             }
                         },
-                        enabled = pagerState.currentPage < 3 || isQuestionnaireCompleted
+                        // Enable 'Next' for pages 0,1,2. Enable 'Done' on page 3 only if valid.
+                        enabled = if (pagerState.currentPage < 3) true else isQuestionnaireValid
                     ) {
-                        Text("Next")
+                        // Change text to 'Done' on the summary page (page 3)
+                        Text(if (pagerState.currentPage < 3) "Next" else "Done")
                     }
                 }
             }
@@ -295,11 +302,11 @@ fun FoodCategoryPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.Top
     ) {
         QuestionnaireTextRow("Tick all the food categories you can eat", 18)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         CheckboxContainer(
             checkedState = selectedFoodKeys,
             onCheckedChange = onCheckedChange
@@ -316,15 +323,15 @@ fun PersonaPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.Top
     ) {
         QuestionnaireTextRow("Your Persona", 18)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         CreatePersonaButtons()
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp))
         QuestionnaireTextRow("Which persona best fits you?", 16)
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         PersonaSelectionDropdownField(
             selectedPersona = selectedPersona,
             onPersonaSelected = onPersonaSelected,
@@ -341,11 +348,11 @@ fun TimingsPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.Top
     ) {
         QuestionnaireTextRow("Timings", 18)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         TimePickerInterface(
             modifier = Modifier.fillMaxWidth(),
             timePreferences = timePreferences,

@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
 import kotlin.jvm.java
 
 class QuestionnaireViewModel(
@@ -28,16 +29,6 @@ class QuestionnaireViewModel(
     private val userTimePreferenceRepository: UserTimePreferenceRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
-
-    /**
-     * Optionally preload user preferences when a valid userId is available.
-     * Call [loadUserPreferences] explicitly from the UI layer once you know the
-     * currently-logged-in user rather than forcing it at construction time to
-     * avoid null crashes.
-     */
-    init {
-        /* No-op for now – wait until a userId is supplied. */
-    }
 
     // Food Categories Functions
     val allFoodCategories: StateFlow<List<FoodCategoryDefinitionEntity>> =
@@ -87,6 +78,26 @@ class QuestionnaireViewModel(
     fun updateSleepTime(time: String?) { _sleepTime.value = time }
     fun updateWakeUpTime(time: String?) { _wakeUpTime.value = time }
 
+    // Validation State
+    val isQuestionnaireValid: StateFlow<Boolean> = combine(
+        _foodCategoryKeyBooleanMap,
+        _selectedPersonaId,
+        _biggestMealTime,
+        _sleepTime,
+        _wakeUpTime
+    ) { foodCategories, personaId, biggestMeal, sleep, wakeUp ->
+        val isFoodValid = foodCategories.any { it.value } // At least one selected
+        val isPersonaValid = !personaId.isNullOrBlank()
+        val areTimesValid = !biggestMeal.isNullOrBlank() && 
+                            !sleep.isNullOrBlank() && 
+                            !wakeUp.isNullOrBlank()
+        isFoodValid && isPersonaValid && areTimesValid
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+
     // Saving
     private val _isQuestionnaireCompleted = MutableStateFlow(false)
     val isQuestionnaireCompleted: StateFlow<Boolean> = _isQuestionnaireCompleted.asStateFlow()
@@ -94,8 +105,15 @@ class QuestionnaireViewModel(
     private val _saveStatus = MutableStateFlow<String?>(null)
     val saveStatus: StateFlow<String?> = _saveStatus.asStateFlow()
 
+    /**
+     * Saves all user preferences to the database. Also test validation
+     */
     fun saveAllPreferences(userId: String) {
         viewModelScope.launch {
+            if (!isQuestionnaireValid.value) {
+                _saveStatus.value = "Please ensure all questionnaire sections are completed correctly."
+                return@launch
+            }
             if (userId.isBlank()) {
                 _saveStatus.value = "Error: User ID is missing."
                 return@launch

@@ -235,6 +235,15 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
                             animationSpec = tween(450)
                         )
                     }
+                    Screen.Insights.route, Screen.NutriCoach.route, Screen.Settings.route -> {
+                        // Coming from another main screen (bottom navigation)
+                        fadeIn(
+                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                        ) + scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = tween(300, easing = EaseInOutBack)
+                        )
+                    }
                     else -> {
                         // Default transition
                         slideInHorizontally(
@@ -242,6 +251,28 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
                             animationSpec = tween(450, easing = LinearOutSlowInEasing)
                         ) + fadeIn(
                             animationSpec = tween(350, 50, FastOutSlowInEasing)
+                        )
+                    }
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    Screen.Insights.route, Screen.NutriCoach.route, Screen.Settings.route -> {
+                        // Going to another main screen (bottom navigation)
+                        fadeOut(
+                            animationSpec = tween(200)
+                        ) + scaleOut(
+                            targetScale = 0.95f,
+                            animationSpec = tween(200)
+                        )
+                    }
+                    else -> {
+                        // Default exit
+                        slideOutHorizontally(
+                            targetOffsetX = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
                         )
                     }
                 }
@@ -253,7 +284,53 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
             )
         }
         //InsightScreen
-        composable(Screen.Insights.route) {
+        composable(
+            Screen.Insights.route,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    Screen.Home.route, Screen.NutriCoach.route, Screen.Settings.route -> {
+                        // Coming from another main screen (bottom navigation)
+                        fadeIn(
+                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                        ) + scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = tween(300, easing = EaseInOutBack)
+                        )
+                    }
+                    else -> {
+                        // Default transition
+                        slideInHorizontally(
+                            initialOffsetX = { 800 },
+                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                        ) + fadeIn(
+                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                        )
+                    }
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    Screen.Home.route, Screen.NutriCoach.route, Screen.Settings.route -> {
+                        // Going to another main screen (bottom navigation)
+                        fadeOut(
+                            animationSpec = tween(200)
+                        ) + scaleOut(
+                            targetScale = 0.95f,
+                            animationSpec = tween(200)
+                        )
+                    }
+                    else -> {
+                        // Default exit
+                        slideOutHorizontally(
+                            targetOffsetX = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                }
+            }
+        ) {
             InsightScreen(
                 viewModel = insightsViewModel,
                 onNavigate = { route -> navController.navigate(route) }
@@ -302,14 +379,106 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
         }
 
         //NutriCoachScreen
-        composable(Screen.NutriCoach.route) {
+        composable(
+            Screen.NutriCoach.route,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    Screen.Home.route, Screen.Insights.route, Screen.Settings.route -> {
+                        // Coming from another main screen (bottom navigation)
+                        fadeIn(
+                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                        ) + scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = tween(300, easing = EaseInOutBack)
+                        )
+                    }
+                    else -> {
+                        // Default transition
+                        slideInHorizontally(
+                            initialOffsetX = { 800 },
+                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                        ) + fadeIn(
+                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                        )
+                    }
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    Screen.Home.route, Screen.Insights.route, Screen.Settings.route -> {
+                        // Going to another main screen (bottom navigation)
+                        fadeOut(
+                            animationSpec = tween(200)
+                        ) + scaleOut(
+                            targetScale = 0.95f,
+                            animationSpec = tween(200)
+                        )
+                    }
+                    else -> {
+                        // Default exit
+                        slideOutHorizontally(
+                            targetOffsetX = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                }
+            }
+        ) {
             CoachScreen(
                 onNavigate = { route -> navController.navigate(route) }
             )
         }
 
         //SettingsScreen
-        composable(Screen.Settings.route) {
+        composable(
+            Screen.Settings.route,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    Screen.Home.route, Screen.Insights.route, Screen.NutriCoach.route -> {
+                        // Coming from another main screen (bottom navigation)
+                        fadeIn(
+                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                        ) + scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = tween(300, easing = EaseInOutBack)
+                        )
+                    }
+                    else -> {
+                        // Default transition
+                        slideInHorizontally(
+                            initialOffsetX = { 800 },
+                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                        ) + fadeIn(
+                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                        )
+                    }
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    Screen.Home.route, Screen.Insights.route, Screen.NutriCoach.route -> {
+                        // Going to another main screen (bottom navigation)
+                        fadeOut(
+                            animationSpec = tween(200)
+                        ) + scaleOut(
+                            targetScale = 0.95f,
+                            animationSpec = tween(200)
+                        )
+                    }
+                    else -> {
+                        // Default exit
+                        slideOutHorizontally(
+                            targetOffsetX = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                }
+            }
+        ) {
             SettingsScreen(
                 profileViewModel = profileViewModel,
                 onNavigate = { route -> navController.navigate(route) }
