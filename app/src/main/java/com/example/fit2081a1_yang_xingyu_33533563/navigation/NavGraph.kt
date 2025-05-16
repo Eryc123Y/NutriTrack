@@ -1,10 +1,22 @@
 package com.example.fit2081a1_yang_xingyu_33533563.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutBack
+import androidx.compose.animation.core.EaseOutQuint
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -62,25 +74,112 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
     NavHost(
         navController = navController,
         startDestination = Screen.Welcome.route,
-        // default transition
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
-        popEnterTransition = { slideInHorizontally(initialOffsetX = { -1200 }, animationSpec = tween(300)) },
-        popExitTransition = { slideOutHorizontally(targetOffsetX = { 1200 }, animationSpec = tween(300)) }
-
-        // previously used transitions, only put it here for future reference
-//        enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(300)) },
-//        exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(300)) },
-
+        // Enhanced transitions for smoother navigation
+        enterTransition = { 
+            slideInHorizontally(
+                initialOffsetX = { 800 },
+                animationSpec = tween(400, easing = LinearOutSlowInEasing)
+            ) + fadeIn(
+                animationSpec = tween(350, 50, FastOutSlowInEasing)
+            )
+        },
+        exitTransition = { 
+            slideOutHorizontally(
+                targetOffsetX = { -200 },
+                animationSpec = tween(350, easing = EaseInOut)
+            ) + fadeOut(
+                animationSpec = tween(250)
+            )
+        },
+        popEnterTransition = { 
+            slideInHorizontally(
+                initialOffsetX = { -200 },
+                animationSpec = tween(400, easing = LinearOutSlowInEasing)
+            ) + fadeIn(
+                animationSpec = tween(350, 50, FastOutSlowInEasing)
+            )
+        },
+        popExitTransition = { 
+            slideOutHorizontally(
+                targetOffsetX = { 800 },
+                animationSpec = tween(350, easing = EaseInOut)
+            ) + fadeOut(
+                animationSpec = tween(250)
+            )
+        }
     ) {
         //Welcome
-        composable(Screen.Welcome.route) {
+        composable(
+            Screen.Welcome.route,
+            enterTransition = {
+                fadeIn(
+                    animationSpec = tween(500, easing = LinearOutSlowInEasing)
+                ) + scaleIn(
+                    initialScale = 0.88f,
+                    animationSpec = tween(500, easing = EaseInOutBack)
+                )
+            },
+            exitTransition = {
+                fadeOut(
+                    animationSpec = tween(350)
+                ) + scaleOut(
+                    targetScale = 0.95f,
+                    animationSpec = tween(350, easing = EaseInOut)
+                )
+            }
+        ) {
             WelcomeScreen(onNavigateToLogin = {
                 navController.navigate(Screen.Login.route)
             })
         }
         //LoginScreen
-        composable(Screen.Login.route) {
+        composable(
+            Screen.Login.route,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    Screen.Register.route -> {
+                        // Coming back from register
+                        slideInVertically(
+                            initialOffsetY = { -200 },
+                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                        ) + fadeIn(
+                            animationSpec = tween(350, 50)
+                        )
+                    }
+                    else -> {
+                        // Default transition
+                        slideInHorizontally(
+                            initialOffsetX = { 800 },
+                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                        ) + fadeIn(
+                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                        )
+                    }
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    Screen.Register.route -> {
+                        // Going to register
+                        slideOutVertically(
+                            targetOffsetY = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                    else -> {
+                        // Default exit
+                        slideOutHorizontally(
+                            targetOffsetX = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                }
+            }
+        ) {
             LoginScreen(
                 viewModel = authViewModel,
                 onNavigateToHome = {
@@ -95,7 +194,25 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
                 },
             )
         }
-        composable(Screen.Register.route) {
+        composable(
+            Screen.Register.route,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                ) + fadeIn(
+                    animationSpec = tween(350, 50)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(350, easing = EaseInOut)
+                ) + fadeOut(
+                    animationSpec = tween(250)
+                )
+            }
+        ) {
             RegisterScreen(
                 viewModel = authViewModel,
                 onNavigateToLogin = {
@@ -105,7 +222,31 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
 
         }
         //HomeScreen
-        composable(Screen.Home.route) {
+        composable(
+            Screen.Home.route,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    Screen.Questionnaire.route -> {
+                        // Coming from questionnaire with a special transition
+                        scaleIn(
+                            initialScale = 0.8f,
+                            animationSpec = tween(500, easing = EaseInOutBack)
+                        ) + fadeIn(
+                            animationSpec = tween(450)
+                        )
+                    }
+                    else -> {
+                        // Default transition
+                        slideInHorizontally(
+                            initialOffsetX = { 800 },
+                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                        ) + fadeIn(
+                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                        )
+                    }
+                }
+            }
+        ) {
             HomeScreen(
                 viewModel = profileViewModel,
                 onNavigate = { route -> navController.navigate(route) }
@@ -120,11 +261,43 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
         }
 
         //QuestionnaireScreen
-        composable(Screen.Questionnaire.route) {
+        composable(
+            Screen.Questionnaire.route,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { -200 },
+                    animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                ) + fadeIn(
+                    animationSpec = tween(350, 50)
+                )
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    Screen.Home.route -> {
+                        // Going to home with special transition
+                        scaleOut(
+                            targetScale = 1.1f,
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                    else -> {
+                        // Default exit
+                        slideOutVertically(
+                            targetOffsetY = { -200 },
+                            animationSpec = tween(350, easing = EaseInOut)
+                        ) + fadeOut(
+                            animationSpec = tween(250)
+                        )
+                    }
+                }
+            }
+        ) {
             QuestionnaireScreen(
                 viewModel = questionnaireViewModel,
                 onBackClick = { navController.popBackStack() },
-                onSaveComplete = {}
+                onSaveComplete = { navController.navigate(Screen.Home.route) }
             )
         }
 
