@@ -1,11 +1,8 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
 import android.widget.Toast
-import androidx.compose.animation.core.EaseOutQuint
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
@@ -23,11 +20,11 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,18 +40,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.FoodCategory
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Persona
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.FoodCategoryDefinitionEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.CheckboxWithText
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategoryCard
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PageTransitionEffect
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaButton
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaSelectionDropdownField
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimeInput
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimePickerRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.AnimationUtils
@@ -62,6 +59,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.pageTransition
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.rememberCustomPagerFlingBehavior
+import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaCard
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -184,9 +182,10 @@ fun QuestionnaireScreen(
                         ) {
                             when (page) {
                                 0 -> FoodCategoryPage(
+                                    allFoodCategories = allFoodCategories,
                                     selectedFoodKeys = selectedFoodCategoryKeys,
-                                    onCheckedChange = { category, checked ->
-                                        viewModel.toggleFoodCategory(category.foodDefId, checked) }
+                                    onCategoryToggle = { category, checked ->
+                                        viewModel.toggleFoodCategory(category, checked) }
                                 )
                                 1 -> PersonaPage(
                                     selectedPersona = selectedPersonaId,
@@ -296,8 +295,9 @@ fun QuestionnaireScreen(
 
 @Composable
 fun FoodCategoryPage(
+    allFoodCategories: List<FoodCategoryDefinitionEntity>,
     selectedFoodKeys: Map<String, Boolean>,
-    onCheckedChange: (FoodCategory, Boolean) -> Unit
+    onCategoryToggle: (String, Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -307,10 +307,27 @@ fun FoodCategoryPage(
     ) {
         QuestionnaireTextRow("Tick all the food categories you can eat", 18)
         Spacer(modifier = Modifier.height(20.dp))
-        CheckboxContainer(
-            checkedState = selectedFoodKeys,
-            onCheckedChange = onCheckedChange
-        )
+        
+        if (allFoodCategories.isEmpty()) {
+            Text("Loading food categories...") // Or some placeholder
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3), // Adjust column count as needed
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(allFoodCategories.size) { index ->
+                    val category = allFoodCategories[index]
+                    val isSelected = selectedFoodKeys[category.foodDefId] ?: false
+                    FoodCategoryCard(
+                        category = category,
+                        isSelected = isSelected,
+                        onCategoryClick = { onCategoryToggle(category.foodDefId, !isSelected) }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -323,20 +340,40 @@ fun PersonaPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        QuestionnaireTextRow("Your Persona", 18)
-        Spacer(modifier = Modifier.height(20.dp))
-        CreatePersonaButtons()
-        HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp))
-        QuestionnaireTextRow("Which persona best fits you?", 16)
-        Spacer(modifier = Modifier.height(12.dp))
-        PersonaSelectionDropdownField(
-            selectedPersona = selectedPersona,
-            onPersonaSelected = onPersonaSelected,
-            personas = personas
+        Text(
+            text = "Select Your Persona",
+            style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+        
+        Text(
+            text = "Choose the lifestyle that best describes you to get personalized meal recommendations.",
+            style = TextStyle(fontSize = 16.sp),
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        if (personas.isEmpty()) {
+            Text("Loading personas...")
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(personas.size) { index ->
+                    val persona = personas[index]
+                    PersonaCard(
+                        persona = persona,
+                        isSelected = selectedPersona == persona.personaID,
+                        onPersonaClick = { personaId -> onPersonaSelected(personaId) }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -348,15 +385,72 @@ fun TimingsPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        QuestionnaireTextRow("Timings", 18)
-        Spacer(modifier = Modifier.height(20.dp))
-        TimePickerInterface(
-            modifier = Modifier.fillMaxWidth(),
-            timePreferences = timePreferences,
-            onTimeSelected = onTimeSelected
+        Text(
+            text = "Your Time Preferences",
+            style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        Text(
+            text = "Tell us about your daily schedule to help us plan your meals better.",
+            style = TextStyle(fontSize = 16.sp),
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 2.dp
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                TimeInput(
+                    text = UserTimePref.WAKEUP.questionDescription,
+                    initialTime = timePreferences[UserTimePref.WAKEUP] ?: "",
+                    onTimeSelected = { time -> onTimeSelected(UserTimePref.WAKEUP, time) }
+                )
+                
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                )
+                
+                TimeInput(
+                    text = UserTimePref.BIGGEST_MEAL.questionDescription,
+                    initialTime = timePreferences[UserTimePref.BIGGEST_MEAL] ?: "",
+                    onTimeSelected = { time -> onTimeSelected(UserTimePref.BIGGEST_MEAL, time) }
+                )
+                
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                )
+                
+                TimeInput(
+                    text = UserTimePref.SLEEP.questionDescription,
+                    initialTime = timePreferences[UserTimePref.SLEEP] ?: "",
+                    onTimeSelected = { time -> onTimeSelected(UserTimePref.SLEEP, time) }
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "These preferences help us suggest meals at optimal times based on your daily schedule.",
+            style = TextStyle(fontSize = 14.sp, fontStyle = FontStyle.Italic),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -441,31 +535,6 @@ fun SummaryPage(
 }
 
 @Composable
-fun CheckboxContainer(
-    checkedState: Map<String, Boolean>,
-    onCheckedChange: (FoodCategory, Boolean) -> Unit
-) {
-    val foodCategories = remember { FoodCategory.entries.toList() }
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        foodCategories.forEachIndexed { index, category ->
-            item {
-                CheckboxWithText(
-                    text = category.foodName,
-                    checked = checkedState[category.foodDefId] == true,
-                    onCheckedChange = { checked -> onCheckedChange(category, checked) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun QuestionnaireTextRow(text: String, fontSize: Int ) {
     Row(
         modifier = Modifier.fillMaxWidth() .padding(4.dp),
@@ -494,20 +563,4 @@ fun TimePickerInterface(
     }
 }
 
-@Composable
-fun CreatePersonaButtons() {
-    val personas: List<Persona> = Persona.entries
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxWidth() .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        personas.forEach { persona ->
-            item {
-                PersonaButton(persona)
-            }
-        }
-    }
-}
 

@@ -148,7 +148,11 @@ fun BottomNavigationBar(
                     ) 
                 },
                 selected = selected,
-                onClick = { onNavigate(item.itemScreenRoute) },
+                onClick = {
+                    if (currentRoute != item.itemScreenRoute) {
+                        onNavigate(item.itemScreenRoute)
+                    }
+                },
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 )

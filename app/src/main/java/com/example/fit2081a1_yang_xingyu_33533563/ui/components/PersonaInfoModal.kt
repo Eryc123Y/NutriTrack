@@ -10,17 +10,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fit2081a1_yang_xingyu_33533563.R
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Persona
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
+import com.example.fit2081a1_yang_xingyu_33533563.util.getPersonaImagePainter
 
 @Composable
 fun PersonaInfoModal(
-    persona: Persona,
+    persona: PersonaEntity,
     showDialog: Boolean,
     onDismiss: () -> Unit
 ) {
@@ -28,35 +27,26 @@ fun PersonaInfoModal(
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
-                Text(text = persona.personaName,
+                Text(
+                    text = persona.personaName,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
             },
             text = {
                 Column(
                     modifier = Modifier.padding(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Load image based on persona type
-                    val resourceId = when (persona.personaName) {
-                        "Health Devotee" -> R.drawable.persona_1
-                        "Mindful Eater" -> R.drawable.persona_2
-                        "Wellness Striver" -> R.drawable.persona_3
-                        "Balance Seeker" -> R.drawable.persona_4
-                        "Health Procrastinator" -> R.drawable.persona_5
-                        "Food Carefree" -> R.drawable.persona_6
-                        else -> R.drawable.persona_1
-                    }
-
                     Image(
-                        painter = painterResource(id = resourceId),
+                        painter = getPersonaImagePainter(personaId = persona.personaID),
                         contentDescription = persona.personaName,
                         modifier = Modifier
                             .size(120.dp)
                             .padding(bottom = 8.dp)
                     )
                     Text(
-                        text = persona.personaDescription,
+                        text = persona.personaDescription.toString(),
                         modifier = Modifier.padding(top = 8.dp),
                         textAlign = TextAlign.Justify
                     )
