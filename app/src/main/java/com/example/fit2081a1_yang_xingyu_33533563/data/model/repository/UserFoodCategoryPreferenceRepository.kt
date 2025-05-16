@@ -6,15 +6,15 @@ import kotlinx.coroutines.flow.Flow
 
 class UserFoodCategoryPreferenceRepository(private val dao: UserFoodCategoryPreferenceDao) {
 
-    fun insert(preference: UserFoodPreferenceEntity) {
+    suspend fun insert(preference: UserFoodPreferenceEntity) {
         dao.insert(preference)
     }
 
-    fun update(preference: UserFoodPreferenceEntity) {
+    suspend fun update(preference: UserFoodPreferenceEntity) {
         dao.update(preference)
     }
 
-    fun delete(preference: UserFoodPreferenceEntity) {
+    suspend fun delete(preference: UserFoodPreferenceEntity) {
         dao.delete(preference)
     }
 

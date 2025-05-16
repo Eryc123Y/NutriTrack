@@ -73,7 +73,7 @@ class QuestionnaireViewModel(
         _selectedPersonaId.value = personaId
     }
 
-    // --- Time Preferences ---
+    // Time Preferences
     private val _biggestMealTime = MutableStateFlow<String?>(null)
     val biggestMealTime: StateFlow<String?> = _biggestMealTime.asStateFlow()
 
@@ -87,7 +87,10 @@ class QuestionnaireViewModel(
     fun updateSleepTime(time: String?) { _sleepTime.value = time }
     fun updateWakeUpTime(time: String?) { _wakeUpTime.value = time }
 
-    // --- Saving ---
+    // Saving
+    private val _isQuestionnaireCompleted = MutableStateFlow(false)
+    val isQuestionnaireCompleted: StateFlow<Boolean> = _isQuestionnaireCompleted.asStateFlow()
+
     private val _saveStatus = MutableStateFlow<String?>(null)
     val saveStatus: StateFlow<String?> = _saveStatus.asStateFlow()
 
@@ -98,10 +101,13 @@ class QuestionnaireViewModel(
                 return@launch
             }
             try {
-                userFoodCategoryPreferenceRepository.deleteAllPreferencesForUser(userId)
-                _foodCategoryKeyBooleanMap.value.forEach { key ->
+                //userFoodCategoryPreferenceRepository.deleteAllPreferencesForUser(userId)
+                _foodCategoryKeyBooleanMap.value.forEach { (key, selected) ->
                     userFoodCategoryPreferenceRepository.insert(
-                        UserFoodPreferenceEntity(foodPrefUserId = userId, foodPrefCategoryKey = key, foodPrefCheckedStatus = true)
+                        UserFoodPreferenceEntity(
+                            foodPrefUserId = userId,
+                            foodPrefCategoryKey = key,
+                            foodPrefCheckedStatus = selected)
                     )
                 }
 
@@ -110,11 +116,11 @@ class QuestionnaireViewModel(
                         userRepository.updateUser(user.copy(userPersonaId = personaId))
                     } ?: run {
                         _saveStatus.value = "Error: User not found for saving persona."
-                        // Potentially return or handle error more gracefully
                     }
                 }
                 
-                userTimePreferenceRepository.deleteAllPreferencesForUser(userId)
+                //userTimePreferenceRepository.deleteAllPreferencesForUser(userId)
+                // If already exist record, will cover it
                 userTimePreferenceRepository.insert(
                     UserTimePreferenceEntity(
                         timePrefUserId = userId,
@@ -123,6 +129,7 @@ class QuestionnaireViewModel(
                         wakeUpTime = _wakeUpTime.value
                     )
                 )
+                _isQuestionnaireCompleted.value = true
                 _saveStatus.value = "Preferences saved successfully!"
             } catch (e: Exception) {
                 _saveStatus.value = "Error saving preferences: ${e.message}"
@@ -135,9 +142,22 @@ class QuestionnaireViewModel(
             try {
                 val foodPrefs = userFoodCategoryPreferenceRepository
                     .getPreferencesByUserId(userId).firstOrNull()
-                _foodCategoryKeyBooleanMap.value = foodPrefs?.filter {
-                    it.foodPrefCheckedStatus
-                }?.map { it.foodPrefCategoryKey }?.toSet() ?: emptySet()
+                
+                // Create a proper Map<String, Boolean> from preferences
+                val foodCategoryMap = mutableMapOf<String, Boolean>()
+                
+                // Get all food categories first to ensure we have a complete map
+                val allCategories = foodCategoryDefinitionRepository.getAllFoodCategories().firstOrNull() ?: emptyList()
+                allCategories.forEach { category ->
+                    foodCategoryMap[category.foodDefId] = false
+                }
+                
+                // Then update with user's selections
+                foodPrefs?.forEach { pref ->
+                    foodCategoryMap[pref.foodPrefCategoryKey] = pref.foodPrefCheckedStatus
+                }
+                
+                _foodCategoryKeyBooleanMap.value = foodCategoryMap
 
                 val user = userRepository.getUserById(userId).firstOrNull()
                 _selectedPersonaId.value = user?.userPersonaId

@@ -3,6 +3,7 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.model.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserTimePreferenceEntity
@@ -16,7 +17,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserTimePreferenceDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE) // if already exists, replace it
     suspend fun insert(timePreference: UserTimePreferenceEntity)
 
     @Update
