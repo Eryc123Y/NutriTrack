@@ -51,7 +51,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireVi
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategoryCard
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PageTransitionEffect
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimeInput
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimePickerRow
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.AnimationUtils
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
@@ -95,12 +94,8 @@ fun QuestionnaireScreen(
     // Custom fling behavior for smoother paging with spring physics
     val flingBehavior = rememberCustomPagerFlingBehavior(pagerState)
     
-    // Choose your page transition effect based on device performance
-    val transitionEffect = if (frameMetrics.canHandleComplexAnimations) {
-        PageTransitionEffect.DEPTH // More complex animation for powerful devices
-    } else {
-        PageTransitionEffect.FADE // Simpler animation for less powerful devices
-    }
+    // Always use FADE transition for smoother, simpler animations
+    val transitionEffect = PageTransitionEffect.FADE
 
     // Food category state - using ViewModel
     val allFoodCategories = viewModel.allFoodCategories.collectAsState().value
@@ -141,15 +136,12 @@ fun QuestionnaireScreen(
 
     // Effect to load user preferences when the screen is first displayed
     LaunchedEffect(userID) {
-        // Wait for the next frame before loading data to ensure UI is ready
-        AnimationUtils.waitForNextFrame()
-        
-        // Set editing mode based on the parameter
+        // Set editing mode based on the parameter first - this is fast
         viewModel.setEditingMode(isEditMode)
-        
-        // Load user preferences
+
+        // Load user preferences asynchronously using the LaunchedEffect's scope directly
         viewModel.loadUserPreferences(userID.toString())
-        
+
         // If in edit mode, explicitly reset completion state AFTER loading preferences
         if (isEditMode) {
             viewModel.resetCompleted()
@@ -169,8 +161,9 @@ fun QuestionnaireScreen(
         if (isQuestionnaireCompleted) {
             // Reset editing mode flag before navigating back
             viewModel.setEditingMode(false)
-            // Small delay to show the success message before navigating
-            kotlinx.coroutines.delay(800)
+            
+            // Reduce delay to improve responsiveness - 300ms is enough for visual feedback
+            kotlinx.coroutines.delay(300)
             onSaveComplete()
         }
     }
@@ -183,8 +176,11 @@ fun QuestionnaireScreen(
                 showExitConfirmation.value = true
             } else {
                 // No changes, just go back with proper cleanup
-                viewModel.cancelEditing(userID.toString())
-                onBackClick()
+                // Launch the cancelEditing in a coroutine to avoid blocking the UI thread
+                coroutineScope.launch {
+                    viewModel.cancelEditing(userID.toString())
+                    onBackClick()
+                }
             }
         } else {
             // For new users, don't allow going back - they must complete questionnaire
@@ -204,9 +200,11 @@ fun QuestionnaireScreen(
                 TextButton(
                     onClick = {
                         showExitConfirmation.value = false
-                        // Call the improved cancelEditing method instead of just setting the flag
-                        viewModel.cancelEditing(userID.toString())
-                        onBackClick()
+                        // Launch in a coroutine to prevent UI freezing
+                        coroutineScope.launch {
+                            viewModel.cancelEditing(userID.toString())
+                            onBackClick()
+                        }
                     }
                 ) {
                     Text("Discard")
@@ -233,8 +231,11 @@ fun QuestionnaireScreen(
                         showExitConfirmation.value = true
                     } else {
                         // No changes, just go back with proper cleanup
-                        viewModel.cancelEditing(userID.toString())
-                        onBackClick()
+                        // Launch in a coroutine to avoid blocking the UI thread
+                        coroutineScope.launch {
+                            viewModel.cancelEditing(userID.toString())
+                            onBackClick()
+                        }
                     }
                 }
             )
@@ -301,9 +302,6 @@ fun QuestionnaireScreen(
                                     checkedState = selectedFoodCategoryKeys,
                                     selectedPersona = selectedPersonaId,
                                     timePreferences = timePreferences,
-                                    onSaveClick = {
-                                        viewModel.saveAllPreferences(userID.toString())
-                                    },
                                     allPersonas = allPersonas
                                 )
                             }
@@ -560,7 +558,6 @@ fun SummaryPage(
     checkedState: Map<String, Boolean>,
     selectedPersona: String,
     timePreferences: Map<UserTimePref, String>,
-    onSaveClick: () -> Unit,
     allPersonas: List<PersonaEntity> = emptyList()
 ) {
     Column(

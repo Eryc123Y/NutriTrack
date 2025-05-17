@@ -156,32 +156,15 @@ fun QuestionnaireStatusSection(
         // Edit Button
         Button(
             onClick = {
-                scope.launch {
-                    // First, explicitly reset the completed state to ensure we're in a clean state
-                    questionnaireViewModel.resetCompleted()
-                    
-                    // Set editing mode to true BEFORE navigation
-                    questionnaireViewModel.setEditingMode(true)
-                    
-                    // Small delay to ensure state is updated before navigation
-                    kotlinx.coroutines.delay(100)
-                    
-                    // Then navigate to questionnaire
-                    onNavigate(Screen.Questionnaire.route)
-                }
+                // Set editing mode and navigate directly
+                questionnaireViewModel.setEditingMode(true)
+                questionnaireViewModel.resetCompleted()
+                onNavigate(Screen.Questionnaire.route)
             },
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.padding(start = 8.dp)
         ) {
-            Text(
-                text = "Edit",
-                fontSize = 16.sp
-            )
-            Icon(
-                imageVector = Icons.Outlined.Edit,
-                contentDescription = "Edit",
-                modifier = Modifier.padding(start = 4.dp).size(18.dp)
-            )
+            Text(text = "Edit")
         }
     }
 }

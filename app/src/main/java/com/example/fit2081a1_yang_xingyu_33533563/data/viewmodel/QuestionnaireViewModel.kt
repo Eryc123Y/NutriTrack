@@ -1,7 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.FoodCategoryDefinitionEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.combine
-import kotlin.jvm.java
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -273,11 +271,11 @@ class QuestionnaireViewModel(
         
         // Force the questionnaire to stay in "not completed" state
         // This ensures it doesn't get automatically marked as completed based on loaded data
-        viewModelScope.launch {
-            // Small delay to ensure this takes precedence over any other state changes
-            kotlinx.coroutines.delay(100)
-            _isQuestionnaireCompleted.value = false
-        }
+//        viewModelScope.launch {
+//            // Small delay to ensure this takes precedence over any other state changes
+//            kotlinx.coroutines.delay(100)
+//            _isQuestionnaireCompleted.value = false
+//        }
     }
 
     fun loadUserPreferences(userId: String) {
@@ -376,5 +374,62 @@ class QuestionnaireViewModel(
         // Implementation would compare current state to saved state
         // For simplicity, we'll return true in edit mode
         return true
+    }
+
+    /**
+     * Loads user preferences and returns whether the questionnaire is completed synchronously
+     * This eliminates the need for delays in navigation logic
+     */
+    suspend fun loadUserPreferencesAndCheckCompletion(userId: String): Boolean {
+        try {
+            // Load food preferences
+            val foodPrefs = userFoodCategoryPreferenceRepository
+                .getPreferencesByUserId(userId).firstOrNull()
+            
+            // Create a proper Map<String, Boolean> from preferences
+            val foodCategoryMap = mutableMapOf<String, Boolean>()
+            
+            // Get all food categories first to ensure we have a complete map
+            val allCategories = foodCategoryDefinitionRepository.getAllFoodCategories().firstOrNull() ?: emptyList()
+            allCategories.forEach { category ->
+                foodCategoryMap[category.foodDefId] = false
+            }
+            
+            // Then update with user's selections
+            foodPrefs?.forEach { pref ->
+                foodCategoryMap[pref.foodPrefCategoryKey] = pref.foodPrefCheckedStatus
+            }
+            
+            _foodCategoryKeyBooleanMap.value = foodCategoryMap
+
+            // Load user data
+            val user = userRepository.getUserById(userId).firstOrNull()
+            _selectedPersonaId.value = user?.userPersonaId
+            
+            // Load time preferences
+            val timePrefs = userTimePreferenceRepository.getPreference(userId).firstOrNull()
+            if (timePrefs != null) {
+                _biggestMealTime.value = timePrefs.biggestMealTime
+                _sleepTime.value = timePrefs.sleepTime
+                _wakeUpTime.value = timePrefs.wakeUpTime
+            }
+            
+            // Check if all required preferences are set
+            val hasSelectedCategories = foodCategoryMap.any { it.value }
+            val hasSelectedPersona = !_selectedPersonaId.value.isNullOrBlank()
+            val hasValidTimes = !_biggestMealTime.value.isNullOrBlank() && 
+                         !_sleepTime.value.isNullOrBlank() && 
+                         !_wakeUpTime.value.isNullOrBlank()
+            
+            // Update the state
+            _isQuestionnaireCompleted.value = hasSelectedCategories && hasSelectedPersona && hasValidTimes
+            
+            // Return the completion status directly
+            return _isQuestionnaireCompleted.value
+        } catch (e: Exception) {
+            // If there's any error, assume questionnaire is not completed
+            _isQuestionnaireCompleted.value = false
+            return false
+        }
     }
 }

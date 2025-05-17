@@ -128,18 +128,18 @@ private fun depthPageTransition(
     val smoothFraction = calculateSmoothFraction(page, pagerState)
     
     // Enhanced scale with improved interpolation
-    val scale = 0.7f + (0.3f * smoothFraction)
+    val scale = 0.85f + (0.15f * smoothFraction)
     scaleX = scale
     scaleY = scale
     
-    // Improved shadow elevation
-    shadowElevation = 20f * smoothFraction
+    // Reduced shadow elevation for smoother transitions
+    shadowElevation = 8f * smoothFraction
     
     // Better alpha transition
-    alpha = 0.2f + (0.8f * smoothFraction)
+    alpha = 0.5f + (0.5f * smoothFraction)
     
-    // Add subtle translation for a parallax effect
-    translationY = 20f * (1f - smoothFraction)
+    // Reduce translation for less jumpy effect
+    translationY = 10f * (1f - smoothFraction)
 }
 
 /**
@@ -181,15 +181,15 @@ private fun fadePageTransition(
     val smoothFraction = calculateSmoothFraction(page, pagerState)
     
     // Improved fade effect with better interpolation
-    alpha = smoothFraction
+    alpha = 0.3f + (0.7f * smoothFraction)
     
-    // Enhanced scale effect
-    val scale = 0.92f + (0.08f * smoothFraction)
+    // Enhanced scale effect - more subtle
+    val scale = 0.96f + (0.04f * smoothFraction)
     scaleX = scale
     scaleY = scale
     
-    // Add a subtle vertical translation for more interest
-    translationY = 30f * (1f - smoothFraction)
+    // Reduced vertical translation for smoother effect
+    translationY = 15f * (1f - smoothFraction)
 }
 
 /**
