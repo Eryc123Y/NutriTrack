@@ -61,7 +61,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationB
  * Created by Eric
  * This module contains setting layout
  */
-
+// todo: add userId and phone number to the settings screen
 /**
  * Composable function for the Settings screen
  * @param profileViewModel ViewModel for managing profile data
