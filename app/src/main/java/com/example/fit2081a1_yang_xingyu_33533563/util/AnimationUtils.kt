@@ -9,10 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -88,8 +88,8 @@ object AnimationUtils {
      */
     @Composable
     fun MeasureFrameTime(): FrameTimeMetrics {
-        var avgFrameTimeMs by remember { mutableStateOf(16.67f) } // Target 60fps
-        var frameTimeMs by remember { mutableStateOf(16.67f) }
+        var avgFrameTimeMs by remember { mutableFloatStateOf(16.67f) } // Target 60fps
+        var frameTimeMs by remember { mutableFloatStateOf(16.67f) }
         var jankDetected by remember { mutableStateOf(false) }
         
         LaunchedEffect(Unit) {
