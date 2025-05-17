@@ -7,7 +7,6 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.dao.*
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.*
-
 @Database(
     entities = [
         UserEntity::class,
@@ -16,7 +15,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.*
         UserScoreEntity::class,
         UserTimePreferenceEntity::class,
         FoodCategoryDefinitionEntity::class,
-        ScoreTypeDefinitionEntity::class
+        ScoreTypeDefinitionEntity::class,
+        ChatMessageEntity::class
     ],
     version = 1,
     exportSchema = false
@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userTimePreferenceDao(): UserTimePreferenceDao
     abstract fun foodCategoryDefinitionDao(): FoodCategoryDefinitionDao
     abstract fun scoreTypeDefinitionDao(): ScoreTypeDefinitionDao
+    abstract fun chatMessageDao(): ChatMessageDao
 
     companion object {
         @Volatile
