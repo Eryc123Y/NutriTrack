@@ -1,4 +1,6 @@
 import org.gradle.kotlin.dsl.implementation
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -25,6 +27,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Load API key from secrets.properties
+        val secretsFile = rootProject.file("secrets.properties")
+        val secretsProperties = Properties()
+        if (secretsFile.exists()) {
+            secretsProperties.load(FileInputStream(secretsFile))
+            val apiKey = secretsProperties.getProperty("API_KEY", "")
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+        } else {
+            buildConfigField("String", "API_KEY", "\"\"")
+        }
     }
 
     buildTypes {
@@ -45,6 +58,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
