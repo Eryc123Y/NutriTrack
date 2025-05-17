@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
+package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

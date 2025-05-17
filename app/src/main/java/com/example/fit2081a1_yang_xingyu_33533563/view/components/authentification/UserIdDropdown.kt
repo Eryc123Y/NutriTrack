@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification
+package com.example.fit2081a1_yang_xingyu_33533563.view.components.authentification
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

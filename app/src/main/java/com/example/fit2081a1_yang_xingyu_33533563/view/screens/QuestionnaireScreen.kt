@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
+package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -48,16 +48,16 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.FoodCategoryDefinitionEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.PersonaEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.FoodCategoryCard
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PageTransitionEffect
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TimeInput
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.FoodCategoryCard
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.PageTransitionEffect
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.TimeInput
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.AnimationUtils
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.pageTransition
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.rememberCustomPagerFlingBehavior
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaCard
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.pageTransition
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.rememberCustomPagerFlingBehavior
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.PersonaCard
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.AlertDialog

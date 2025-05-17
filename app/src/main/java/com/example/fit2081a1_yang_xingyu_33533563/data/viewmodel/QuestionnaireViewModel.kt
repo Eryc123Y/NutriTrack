@@ -195,32 +195,32 @@ class QuestionnaireViewModel(
      * Handles canceling edits - resets editing mode and ensures questionnaire
      * is properly marked as completed if it was before editing started
      */
-    fun cancelEditing(userId: String) {
+    suspend fun cancelEditing(userId: String) {
         // Reset editing mode
         _isEditing.value = false
-        
-        // Reload preferences from database to restore original state
-        viewModelScope.launch {
-            loadUserPreferences(userId)
-        }
+        // Now that loadUserPreferences is suspend, this will complete before cancelEditing returns
+        loadUserPreferences(userId)
     }
 
     /**
      * Saves all user preferences to the database. Also test validation
+     * @return Boolean true if save was successful and questionnaire is complete, false otherwise.
      */
-    fun saveAllPreferences(userId: String) {
-        viewModelScope.launch {
+    suspend fun saveAllPreferences(userId: String): Boolean {
+        // viewModelScope.launch { // No longer need to launch a new coroutine here, as this will be called from one
             if (!isQuestionnaireValid.value) {
                 _saveStatus.value = if (_timeValidationError.value != null) {
                     _timeValidationError.value
                 } else {
                     "Please ensure all questionnaire sections are completed correctly."
                 }
-                return@launch
+                // return@launch // Becomes return false
+                return false
             }
             if (userId.isBlank()) {
                 _saveStatus.value = "Error: User ID is missing."
-                return@launch
+                // return@launch // Becomes return false
+                return false
             }
             try {
                 // Save food category preferences
@@ -242,6 +242,8 @@ class QuestionnaireViewModel(
                         userRepository.updateUser(user.copy(userPersonaId = personaId))
                     } ?: run {
                         _saveStatus.value = "Error: User not found for saving persona."
+                        // We should ideally throw or return a specific error, for now, treat as save failure
+                        return false 
                     }
                 }
                 
@@ -256,14 +258,18 @@ class QuestionnaireViewModel(
                 )
                 
                 // Mark as completed and reset editing mode
-                _isQuestionnaireCompleted.value = true
-                _isEditing.value = false
-                
+                // _isQuestionnaireCompleted.value = true // This state will be managed by checkQuestionnaireCompleted or similar logic
+                _isEditing.value = false 
+                // Ensure the completion status is correctly updated after save & exiting edit mode
+                checkQuestionnaireCompleted() // Call this to update isQuestionnaireCompleted state based on current valid data
+
                 _saveStatus.value = "Preferences saved successfully!"
+                return true // Successfully saved
             } catch (e: Exception) {
                 _saveStatus.value = "Error saving preferences: ${e.message}"
+                return false // Save failed
             }
-        }
+        // } // End of viewModelScope.launch
     }
 
     fun resetCompleted() {
@@ -278,12 +284,13 @@ class QuestionnaireViewModel(
 //        }
     }
 
-    fun loadUserPreferences(userId: String) {
+    // Make this suspend so cancelEditing can await its completion
+    suspend fun loadUserPreferences(userId: String) {
         // Reset editing state when loading user preferences (e.g., on login)
         // Only reset if we're not in edit mode - prevents existing state from being overwritten
-        if (!_isEditing.value) {
+        // if (!_isEditing.value) { // This condition might be too restrictive if called from cancelEditing
             // We're not in editing mode, so load everything normally
-            viewModelScope.launch {
+            // viewModelScope.launch { // Removed launch, as this is now a suspend function
                 try {
                     val foodPrefs = userFoodCategoryPreferenceRepository
                         .getPreferencesByUserId(userId).firstOrNull()
@@ -322,14 +329,15 @@ class QuestionnaireViewModel(
                     // Handle exceptions during loading, e.g., update a status StateFlow
                      _saveStatus.value = "Error loading preferences: ${e.message}"
                 }
-            }
-        } else {
+            // } // End of removed viewModelScope.launch
+        // } else { // Removed else block related to _isEditing check, simplifying the function
             // We're in edit mode, so just reload to make sure the isQuestionnaireCompleted state
             // gets properly updated after checking completion
-            viewModelScope.launch {
-                checkQuestionnaireCompleted()
-            }
-        }
+            // This case is now covered by the main block since _isEditing is set by caller before calling this if needed
+            // viewModelScope.launch {
+            //    checkQuestionnaireCompleted()
+            // }
+        // }
     }
 
     /**
@@ -422,8 +430,9 @@ class QuestionnaireViewModel(
                          !_wakeUpTime.value.isNullOrBlank()
             
             // Update the state
-            _isQuestionnaireCompleted.value = hasSelectedCategories && hasSelectedPersona && hasValidTimes
-            
+            // _isQuestionnaireCompleted.value = hasSelectedCategories && hasSelectedPersona && hasValidTimes // This is now handled by checkQuestionnaireCompleted()
+            checkQuestionnaireCompleted() // This will update the _isQuestionnaireCompleted StateFlow
+
             // Return the completion status directly
             return _isQuestionnaireCompleted.value
         } catch (e: Exception) {

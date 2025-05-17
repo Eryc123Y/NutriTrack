@@ -1,6 +1,5 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
+package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
-import android.R.attr.text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,10 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,8 +24,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification.AuthenticationButton
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification.UserIdDropdown
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.authentification.AuthenticationButton
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.authentification.UserIdDropdown
 
 
 @Composable

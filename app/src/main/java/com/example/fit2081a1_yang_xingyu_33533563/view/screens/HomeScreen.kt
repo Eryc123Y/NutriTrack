@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
+package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -42,13 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.R
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getGradientColorsForScore
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import androidx.compose.runtime.collectAsState
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(

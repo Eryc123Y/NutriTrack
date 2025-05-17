@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.components
+package com.example.fit2081a1_yang_xingyu_33533563.view.components
 
 import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
@@ -21,14 +21,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getColorforScore
 
 

@@ -3,7 +3,6 @@ package com.example.fit2081a1_yang_xingyu_33533563.navigation
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutBack
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,14 +25,14 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewMod
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ViewModelProviderFactory
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.CoachScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.HomeScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.InsightScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.LoginScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.RegisterScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.CoachScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.HomeScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.InsightScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.LoginScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.QuestionnaireScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.RegisterScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.SettingsScreen
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.WelcomeScreen
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 

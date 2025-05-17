@@ -1,9 +1,8 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.components
+package com.example.fit2081a1_yang_xingyu_33533563.view.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.pager.PagerDefaults

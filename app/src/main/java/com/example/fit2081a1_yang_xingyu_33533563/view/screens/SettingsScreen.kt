@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
+package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -54,8 +54,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.R
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.BottomNavigationBar
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.TopNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
 
 /**
  * Created by Eric

@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
+package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
 import com.example.fit2081a1_yang_xingyu_33533563.R
 import androidx.compose.foundation.Image
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -32,8 +31,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification.AuthenticationButton
-import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification.UserIdDropdown
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.authentification.AuthenticationButton
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.authentification.UserIdDropdown
 
 
 @OptIn(ExperimentalMaterial3Api::class)
