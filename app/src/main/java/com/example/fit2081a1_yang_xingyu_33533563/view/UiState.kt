@@ -4,20 +4,21 @@ package com.example.fit2081a1_yang_xingyu_33533563.view
  * A sealed hierarchy describing the state of the text generation.
  * Generic type T is used to allow flexibility in the type of data being handled.
  */
-sealed interface UiState<T> {
+sealed interface UiState {
 
-    object Initial : UiState<Nothing>
+    object Initial : UiState
 
-    object Loading : UiState<Nothing>
+    object Loading : UiState
 
-    data class Success<T>(val outputText: T) : UiState<T>
+    data class Success(val outputText: String) : UiState
 
     /**
-     * Error state with different types of errors
+     * Error state with different types of errors.
+     * Error messages are always strings for consistency.
      */
-    sealed interface Error<T> : UiState<T> {
-        data class NetworkError<T>(val errorMessage: T) : Error<T>
-        data class ApiError<T>(val errorMessage: T) : Error<T>
-        data class UnidentifiedError<T>(val errorMessage: T) : Error<T>
+    sealed interface Error : UiState {
+        data class NetworkError(val errorMessage: String) : Error
+        data class ApiError(val errorMessage: String) : Error
+        data class UnidentifiedError(val errorMessage: String) : Error
     }
 }
