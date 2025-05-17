@@ -50,9 +50,9 @@ class ViewModelProviderFactory(
                 InsightsViewModel(userScoreRepository, scoreTypeDefinitionRepository,
                     userRepository) as T
             }
-            modelClass.isAssignableFrom(GenAIViewModel::class.java) -> {
-                GenAIViewModel() as T
-            }
+//            modelClass.isAssignableFrom(GenAIViewModel::class.java) -> {
+//                GenAIViewModel() as T
+//            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

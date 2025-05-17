@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,16 +77,32 @@ fun TimeInput(
     initialTime: String,
     onTimeSelected: (String) -> Unit
 ) {
+    // Parse initialTime (HH:mm format)
     val parts = initialTime.split(":")
-    val initialHour = if (parts.size >= 1 && parts[0].isNotEmpty()) parts[0].toInt() else 0
-    val initialMinute = if (parts.size >= 2 && parts[1].isNotEmpty()) parts[1].toInt() else 0
-    
-    // Convert to 12-hour format
-    val is24Hour = initialHour >= 12
-    val hour12 = if (initialHour == 0) 12 else if (initialHour > 12) initialHour - 12 else initialHour
-    var hour by remember { mutableStateOf(if (hour12 == 0) "" else hour12.toString()) }
-    var minute by remember { mutableStateOf(if (initialMinute == 0) "" else initialMinute.toString()) }
-    var isPM by remember { mutableStateOf(is24Hour) }
+    val initialHour24 = parts.getOrNull(0)?.toIntOrNull()
+    val initialMinute = parts.getOrNull(1)?.toIntOrNull()
+
+    var displayHourText by remember { mutableStateOf("") }
+    var minuteText by remember { mutableStateOf("") }
+    var isPM by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialTime) {
+        if (initialHour24 != null && initialMinute != null) {
+            val currentCal = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, initialHour24)
+                set(Calendar.MINUTE, initialMinute)
+            }
+            val h12 = currentCal.get(Calendar.HOUR) // 0-11 for Calendar.HOUR, so 12 for 12 AM/PM
+            displayHourText = String.format("%02d", if (h12 == 0) 12 else h12) // Display 12 for 0 o'clock (12 AM)
+            minuteText = String.format("%02d", initialMinute)
+            isPM = currentCal.get(Calendar.AM_PM) == Calendar.PM
+        } else {
+            // Default to empty or some placeholder if initialTime is invalid
+            displayHourText = ""
+            minuteText = ""
+            isPM = false // Default to AM or based on current time if preferred
+        }
+    }
     
     Column(
         modifier = modifier.padding(vertical = 8.dp)
@@ -104,38 +121,57 @@ fun TimeInput(
         ) {
             // Hour input
             OutlinedTextField(
-                value = hour,
+                value = displayHourText,
                 onValueChange = { newValue -> 
-                    // Allow empty input or valid numbers between 1-12
-                    if (newValue.isEmpty() || (newValue.toIntOrNull() != null && newValue.toInt() in 1..12)) {
-                        hour = newValue // Don't pad with zeros for better editing experience
-                        updateTime(hour, minute, isPM, onTimeSelected)
+                    val num = newValue.take(2).filter { it.isDigit() }
+                    if (num.isEmpty()) {
+                        displayHourText = ""
+                    } else {
+                        val intVal = num.toIntOrNull()
+                        if (intVal != null && intVal >= 1 && intVal <= 12) {
+                            displayHourText = String.format("%02d", intVal) // Keep leading zero if single digit
+                        } else if (num.length == 1 && "1".contains(num)) { // Allow typing '1' for 10,11,12
+                             displayHourText = num
+                        } else if (num.length ==1 && intVal == 0) {
+                             displayHourText = num // allow typing '0' for '01' to '09'
+                        }
                     }
+                    updateTime(displayHourText, minuteText, isPM, onTimeSelected)
                 },
                 modifier = Modifier.weight(1f),
                 label = { Text("Hour") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                placeholder = { Text("00", textAlign = TextAlign.Center) }
+                placeholder = { Text("HH", textAlign = TextAlign.Center) } // Changed placeholder
             )
             
             Text(":", fontSize = 20.sp)
             
             // Minute input
             OutlinedTextField(
-                value = minute,
+                value = minuteText,
                 onValueChange = { newValue -> 
-                    // Allow empty input or valid numbers between 0-59
-                    if (newValue.isEmpty() || (newValue.toIntOrNull() != null && newValue.toInt() in 0..59)) {
-                        minute = newValue
-                        updateTime(hour, minute, isPM, onTimeSelected)
+                    val num = newValue.take(2).filter { it.isDigit() }
+                     if (num.isEmpty()) {
+                        minuteText = ""
+                    } else {
+                        val intVal = num.toIntOrNull()
+                        if (intVal != null && intVal >= 0 && intVal <= 59) {
+                            minuteText = String.format("%02d", intVal) // Keep leading zero
+                        } else if (num.length == 1 && num.toIntOrNull() != null && num.toInt() <=5 ) {
+                           minuteText = num // Allow typing first digit of minutes 0-5
+                        } else if (num.length == 1 && num.toIntOrNull() == null) {
+                            // allow typing if its not a number yet
+                            minuteText = num
+                        }
                     }
+                    updateTime(displayHourText, minuteText, isPM, onTimeSelected)
                 },
                 modifier = Modifier.weight(1f),
                 label = { Text("Min") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                placeholder = { Text("00", textAlign = TextAlign.Center) }
+                placeholder = { Text("MM", textAlign = TextAlign.Center) } // Changed placeholder
             )
             
             // AM/PM toggle
@@ -150,7 +186,7 @@ fun TimeInput(
                     isSelected = !isPM,
                     onClick = { 
                         isPM = false 
-                        updateTime(hour, minute, isPM, onTimeSelected)
+                        updateTime(displayHourText, minuteText, isPM, onTimeSelected)
                     }
                 )
                 
@@ -159,7 +195,7 @@ fun TimeInput(
                     isSelected = isPM,
                     onClick = { 
                         isPM = true
-                        updateTime(hour, minute, isPM, onTimeSelected)
+                        updateTime(displayHourText, minuteText, isPM, onTimeSelected)
                     }
                 )
             }
@@ -213,21 +249,25 @@ private fun AmPmButton(
     }
 }
 
-private fun updateTime(hour: String, minute: String, isPM: Boolean, onTimeSelected: (String) -> Unit) {
-    // If either hour or minute is empty, don't update
-    if (hour.isEmpty() || minute.isEmpty()) return
-    
-    val h = hour.toIntOrNull() ?: return
-    val m = minute.toIntOrNull() ?: return
-    
-    // Convert to 24-hour format
-    val hour24 = when {
-        isPM && h < 12 -> h + 12
-        !isPM && h == 12 -> 0
-        else -> h
+private fun updateTime(hourText: String, minuteText: String, isPM: Boolean, onTimeSelected: (String) -> Unit) {
+    val hour12 = hourText.toIntOrNull()
+    val minute = minuteText.toIntOrNull()
+
+    if (hour12 == null || minute == null) {
+        // Or handle partial input, e.g., by calling onTimeSelected with a specific format or null
+        // For now, only call back when both are valid numbers.
+        // onTimeSelected("") // Indicate invalid/incomplete time to ViewModel if needed
+        return
     }
     
-    val formattedTime = String.format("%02d:%02d", hour24, m)
+    // Convert 12-hour format parts to 24-hour format string
+    val hour24 = when {
+        isPM && hour12 < 12 -> hour12 + 12
+        !isPM && hour12 == 12 -> 0 // 12 AM is 00 hours
+        else -> hour12
+    }
+    
+    val formattedTime = String.format("%02d:%02d", hour24, minute)
     onTimeSelected(formattedTime)
 }
 

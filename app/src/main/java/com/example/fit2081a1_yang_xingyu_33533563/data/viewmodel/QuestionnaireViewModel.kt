@@ -66,13 +66,13 @@ class QuestionnaireViewModel(
     }
 
     // Time Preferences
-    private val _biggestMealTime = MutableStateFlow<String?>(null)
+    private val _biggestMealTime = MutableStateFlow("12:00") // Default value
     val biggestMealTime: StateFlow<String?> = _biggestMealTime.asStateFlow()
 
-    private val _sleepTime = MutableStateFlow<String?>(null)
+    private val _sleepTime = MutableStateFlow("22:00") // Default value
     val sleepTime: StateFlow<String?> = _sleepTime.asStateFlow()
 
-    private val _wakeUpTime = MutableStateFlow<String?>(null)
+    private val _wakeUpTime = MutableStateFlow("07:00") // Default value
     val wakeUpTime: StateFlow<String?> = _wakeUpTime.asStateFlow()
 
     // Track time validation errors
@@ -80,17 +80,17 @@ class QuestionnaireViewModel(
     val timeValidationError: StateFlow<String?> = _timeValidationError.asStateFlow()
 
     fun updateBiggestMealTime(time: String?) { 
-        _biggestMealTime.value = time
+        _biggestMealTime.value = time.toString()
         validateTimesLogic()
     }
     
     fun updateSleepTime(time: String?) { 
-        _sleepTime.value = time
+        _sleepTime.value = time.toString()
         validateTimesLogic()
     }
     
     fun updateWakeUpTime(time: String?) { 
-        _wakeUpTime.value = time
+        _wakeUpTime.value = time.toString()
         validateTimesLogic()
     }
     
@@ -98,41 +98,55 @@ class QuestionnaireViewModel(
     private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     
     /**
-     * Validates if the times are in logical order:
-     * - Wake up time should be before biggest meal time
-     * - Biggest meal time should be before sleep time
+     * Validates if the times are in logical order.
+     * Ensures times are in HH:mm format.
+     * Wake up time, biggest meal time, and sleep time should be logical.
      */
     private fun validateTimesLogic() {
-        _timeValidationError.value = null
-        
-        val wakeUpTime = _wakeUpTime.value
-        val biggestMealTime = _biggestMealTime.value
-        val sleepTime = _sleepTime.value
-        
-        if (wakeUpTime.isNullOrBlank() || biggestMealTime.isNullOrBlank() || sleepTime.isNullOrBlank()) {
-            // Not all times are set yet, don't validate
+        _timeValidationError.value = null // Reset error at the beginning
+
+        val wakeUpStr = _wakeUpTime.value
+        val biggestMealStr = _biggestMealTime.value
+        val sleepStr = _sleepTime.value
+
+        if (wakeUpStr.isNullOrBlank() || biggestMealStr.isNullOrBlank() || sleepStr.isNullOrBlank()) {
+            // This case should ideally be caught by the overall form validation (isQuestionnaireValid)
+            // but we can set a generic error if needed, or rely on field-specific "required" indicators.
+            // For now, let isQuestionnaireValid handle fully blank fields.
+            // If any field is PARTIALLY filled then becomes blank, this check is useful.
+             _timeValidationError.value = "All time fields are required."
             return
         }
-        
+
         try {
-            val wakeUpLocalTime = LocalTime.parse(wakeUpTime, timeFormatter)
-            val biggestMealLocalTime = LocalTime.parse(biggestMealTime, timeFormatter)
-            val sleepLocalTime = LocalTime.parse(sleepTime, timeFormatter)
-            
-            // Validate wake up time is before biggest meal time
-            if (wakeUpLocalTime.isAfter(biggestMealLocalTime)) {
-                _timeValidationError.value = "Wake up time must be before your biggest meal time"
+            val wakeUp = LocalTime.parse(wakeUpStr, timeFormatter)
+            val meal = LocalTime.parse(biggestMealStr, timeFormatter)
+            val sleep = LocalTime.parse(sleepStr, timeFormatter)
+
+            if (wakeUp == sleep) {
+                _timeValidationError.value = "Wake up and sleep times cannot be the same."
                 return
             }
-            
-            // Validate biggest meal time is before sleep time
-            if (biggestMealLocalTime.isAfter(sleepLocalTime)) {
-                _timeValidationError.value = "Your biggest meal time must be before sleep time"
-                return
+
+            // Scenario 1: Sleep is on the same day as wake up (e.g., wake 07:00, sleep 22:00)
+            if (sleep.isAfter(wakeUp)) {
+                if (meal.isBefore(wakeUp) || meal.isAfter(sleep)) {
+                    _timeValidationError.value = "Biggest meal time must be between wake up and sleep time."
+                    return
+                }
             }
-            
+            // Scenario 2: Sleep is on the next day (e.g., wake 07:00, sleep 01:00)
+            else { // sleep.isBefore(wakeUp)
+                if (meal.isBefore(wakeUp) && meal.isAfter(sleep)) {
+                    _timeValidationError.value = "Biggest meal time must be within your awake period (after wake up on day 1 or before sleep on day 2)."
+                    return
+                }
+            }
+            // All checks passed
+            _timeValidationError.value = null
+
         } catch (e: DateTimeParseException) {
-            _timeValidationError.value = "Invalid time format provided"
+            _timeValidationError.value = "Invalid time format. Please use HH:mm."
         }
     }
 
@@ -315,9 +329,9 @@ class QuestionnaireViewModel(
                     _selectedPersonaId.value = user?.userPersonaId
                 
                     val timePref = userTimePreferenceRepository.getPreference(userId).firstOrNull()
-                    _biggestMealTime.value = timePref?.biggestMealTime
-                    _sleepTime.value = timePref?.sleepTime
-                    _wakeUpTime.value = timePref?.wakeUpTime
+                    _biggestMealTime.value = timePref?.biggestMealTime.toString()
+                    _sleepTime.value = timePref?.sleepTime.toString()
+                    _wakeUpTime.value = timePref?.wakeUpTime.toString()
                     
                     // Validate loaded times
                     validateTimesLogic()
@@ -352,9 +366,9 @@ class QuestionnaireViewModel(
         // Check if all required preferences are set
         val hasSelectedCategories = _foodCategoryKeyBooleanMap.value.any { it.value }
         val hasSelectedPersona = !_selectedPersonaId.value.isNullOrBlank()
-        val hasValidTimes = !_biggestMealTime.value.isNullOrBlank() && 
-                         !_sleepTime.value.isNullOrBlank() && 
-                         !_wakeUpTime.value.isNullOrBlank() &&
+        val hasValidTimes = _biggestMealTime.value.isNotBlank() &&
+                _sleepTime.value.isNotBlank() &&
+                _wakeUpTime.value.isNotBlank() &&
                          _timeValidationError.value == null
                          
         // Only mark as completed if all sections are filled
@@ -417,17 +431,17 @@ class QuestionnaireViewModel(
             // Load time preferences
             val timePrefs = userTimePreferenceRepository.getPreference(userId).firstOrNull()
             if (timePrefs != null) {
-                _biggestMealTime.value = timePrefs.biggestMealTime
-                _sleepTime.value = timePrefs.sleepTime
-                _wakeUpTime.value = timePrefs.wakeUpTime
+                _biggestMealTime.value = timePrefs.biggestMealTime.toString()
+                _sleepTime.value = timePrefs.sleepTime.toString()
+                _wakeUpTime.value = timePrefs.wakeUpTime.toString()
             }
             
             // Check if all required preferences are set
             val hasSelectedCategories = foodCategoryMap.any { it.value }
             val hasSelectedPersona = !_selectedPersonaId.value.isNullOrBlank()
-            val hasValidTimes = !_biggestMealTime.value.isNullOrBlank() && 
-                         !_sleepTime.value.isNullOrBlank() && 
-                         !_wakeUpTime.value.isNullOrBlank()
+            val hasValidTimes = _biggestMealTime.value.isNotBlank() &&
+                    _sleepTime.value.isNotBlank() &&
+                    _wakeUpTime.value.isNotBlank()
             
             // Update the state
             // _isQuestionnaireCompleted.value = hasSelectedCategories && hasSelectedPersona && hasValidTimes // This is now handled by checkQuestionnaireCompleted()
