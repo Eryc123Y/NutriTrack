@@ -335,7 +335,10 @@ fun AppNavigation(
         ) {
             InsightScreen(
                 viewModel = insightsViewModel,
-                onNavigate = { route -> navController.navigate(route) }
+                onNavigate = { route -> navController.navigate(route) },
+                onNavigateToCoach = {
+                    navController.navigate(Screen.NutriCoach.route)
+                }
             )
         }
 

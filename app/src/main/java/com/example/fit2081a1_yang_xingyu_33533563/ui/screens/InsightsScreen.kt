@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
+import android.R.attr.onClick
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import android.widget.Toast
@@ -53,7 +54,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun InsightScreen(
     viewModel: InsightsViewModel,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onNavigateToCoach: () -> Unit,
 ) {
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager.getInstance(context)
@@ -147,7 +149,7 @@ fun InsightScreen(
                     userForShare?.let { userData ->
                         ShareButton(userData)
                     }
-                    ImproveDietButton()
+                    ImproveDietButton(onClick = onNavigateToCoach)
                 }
             }
         }
@@ -174,8 +176,8 @@ fun ShareButton(user: User) {
 
 @Composable
 fun ImproveDietButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
