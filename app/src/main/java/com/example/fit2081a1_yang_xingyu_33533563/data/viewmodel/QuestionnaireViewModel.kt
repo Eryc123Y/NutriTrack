@@ -232,6 +232,18 @@ class QuestionnaireViewModel(
         }
     }
 
+    fun resetCompleted() {
+        _isQuestionnaireCompleted.value = false
+        
+        // Force the questionnaire to stay in "not completed" state
+        // This ensures it doesn't get automatically marked as completed based on loaded data
+        viewModelScope.launch {
+            // Small delay to ensure this takes precedence over any other state changes
+            kotlinx.coroutines.delay(100)
+            _isQuestionnaireCompleted.value = false
+        }
+    }
+
     fun loadUserPreferences(userId: String) {
         viewModelScope.launch {
             try {
@@ -264,11 +276,30 @@ class QuestionnaireViewModel(
                 
                 // Validate loaded times
                 validateTimesLogic()
+                
+                // Check if questionnaire is already completed based on loaded preferences
+                checkQuestionnaireCompleted()
             } catch (e: Exception) {
                 // Handle exceptions during loading, e.g., update a status StateFlow
                  _saveStatus.value = "Error loading preferences: ${e.message}"
             }
         }
+    }
+
+    /**
+     * Checks if the questionnaire is already completed based on loaded data
+     */
+    private fun checkQuestionnaireCompleted() {
+        // Check if all required preferences are set
+        val hasSelectedCategories = _foodCategoryKeyBooleanMap.value.any { it.value }
+        val hasSelectedPersona = !_selectedPersonaId.value.isNullOrBlank()
+        val hasValidTimes = !_biggestMealTime.value.isNullOrBlank() && 
+                         !_sleepTime.value.isNullOrBlank() && 
+                         !_wakeUpTime.value.isNullOrBlank() &&
+                         _timeValidationError.value == null
+                         
+        // Only mark as completed if all sections are filled
+        _isQuestionnaireCompleted.value = hasSelectedCategories && hasSelectedPersona && hasValidTimes
     }
 
     fun clearSaveStatus() {

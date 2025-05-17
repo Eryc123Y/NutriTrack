@@ -59,13 +59,16 @@ import kotlinx.coroutines.launch
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.pageTransition
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.rememberCustomPagerFlingBehavior
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaCard
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.systemBarsPadding
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun QuestionnaireScreen(
     viewModel: QuestionnaireViewModel,
     onBackClick: () -> Unit = {},
-    onSaveComplete: () -> Unit = {}
+    onSaveComplete: () -> Unit = {},
+    isEditMode: Boolean = false
 ) {
 
     val context = LocalContext.current
@@ -131,6 +134,11 @@ fun QuestionnaireScreen(
         // Wait for the next frame before loading data to ensure UI is ready
         AnimationUtils.waitForNextFrame()
         viewModel.loadUserPreferences(userID.toString())
+        
+        // If in edit mode, reset completion state AFTER loading preferences
+        if (isEditMode) {
+            viewModel.resetCompleted()
+        }
     }
     
     // Effect to show toast when save status changes
@@ -140,15 +148,33 @@ fun QuestionnaireScreen(
             viewModel.clearSaveStatus()
         }
     }
+    
+    // If the questionnaire is completed, navigate to the home screen
+    LaunchedEffect(isQuestionnaireCompleted) {
+        if (isQuestionnaireCompleted) {
+            // Small delay to show the success message before navigating
+            kotlinx.coroutines.delay(800)
+            onSaveComplete()
+        }
+    }
+
+    // Prevent back navigation - questionnaire must be completed
+    BackHandler(enabled = true) {
+        // Do nothing - consume the back press event
+        // Optionally show a message that questionnaire must be completed
+        Toast.makeText(context, "Please complete the questionnaire before proceeding", Toast.LENGTH_SHORT).show()
+    }
 
     Scaffold(
         topBar = {
             TopNavigationBar(
                 title = "Food Intake Questionnaire (${pagerState.currentPage + 1}/4)",
-                showBackButton = true,
-                onBackButtonClick = onBackClick
+                showBackButton = false, // Disable back button - questionnaire must be completed
+                onBackButtonClick = {} // Empty handler since back is disabled
             )
-        }
+        },
+        // Intercepting system back button
+        modifier = Modifier.fillMaxSize().systemBarsPadding()
     ) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -272,17 +298,17 @@ fun QuestionnaireScreen(
                                         page = pagerState.currentPage + 1,
                                         animationSpec = AnimationUtils.smoothSpringSpec
                                     )
-                                } else {
+                                } else if (isQuestionnaireValid) {
                                     viewModel.saveAllPreferences(userID.toString())
-                                    onSaveComplete()
+                                    // Navigation will occur when save completes and isQuestionnaireCompleted becomes true
                                 }
                             }
                         },
-                        // Enable 'Next' for pages 0,1,2. Enable 'Done' on page 3 only if valid.
+                        // Enable 'Next' for pages 0,1,2. Enable 'Save' on page 3 only if valid.
                         enabled = if (pagerState.currentPage < 3) true else isQuestionnaireValid
                     ) {
-                        // Change text to 'Done' on the summary page (page 3)
-                        Text(if (pagerState.currentPage < 3) "Next" else "Done")
+                        // Change text to 'Save' on the summary page (page 3)
+                        Text(if (pagerState.currentPage < 3) "Next" else "Save")
                     }
                 }
             }

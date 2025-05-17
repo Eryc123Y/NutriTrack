@@ -34,7 +34,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.authentification
 @Composable
 fun RegisterScreen(
     viewModel: AuthViewModel,
-    onNavigateToLogin: () -> Unit
+    onRegistrationComplete: () -> Unit,
+    onBackToLogin: () -> Unit
 ) {
     val userIdState = remember { mutableStateOf("") }
     val phoneNumberState = remember { mutableStateOf("") }
@@ -47,6 +48,7 @@ fun RegisterScreen(
 
     val logInButtonShape = MaterialTheme.shapes.medium
 
+    // Clear error message when any input field changes
     LaunchedEffect(userIdState.value, phoneNumberState.value, passwordState.value,
         confirmPasswordState.value) {
         viewModel.clearAuthError()
@@ -56,6 +58,14 @@ fun RegisterScreen(
     LaunchedEffect(userIdState.value) {
         if (userIdState.value.isNotBlank()) {
             viewModel.loadUserPhoneNumber(userIdState.value)
+        }
+    }
+    
+    // Navigate to Questionnaire when user is successfully registered and logged in
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            // After successful registration and login, navigate to questionnaire
+            onRegistrationComplete()
         }
     }
 
@@ -139,11 +149,7 @@ fun RegisterScreen(
                             phone = phoneNumberState.value,
                             password = passwordState.value
                         )
-                        if (isLoggedIn) {
-                            onNavigateToLogin()
-                        } else {
-                            errorMessage = "Registration failed. Please check your credentials."
-                        }
+                        // Registration success/failure will be handled by the LaunchedEffect observing isLoggedIn
                     }
                 },
                 isLoading = isLoading,
@@ -151,7 +157,7 @@ fun RegisterScreen(
 
             AuthenticationButton(
                 text = "Back to Login",
-                onClick = onNavigateToLogin,
+                onClick = onBackToLogin,
             )
 
         }

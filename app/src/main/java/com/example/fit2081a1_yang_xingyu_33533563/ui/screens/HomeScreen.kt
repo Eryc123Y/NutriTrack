@@ -1,6 +1,5 @@
 package com.example.fit2081a1_yang_xingyu_33533563.ui.screens
 
-import android.R.attr.fontWeight
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,10 +47,14 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.getGradientColorsForScore
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import androidx.compose.runtime.collectAsState
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    viewModel: ProfileViewModel,
+    profileViewModel: ProfileViewModel,
+    questionnaireViewModel: QuestionnaireViewModel,
+
     onNavigate: (String) -> Unit = {}
 ) {
 
@@ -62,13 +65,12 @@ fun HomeScreen(
     // listen to the current user id from shared preferences and initialise the view model
     LaunchedEffect(currentUserIdFromPrefs) {
         currentUserIdFromPrefs?.let { userId ->
-            viewModel.setUserId(userId)
+            profileViewModel.setUserId(userId)
         }
     }
 
     val scrollState = rememberScrollState()
-    val score = viewModel.userTotalScore.collectAsState().value
-    val user by viewModel.currentUser.collectAsState()
+    val score = profileViewModel.userTotalScore.collectAsState().value
 
     Scaffold(
         bottomBar = {
@@ -90,8 +92,8 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
-                GreetingSection(viewModel.getUserName().toString())
-                QuestionnaireStatusSection(onNavigate = onNavigate)
+                GreetingSection(profileViewModel.getUserName().toString())
+                QuestionnaireStatusSection(onNavigate, questionnaireViewModel)
                 NutritionMixImage()
                 MyScoreDisplay(score?.toInt() ?: 0, onNavigate = onNavigate)
                 FoodQualityScoreInfo()
@@ -128,7 +130,12 @@ fun GreetingSection(userName: String) {
  * Composable function for the questionnaire status section
  */
 @Composable
-fun QuestionnaireStatusSection(onNavigate: (String) -> Unit) {
+fun QuestionnaireStatusSection(
+    onNavigate: (String) -> Unit,
+    questionnaireViewModel: QuestionnaireViewModel
+    ) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,7 +153,16 @@ fun QuestionnaireStatusSection(onNavigate: (String) -> Unit) {
 
         // Edit Button
         Button(
-            onClick = { onNavigate(Screen.Questionnaire.route) },
+            onClick = {
+                scope.launch {
+                    // First reset the completed state
+                    questionnaireViewModel.resetCompleted()
+                    // Small delay before navigation to ensure the state is updated
+                    kotlinx.coroutines.delay(200)
+                    // Then navigate to questionnaire
+                    onNavigate(Screen.Questionnaire.route)
+                }
+            },
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.padding(start = 8.dp)
         ) {

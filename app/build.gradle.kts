@@ -45,8 +45,10 @@ android {
 dependencies {
     implementation(libs.androidx.room.runtime)
     ksp(libs.room.compiler)
+    implementation(libs.androidx.core.splashscreen)
     annotationProcessor(libs.room.compiler)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.navigation.compose)
     implementation (libs.androidx.lifecycle.viewmodel.compose.v271)
     implementation(libs.androidx.lifecycle.common.java8)
     implementation(libs.androidx.lifecycle.livedata.ktx)

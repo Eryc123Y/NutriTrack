@@ -56,7 +56,6 @@ class AuthViewModel(
     // any user is stored in the shared preferences.
     init {
         resetUserStatus()
-        loadCurrentUser()
         loadAllUserIds()
     }
 
@@ -69,7 +68,8 @@ class AuthViewModel(
                 if (storedUserId != null) {
                     userRepository.getUserById(storedUserId).firstOrNull()?.let { user ->
                         _currentUser.value = user
-                        //_isLoggedIn.value = true
+                        // Don't auto login - requiring explicit login for safety
+                        // _isLoggedIn.value = false
                         _isUserRegistered.value = user.userIsRegistered
                         _currentUserPhoneNumber.value = user.userPhoneNumber
                     } ?: run {
@@ -119,6 +119,7 @@ class AuthViewModel(
                         _currentUser.value = user
                         _currentUserId.value = userId
                         _isLoggedIn.value = true
+                        _isUserRegistered.value = user.userIsRegistered
                     } else {
                         // Invalid password
                         _authError.value = "Invalid password."
@@ -161,6 +162,7 @@ class AuthViewModel(
                     _currentUser.value = newUser
                     _currentUserId.value = userId
                     _isLoggedIn.value = true
+                    _isUserRegistered.value = true
                 } else {
                     _authError.value = "User ID already exists."
                 }
@@ -233,13 +235,15 @@ class AuthViewModel(
     fun resetUserStatus() {
         viewModelScope.launch {
             _isLoading.value = true
-            _isLoggedIn.value = false
             try {
                 _currentUser.value = null
                 _currentUserId.value = null
                 _isLoggedIn.value = false
                 _currentUserPhoneNumber.value = null
                 _authError.value = null
+                
+                // Don't clear SharedPreferences here, just ensure user must login again
+                loadCurrentUser() // Load the current user from SharedPreferences if exists
             } catch (e: Exception) {
                 // Log or handle error if SharedPreferences fails, though unlikely
                 _authError.value = "Reset user status error: ${e.message}"
@@ -253,7 +257,10 @@ class AuthViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                // Ensure we clear the persisted user data in SharedPreferences
                 sharedPreferencesManager.logout()
+                
+                // Clear local state
                 _currentUser.value = null
                 _currentUserId.value = null
                 _isLoggedIn.value = false
@@ -286,5 +293,4 @@ class AuthViewModel(
             }
         }
     }
-
 }

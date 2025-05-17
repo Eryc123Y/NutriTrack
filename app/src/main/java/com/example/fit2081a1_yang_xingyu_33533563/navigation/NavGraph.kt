@@ -1,11 +1,7 @@
 package com.example.fit2081a1_yang_xingyu_33533563.navigation
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutBack
-import androidx.compose.animation.core.EaseOutQuint
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -18,8 +14,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,7 +32,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.RegisterScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
-import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 
 /**
  * Created by Xingyu Yang
@@ -186,9 +180,13 @@ fun AppNavigation(
                 viewModel = authViewModel,
                 onNavigateToHome = {
                     if (authViewModel.isUserRegistered.value == true) {
-                        navController.navigate(Screen.Home.route)
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
                     } else {
-                        navController.navigate(Screen.Questionnaire.route)
+                        navController.navigate(Screen.Questionnaire.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
                     }
                 },
                 onNavigateToRegisterScreen = {
@@ -217,11 +215,17 @@ fun AppNavigation(
         ) {
             RegisterScreen(
                 viewModel = authViewModel,
-                onNavigateToLogin = {
-                    navController.navigate(Screen.Login.route)
+                onRegistrationComplete = {
+                    navController.navigate(Screen.Questionnaire.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 },
+                onBackToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
             )
-
         }
         //HomeScreen
         composable(
@@ -280,9 +284,23 @@ fun AppNavigation(
                 }
             }
         ) {
+            // Check if this is a new user from registration who hasn't completed questionnaire
+            LaunchedEffect(Unit) {
+                // If user is logged in but questionnaire isn't completed, redirect to questionnaire
+                if (authViewModel.isLoggedIn.value && 
+                    authViewModel.isUserRegistered.value == true && 
+                    !questionnaireViewModel.isQuestionnaireCompleted.value) {
+                    navController.navigate(Screen.Questionnaire.route) {
+                        // Clear back stack to prevent going back to home
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            }
+            
             HomeScreen(
-                viewModel = profileViewModel,
-                onNavigate = { route -> navController.navigate(route) }
+                profileViewModel = profileViewModel,
+                onNavigate = { route -> navController.navigate(route) },
+                questionnaireViewModel = questionnaireViewModel
             )
         }
         //InsightScreen
@@ -376,10 +394,24 @@ fun AppNavigation(
                 }
             }
         ) {
+            // Keep track of the previous route to determine if we're coming from Home (editing) or not
+            val previousRoute = navController.previousBackStackEntry?.destination?.route
+            
             QuestionnaireScreen(
                 viewModel = questionnaireViewModel,
-                onBackClick = { navController.popBackStack() },
-                onSaveComplete = { navController.navigate(Screen.Home.route) }
+                onBackClick = { 
+                    // Prevent going back - questionnaire must be completed
+                    // If coming from registration, don't allow going back
+                    // navController.popBackStack() 
+                },
+                onSaveComplete = { 
+                    // Navigate to home screen when questionnaire is completed
+                    navController.navigate(Screen.Home.route) {
+                        // Clear back stack to prevent returning to questionnaire
+                        popUpTo(Screen.Questionnaire.route) { inclusive = true }
+                    }
+                },
+                isEditMode = previousRoute == Screen.Home.route
             )
         }
 
