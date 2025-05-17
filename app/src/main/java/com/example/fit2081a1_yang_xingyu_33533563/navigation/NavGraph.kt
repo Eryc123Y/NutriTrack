@@ -15,6 +15,10 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,6 +36,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.QuestionnaireScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.RegisterScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.ui.screens.WelcomeScreen
+import kotlinx.coroutines.launch
 
 /**
  * Created by Xingyu Yang
@@ -65,6 +70,15 @@ fun AppNavigation(
     val profileViewModel: ProfileViewModel = viewModel(factory = viewModelProviderFactory)
     val questionnaireViewModel: QuestionnaireViewModel = viewModel(factory = viewModelProviderFactory)
 
+    // Collect StateFlow values using correct collectAsState()
+    val currentUserId by authViewModel.currentUserId.collectAsState()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val isQuestionnaireCompleted by questionnaireViewModel.isQuestionnaireCompleted.collectAsState()
+    val isEditing by questionnaireViewModel.isEditing.collectAsState()
+    
+    // Track if user canceled questionnaire editing
+    val userCanceledEdit = remember { mutableStateOf(false) }
+    
     val navController = rememberNavController()
 
     NavHost(
@@ -179,11 +193,30 @@ fun AppNavigation(
             LoginScreen(
                 viewModel = authViewModel,
                 onNavigateToHome = {
-                    if (authViewModel.isUserRegistered.value == true) {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                    // Access collected state values instead of .value directly
+                    if (currentUserId != null) {
+                        // Load user preferences and check if questionnaire is completed
+                        questionnaireViewModel.loadUserPreferences(currentUserId!!)
+                        
+                        // Use a proper coroutine scope with cleaned-up imports
+                        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                            // Add a delay to ensure preferences are loaded
+                            kotlinx.coroutines.delay(300)
+                            
+                            // Check completion status 
+                            if (questionnaireViewModel.isQuestionnaireCompleted.value) {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            } else {
+                                // If questionnaire is not completed, navigate to questionnaire
+                                navController.navigate(Screen.Questionnaire.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            }
                         }
                     } else {
+                        // If no user is found, navigate to questionnaire (as part of new user flow)
                         navController.navigate(Screen.Questionnaire.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
@@ -216,6 +249,8 @@ fun AppNavigation(
             RegisterScreen(
                 viewModel = authViewModel,
                 onRegistrationComplete = {
+                    // After registration, always go to questionnaire
+                    questionnaireViewModel.resetCompleted() // Ensure the questionnaire is marked as not completed
                     navController.navigate(Screen.Questionnaire.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -285,13 +320,32 @@ fun AppNavigation(
             }
         ) {
             // Check if this is a new user from registration who hasn't completed questionnaire
-            LaunchedEffect(Unit) {
-                // If user is logged in but questionnaire isn't completed, redirect to questionnaire
-                if (authViewModel.isLoggedIn.value && 
-                    authViewModel.isUserRegistered.value == true && 
-                    !questionnaireViewModel.isQuestionnaireCompleted.value) {
+            // Only perform this check when coming from a relevant screen
+            val previousRoute = navController.previousBackStackEntry?.destination?.route
+            
+            // Reset the canceled edit flag when navigating to Home from somewhere other than Questionnaire
+            LaunchedEffect(previousRoute) {
+                // Don't reset the flag immediately after coming from questionnaire
+                // This gives time for the userCanceledEdit flag to take effect
+                if (previousRoute != Screen.Questionnaire.route && previousRoute != null) {
+                    userCanceledEdit.value = false
+                }
+            }
+            
+            // Skip the redirection check if user explicitly canceled editing
+            // or if coming directly from the questionnaire screen
+            val shouldRedirectToQuestionnaire = previousRoute != Screen.Questionnaire.route && 
+                                              isLoggedIn && 
+                                              !userCanceledEdit.value && 
+                                              !isQuestionnaireCompleted && 
+                                              !isEditing && 
+                                              currentUserId != null
+                                              
+            // Use LaunchedEffect with a key that includes all relevant state
+            LaunchedEffect(shouldRedirectToQuestionnaire) {
+                if (shouldRedirectToQuestionnaire) {
+                    // Navigate to questionnaire only if all conditions are met
                     navController.navigate(Screen.Questionnaire.route) {
-                        // Clear back stack to prevent going back to home
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
                 }
@@ -396,22 +450,43 @@ fun AppNavigation(
         ) {
             // Keep track of the previous route to determine if we're coming from Home (editing) or not
             val previousRoute = navController.previousBackStackEntry?.destination?.route
+            val isEditMode = previousRoute == Screen.Home.route || isEditing
+            
+            // If coming from home, ensure the editing mode is set properly
+            LaunchedEffect(previousRoute) {
+                if (previousRoute == Screen.Home.route) {
+                    questionnaireViewModel.setEditingMode(true)
+                }
+            }
             
             QuestionnaireScreen(
                 viewModel = questionnaireViewModel,
                 onBackClick = { 
-                    // Prevent going back - questionnaire must be completed
-                    // If coming from registration, don't allow going back
-                    // navController.popBackStack() 
+                    // If we're in edit mode, allow going back to home
+                    if (isEditMode) {
+                        // Use the improved cancelEditing method for better state handling
+                        questionnaireViewModel.cancelEditing(currentUserId ?: "")
+                        userCanceledEdit.value = true
+                        
+                        // Navigate back to home
+                        navController.popBackStack()
+                    } else {
+                        // For new users, don't allow going back - they must complete questionnaire
+                        // Show a toast or message here if needed
+                    }
                 },
                 onSaveComplete = { 
+                    // Reset editing mode first
+                    questionnaireViewModel.setEditingMode(false)
+                    userCanceledEdit.value = false // Clear canceled flag on successful save
+                    
                     // Navigate to home screen when questionnaire is completed
                     navController.navigate(Screen.Home.route) {
                         // Clear back stack to prevent returning to questionnaire
                         popUpTo(Screen.Questionnaire.route) { inclusive = true }
                     }
                 },
-                isEditMode = previousRoute == Screen.Home.route
+                isEditMode = isEditMode
             )
         }
 

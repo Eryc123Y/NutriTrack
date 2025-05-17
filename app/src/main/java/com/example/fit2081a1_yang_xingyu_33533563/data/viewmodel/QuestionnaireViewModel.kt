@@ -178,6 +178,35 @@ class QuestionnaireViewModel(
     private val _saveStatus = MutableStateFlow<String?>(null)
     val saveStatus: StateFlow<String?> = _saveStatus.asStateFlow()
 
+    // Flag to track if we're in editing mode
+    private val _isEditing = MutableStateFlow(false)
+    val isEditing: StateFlow<Boolean> = _isEditing.asStateFlow()
+
+    // Function to set editing mode
+    fun setEditingMode(editing: Boolean) {
+        _isEditing.value = editing
+        
+        // When setting edit mode, we want to also reset the completed state
+        // but only if we're entering edit mode, not leaving it
+        if (editing) {
+            _isQuestionnaireCompleted.value = false
+        }
+    }
+
+    /**
+     * Handles canceling edits - resets editing mode and ensures questionnaire
+     * is properly marked as completed if it was before editing started
+     */
+    fun cancelEditing(userId: String) {
+        // Reset editing mode
+        _isEditing.value = false
+        
+        // Reload preferences from database to restore original state
+        viewModelScope.launch {
+            loadUserPreferences(userId)
+        }
+    }
+
     /**
      * Saves all user preferences to the database. Also test validation
      */
@@ -196,16 +225,20 @@ class QuestionnaireViewModel(
                 return@launch
             }
             try {
-                //userFoodCategoryPreferenceRepository.deleteAllPreferencesForUser(userId)
+                // Save food category preferences
                 _foodCategoryKeyBooleanMap.value.forEach { (key, selected) ->
-                    userFoodCategoryPreferenceRepository.insert(
-                        UserFoodPreferenceEntity(
-                            foodPrefUserId = userId,
-                            foodPrefCategoryKey = key,
-                            foodPrefCheckedStatus = selected)
-                    )
+                    if (selected) {
+                        // Only insert the preference if it's selected
+                        userFoodCategoryPreferenceRepository.insert(
+                            UserFoodPreferenceEntity(
+                                foodPrefUserId = userId,
+                                foodPrefCategoryKey = key,
+                                foodPrefCheckedStatus = selected)
+                        )
+                    }
                 }
 
+                // Save persona preference
                 _selectedPersonaId.value?.let { personaId ->
                     userRepository.getUserById(userId).firstOrNull()?.let { user ->
                         userRepository.updateUser(user.copy(userPersonaId = personaId))
@@ -214,8 +247,7 @@ class QuestionnaireViewModel(
                     }
                 }
                 
-                //userTimePreferenceRepository.deleteAllPreferencesForUser(userId)
-                // If already exist record, will cover it
+                // Save time preferences
                 userTimePreferenceRepository.insert(
                     UserTimePreferenceEntity(
                         timePrefUserId = userId,
@@ -224,7 +256,11 @@ class QuestionnaireViewModel(
                         wakeUpTime = _wakeUpTime.value
                     )
                 )
+                
+                // Mark as completed and reset editing mode
                 _isQuestionnaireCompleted.value = true
+                _isEditing.value = false
+                
                 _saveStatus.value = "Preferences saved successfully!"
             } catch (e: Exception) {
                 _saveStatus.value = "Error saving preferences: ${e.message}"
@@ -245,43 +281,55 @@ class QuestionnaireViewModel(
     }
 
     fun loadUserPreferences(userId: String) {
-        viewModelScope.launch {
-            try {
-                val foodPrefs = userFoodCategoryPreferenceRepository
-                    .getPreferencesByUserId(userId).firstOrNull()
-                
-                // Create a proper Map<String, Boolean> from preferences
-                val foodCategoryMap = mutableMapOf<String, Boolean>()
-                
-                // Get all food categories first to ensure we have a complete map
-                val allCategories = foodCategoryDefinitionRepository.getAllFoodCategories().firstOrNull() ?: emptyList()
-                allCategories.forEach { category ->
-                    foodCategoryMap[category.foodDefId] = false
-                }
-                
-                // Then update with user's selections
-                foodPrefs?.forEach { pref ->
-                    foodCategoryMap[pref.foodPrefCategoryKey] = pref.foodPrefCheckedStatus
-                }
-                
-                _foodCategoryKeyBooleanMap.value = foodCategoryMap
+        // Reset editing state when loading user preferences (e.g., on login)
+        // Only reset if we're not in edit mode - prevents existing state from being overwritten
+        if (!_isEditing.value) {
+            // We're not in editing mode, so load everything normally
+            viewModelScope.launch {
+                try {
+                    val foodPrefs = userFoodCategoryPreferenceRepository
+                        .getPreferencesByUserId(userId).firstOrNull()
+                    
+                    // Create a proper Map<String, Boolean> from preferences
+                    val foodCategoryMap = mutableMapOf<String, Boolean>()
+                    
+                    // Get all food categories first to ensure we have a complete map
+                    val allCategories = foodCategoryDefinitionRepository.getAllFoodCategories().firstOrNull() ?: emptyList()
+                    allCategories.forEach { category ->
+                        foodCategoryMap[category.foodDefId] = false
+                    }
+                    
+                    // Then update with user's selections
+                    foodPrefs?.forEach { pref ->
+                        foodCategoryMap[pref.foodPrefCategoryKey] = pref.foodPrefCheckedStatus
+                    }
+                    
+                    _foodCategoryKeyBooleanMap.value = foodCategoryMap
 
-                val user = userRepository.getUserById(userId).firstOrNull()
-                _selectedPersonaId.value = user?.userPersonaId
-            
-                val timePref = userTimePreferenceRepository.getPreference(userId).firstOrNull()
-                _biggestMealTime.value = timePref?.biggestMealTime
-                _sleepTime.value = timePref?.sleepTime
-                _wakeUpTime.value = timePref?.wakeUpTime
+                    val user = userRepository.getUserById(userId).firstOrNull()
+                    _selectedPersonaId.value = user?.userPersonaId
                 
-                // Validate loaded times
-                validateTimesLogic()
-                
-                // Check if questionnaire is already completed based on loaded preferences
+                    val timePref = userTimePreferenceRepository.getPreference(userId).firstOrNull()
+                    _biggestMealTime.value = timePref?.biggestMealTime
+                    _sleepTime.value = timePref?.sleepTime
+                    _wakeUpTime.value = timePref?.wakeUpTime
+                    
+                    // Validate loaded times
+                    validateTimesLogic()
+                    
+                    // Check if questionnaire is already completed based on loaded preferences
+                    // Don't check if we're in edit mode
+                    checkQuestionnaireCompleted()
+                } catch (e: Exception) {
+                    // Handle exceptions during loading, e.g., update a status StateFlow
+                     _saveStatus.value = "Error loading preferences: ${e.message}"
+                }
+            }
+        } else {
+            // We're in edit mode, so just reload to make sure the isQuestionnaireCompleted state
+            // gets properly updated after checking completion
+            viewModelScope.launch {
                 checkQuestionnaireCompleted()
-            } catch (e: Exception) {
-                // Handle exceptions during loading, e.g., update a status StateFlow
-                 _saveStatus.value = "Error loading preferences: ${e.message}"
             }
         }
     }
@@ -290,6 +338,11 @@ class QuestionnaireViewModel(
      * Checks if the questionnaire is already completed based on loaded data
      */
     private fun checkQuestionnaireCompleted() {
+        // Don't change completion status if we're in edit mode
+        if (_isEditing.value) {
+            return
+        }
+        
         // Check if all required preferences are set
         val hasSelectedCategories = _foodCategoryKeyBooleanMap.value.any { it.value }
         val hasSelectedPersona = !_selectedPersonaId.value.isNullOrBlank()
@@ -308,5 +361,20 @@ class QuestionnaireViewModel(
     
     fun clearTimeValidationError() {
         _timeValidationError.value = null
+    }
+    
+    /**
+     * Check if there have been any changes made since the questionnaire was loaded
+     * Used to determine if we should show a confirmation when abandoning edits
+     */
+    fun hasUnsavedChanges(userId: String): Boolean {
+        // If not in edit mode, no unsaved changes
+        if (!_isEditing.value) {
+            return false
+        }
+        
+        // Implementation would compare current state to saved state
+        // For simplicity, we'll return true in edit mode
+        return true
     }
 }

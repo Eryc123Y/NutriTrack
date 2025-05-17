@@ -61,6 +61,9 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.components.rememberCustomPa
 import com.example.fit2081a1_yang_xingyu_33533563.ui.components.PersonaCard
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -74,6 +77,9 @@ fun QuestionnaireScreen(
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager.getInstance(context)
     val userID = prefManager.getCurrentUser()
+    
+    // State for exit confirmation dialog
+    val showExitConfirmation = remember { mutableStateOf(false) }
     
     // We store only 4 pages: food categories, persona, time prefs, summary
     val pageCount = 4
@@ -117,6 +123,10 @@ fun QuestionnaireScreen(
 
     // is questionnaire completed
     val isQuestionnaireCompleted by viewModel.isQuestionnaireCompleted.collectAsState()
+    
+    // is in editing mode - collect from viewModel
+    val isInEditMode by viewModel.isEditing.collectAsState()
+    
     // Collect validation state
     val isQuestionnaireValid by viewModel.isQuestionnaireValid.collectAsState()
     
@@ -133,9 +143,14 @@ fun QuestionnaireScreen(
     LaunchedEffect(userID) {
         // Wait for the next frame before loading data to ensure UI is ready
         AnimationUtils.waitForNextFrame()
+        
+        // Set editing mode based on the parameter
+        viewModel.setEditingMode(isEditMode)
+        
+        // Load user preferences
         viewModel.loadUserPreferences(userID.toString())
         
-        // If in edit mode, reset completion state AFTER loading preferences
+        // If in edit mode, explicitly reset completion state AFTER loading preferences
         if (isEditMode) {
             viewModel.resetCompleted()
         }
@@ -152,25 +167,76 @@ fun QuestionnaireScreen(
     // If the questionnaire is completed, navigate to the home screen
     LaunchedEffect(isQuestionnaireCompleted) {
         if (isQuestionnaireCompleted) {
+            // Reset editing mode flag before navigating back
+            viewModel.setEditingMode(false)
             // Small delay to show the success message before navigating
             kotlinx.coroutines.delay(800)
             onSaveComplete()
         }
     }
 
-    // Prevent back navigation - questionnaire must be completed
+    // Handle back press
     BackHandler(enabled = true) {
-        // Do nothing - consume the back press event
-        // Optionally show a message that questionnaire must be completed
-        Toast.makeText(context, "Please complete the questionnaire before proceeding", Toast.LENGTH_SHORT).show()
+        if (isInEditMode) {
+            // Only show confirmation dialog if there are unsaved changes
+            if (viewModel.hasUnsavedChanges(userID.toString())) {
+                showExitConfirmation.value = true
+            } else {
+                // No changes, just go back with proper cleanup
+                viewModel.cancelEditing(userID.toString())
+                onBackClick()
+            }
+        } else {
+            // For new users, don't allow going back - they must complete questionnaire
+            Toast.makeText(context, 
+                "Please complete the questionnaire before proceeding", 
+                Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Exit Confirmation Dialog
+    if (showExitConfirmation.value) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirmation.value = false },
+            title = { Text("Discard Changes?") },
+            text = { Text("Are you sure you want to exit without saving your changes? All changes will be lost.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitConfirmation.value = false
+                        // Call the improved cancelEditing method instead of just setting the flag
+                        viewModel.cancelEditing(userID.toString())
+                        onBackClick()
+                    }
+                ) {
+                    Text("Discard")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showExitConfirmation.value = false }
+                ) {
+                    Text("Continue Editing")
+                }
+            }
+        )
     }
 
     Scaffold(
         topBar = {
             TopNavigationBar(
                 title = "Food Intake Questionnaire (${pagerState.currentPage + 1}/4)",
-                showBackButton = false, // Disable back button - questionnaire must be completed
-                onBackButtonClick = {} // Empty handler since back is disabled
+                showBackButton = isInEditMode, // Only show back button in edit mode
+                onBackButtonClick = { 
+                    // Only show confirmation dialog if there are unsaved changes
+                    if (viewModel.hasUnsavedChanges(userID.toString())) {
+                        showExitConfirmation.value = true
+                    } else {
+                        // No changes, just go back with proper cleanup
+                        viewModel.cancelEditing(userID.toString())
+                        onBackClick()
+                    }
+                }
             )
         },
         // Intercepting system back button
@@ -642,22 +708,6 @@ fun QuestionnaireTextRow(text: String, fontSize: Int ) {
         Text(
             text = text,
             style = TextStyle(fontSize = fontSize.sp, fontWeight = FontWeight.Bold)
-        )
-    }
-}
-
-@Composable
-fun TimePickerInterface(
-    modifier: Modifier,
-    timePreferences: Map<UserTimePref, String>,
-    onTimeSelected: (UserTimePref, String) -> Unit
-) {
-    for (timePrefType in UserTimePref.entries) {
-        TimePickerRow(
-            modifier = modifier,
-            text = timePrefType.questionDescription,
-            initialTime = timePreferences[timePrefType] ?: "",
-            onTimeSelected = { newTime -> onTimeSelected(timePrefType, newTime) }
         )
     }
 }

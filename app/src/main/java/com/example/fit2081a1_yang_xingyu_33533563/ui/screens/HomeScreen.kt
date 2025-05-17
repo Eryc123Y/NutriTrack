@@ -136,6 +136,9 @@ fun QuestionnaireStatusSection(
     ) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     
+    // Get the questionnaire completion status
+    val isCompleted by questionnaireViewModel.isQuestionnaireCompleted.collectAsState()
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,10 +146,9 @@ fun QuestionnaireStatusSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Text Column
+        // Text Column with conditional text based on questionnaire completion
         Text(
-            text = "You've filled in your food questionnaire, but you can " +
-                    "change details here.",
+            text = "You've filled in your food questionnaire, but you can change details here.",
             textAlign = TextAlign.Justify,
             modifier = Modifier.weight(1f)
         )
@@ -155,10 +157,15 @@ fun QuestionnaireStatusSection(
         Button(
             onClick = {
                 scope.launch {
-                    // First reset the completed state
+                    // First, explicitly reset the completed state to ensure we're in a clean state
                     questionnaireViewModel.resetCompleted()
-                    // Small delay before navigation to ensure the state is updated
-                    kotlinx.coroutines.delay(200)
+                    
+                    // Set editing mode to true BEFORE navigation
+                    questionnaireViewModel.setEditingMode(true)
+                    
+                    // Small delay to ensure state is updated before navigation
+                    kotlinx.coroutines.delay(100)
+                    
                     // Then navigate to questionnaire
                     onNavigate(Screen.Questionnaire.route)
                 }
