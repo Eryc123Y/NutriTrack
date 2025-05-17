@@ -84,34 +84,34 @@ fun AppNavigation(
         // Enhanced transitions for smoother navigation
         enterTransition = { 
             slideInHorizontally(
-                initialOffsetX = { 800 },
-                animationSpec = tween(400, easing = LinearOutSlowInEasing)
+                initialOffsetX = { it }, // Adjusted for consistency, lambda for full width
+                animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration, FastOutSlowInEasing for smooth arrival
             ) + fadeIn(
-                animationSpec = tween(350, 50, FastOutSlowInEasing)
+                animationSpec = tween(450, easing = FastOutSlowInEasing) // Increased duration
             )
         },
         exitTransition = { 
             slideOutHorizontally(
-                targetOffsetX = { -200 },
-                animationSpec = tween(350, easing = EaseInOut)
+                targetOffsetX = { -it / 3 }, // Slide out less aggressively
+                animationSpec = tween(450, easing = EaseInOut) // Increased duration, EaseInOut for symmetry
             ) + fadeOut(
-                animationSpec = tween(250)
+                animationSpec = tween(350, easing = EaseInOut) // Increased duration
             )
         },
         popEnterTransition = { 
             slideInHorizontally(
-                initialOffsetX = { -200 },
-                animationSpec = tween(400, easing = LinearOutSlowInEasing)
+                initialOffsetX = { -it / 3 }, // Slide in less aggressively
+                animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
             ) + fadeIn(
-                animationSpec = tween(350, 50, FastOutSlowInEasing)
+                animationSpec = tween(450, easing = FastOutSlowInEasing) // Increased duration
             )
         },
         popExitTransition = { 
             slideOutHorizontally(
-                targetOffsetX = { 800 },
-                animationSpec = tween(350, easing = EaseInOut)
+                targetOffsetX = { it }, // Adjusted for consistency
+                animationSpec = tween(450, easing = EaseInOut) // Increased duration
             ) + fadeOut(
-                animationSpec = tween(250)
+                animationSpec = tween(350, easing = EaseInOut) // Increased duration
             )
         }
     ) {
@@ -120,18 +120,18 @@ fun AppNavigation(
             Screen.Welcome.route,
             enterTransition = {
                 fadeIn(
-                    animationSpec = tween(500, easing = LinearOutSlowInEasing)
+                    animationSpec = tween(600, easing = FastOutSlowInEasing) // Increased duration
                 ) + scaleIn(
-                    initialScale = 0.88f,
-                    animationSpec = tween(500, easing = EaseInOutBack)
+                    initialScale = 0.92f, // Slightly less aggressive scale
+                    animationSpec = tween(600, easing = EaseInOutBack) // Increased duration, kept EaseInOutBack for a bit of bounce
                 )
             },
             exitTransition = {
                 fadeOut(
-                    animationSpec = tween(350)
+                    animationSpec = tween(450, easing = EaseInOut) // Increased duration
                 ) + scaleOut(
-                    targetScale = 0.95f,
-                    animationSpec = tween(350, easing = EaseInOut)
+                    targetScale = 0.95f, // Maintained
+                    animationSpec = tween(450, easing = EaseInOut) // Increased duration
                 )
             }
         ) {
@@ -147,19 +147,19 @@ fun AppNavigation(
                     Screen.Register.route -> {
                         // Coming back from register
                         slideInVertically(
-                            initialOffsetY = { -200 },
-                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                            initialOffsetY = { -it / 2 }, // Less aggressive slide
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(350, 50)
+                            animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration, kept delay
                         )
                     }
                     else -> {
                         // Default transition
                         slideInHorizontally(
-                            initialOffsetX = { 800 },
-                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                            initialOffsetX = { it }, // Consistent full width
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                            animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration, kept delay
                         )
                     }
                 }
@@ -169,19 +169,19 @@ fun AppNavigation(
                     Screen.Register.route -> {
                         // Going to register
                         slideOutVertically(
-                            targetOffsetY = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetY = { -it / 2 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                     else -> {
                         // Default exit
                         slideOutHorizontally(
-                            targetOffsetX = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetX = { -it / 3 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                 }
@@ -223,18 +223,18 @@ fun AppNavigation(
             Screen.Register.route,
             enterTransition = {
                 slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                    initialOffsetY = { it }, // Full height slide
+                    animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                 ) + fadeIn(
-                    animationSpec = tween(350, 50)
+                    animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration, kept delay
                 )
             },
             exitTransition = {
                 slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(350, easing = EaseInOut)
+                    targetOffsetY = { it }, // Full height slide
+                    animationSpec = tween(450, easing = EaseInOut) // Increased duration
                 ) + fadeOut(
-                    animationSpec = tween(250)
+                    animationSpec = tween(350, easing = EaseInOut) // Increased duration
                 )
             }
         ) {
@@ -262,28 +262,28 @@ fun AppNavigation(
                     Screen.Questionnaire.route -> {
                         // Coming from questionnaire with a special transition
                         scaleIn(
-                            initialScale = 0.8f,
-                            animationSpec = tween(500, easing = EaseInOutBack)
+                            initialScale = 0.85f, // Slightly adjusted
+                            animationSpec = tween(550, easing = EaseInOutBack) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(450)
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         )
                     }
                     Screen.Insights.route, Screen.NutriCoach.route, Screen.Settings.route -> {
                         // Coming from another main screen (bottom navigation)
                         fadeIn(
-                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            animationSpec = tween(400, easing = FastOutSlowInEasing) // Increased duration
                         ) + scaleIn(
-                            initialScale = 0.95f,
-                            animationSpec = tween(300, easing = EaseInOutBack)
+                            initialScale = 0.95f, // Maintained
+                            animationSpec = tween(400, easing = EaseInOutBack) // Increased duration
                         )
                     }
                     else -> {
                         // Default transition
                         slideInHorizontally(
-                            initialOffsetX = { 800 },
-                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                            initialOffsetX = { it }, // Full width slide
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                            animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration
                         )
                     }
                 }
@@ -293,19 +293,19 @@ fun AppNavigation(
                     Screen.Insights.route, Screen.NutriCoach.route, Screen.Settings.route -> {
                         // Going to another main screen (bottom navigation)
                         fadeOut(
-                            animationSpec = tween(200)
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         ) + scaleOut(
-                            targetScale = 0.95f,
-                            animationSpec = tween(200)
+                            targetScale = 0.95f, // Maintained
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         )
                     }
                     else -> {
                         // Default exit
                         slideOutHorizontally(
-                            targetOffsetX = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetX = { -it / 3 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                 }
@@ -346,19 +346,19 @@ fun AppNavigation(
                     Screen.Home.route, Screen.NutriCoach.route, Screen.Settings.route -> {
                         // Coming from another main screen (bottom navigation)
                         fadeIn(
-                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            animationSpec = tween(400, easing = FastOutSlowInEasing) // Increased duration
                         ) + scaleIn(
-                            initialScale = 0.95f,
-                            animationSpec = tween(300, easing = EaseInOutBack)
+                            initialScale = 0.95f, // Maintained
+                            animationSpec = tween(400, easing = EaseInOutBack) // Increased duration
                         )
                     }
                     else -> {
                         // Default transition
                         slideInHorizontally(
-                            initialOffsetX = { 800 },
-                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                            initialOffsetX = { it }, // Full width slide
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                            animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration
                         )
                     }
                 }
@@ -368,19 +368,19 @@ fun AppNavigation(
                     Screen.Home.route, Screen.NutriCoach.route, Screen.Settings.route -> {
                         // Going to another main screen (bottom navigation)
                         fadeOut(
-                            animationSpec = tween(200)
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         ) + scaleOut(
-                            targetScale = 0.95f,
-                            animationSpec = tween(200)
+                            targetScale = 0.95f, // Maintained
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         )
                     }
                     else -> {
                         // Default exit
                         slideOutHorizontally(
-                            targetOffsetX = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetX = { -it / 3 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                 }
@@ -399,27 +399,26 @@ fun AppNavigation(
         composable(
             Screen.Questionnaire.route,
             enterTransition = {
-                // No animation when entering questionnaire screen from anywhere
-                fadeIn(animationSpec = tween(0))
+                fadeIn(animationSpec = tween(400, easing = FastOutSlowInEasing)) // Changed from instant to subtle fade
             },
             exitTransition = {
                 when (targetState.destination.route) {
                     Screen.Home.route -> {
                         // Going to home with special transition
                         scaleOut(
-                            targetScale = 1.1f,
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetScale = 1.05f, // Slightly less aggressive scale out
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                     else -> {
                         // Default exit
                         slideOutVertically(
-                            targetOffsetY = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetY = { -it / 2 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                 }
@@ -456,19 +455,19 @@ fun AppNavigation(
                     Screen.Home.route, Screen.Insights.route, Screen.Settings.route -> {
                         // Coming from another main screen (bottom navigation)
                         fadeIn(
-                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            animationSpec = tween(400, easing = FastOutSlowInEasing) // Increased duration
                         ) + scaleIn(
-                            initialScale = 0.95f,
-                            animationSpec = tween(300, easing = EaseInOutBack)
+                            initialScale = 0.95f, // Maintained
+                            animationSpec = tween(400, easing = EaseInOutBack) // Increased duration
                         )
                     }
                     else -> {
                         // Default transition
                         slideInHorizontally(
-                            initialOffsetX = { 800 },
-                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                            initialOffsetX = { it }, // Full width slide
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                            animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration
                         )
                     }
                 }
@@ -478,19 +477,19 @@ fun AppNavigation(
                     Screen.Home.route, Screen.Insights.route, Screen.Settings.route -> {
                         // Going to another main screen (bottom navigation)
                         fadeOut(
-                            animationSpec = tween(200)
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         ) + scaleOut(
-                            targetScale = 0.95f,
-                            animationSpec = tween(200)
+                            targetScale = 0.95f, // Maintained
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         )
                     }
                     else -> {
                         // Default exit
                         slideOutHorizontally(
-                            targetOffsetX = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetX = { -it / 3 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                 }
@@ -509,19 +508,19 @@ fun AppNavigation(
                     Screen.Home.route, Screen.Insights.route, Screen.NutriCoach.route -> {
                         // Coming from another main screen (bottom navigation)
                         fadeIn(
-                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            animationSpec = tween(400, easing = FastOutSlowInEasing) // Increased duration
                         ) + scaleIn(
-                            initialScale = 0.95f,
-                            animationSpec = tween(300, easing = EaseInOutBack)
+                            initialScale = 0.95f, // Maintained
+                            animationSpec = tween(400, easing = EaseInOutBack) // Increased duration
                         )
                     }
                     else -> {
                         // Default transition
                         slideInHorizontally(
-                            initialOffsetX = { 800 },
-                            animationSpec = tween(450, easing = LinearOutSlowInEasing)
+                            initialOffsetX = { it }, // Full width slide
+                            animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
                         ) + fadeIn(
-                            animationSpec = tween(350, 50, FastOutSlowInEasing)
+                            animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration
                         )
                     }
                 }
@@ -531,19 +530,19 @@ fun AppNavigation(
                     Screen.Home.route, Screen.Insights.route, Screen.NutriCoach.route -> {
                         // Going to another main screen (bottom navigation)
                         fadeOut(
-                            animationSpec = tween(200)
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         ) + scaleOut(
-                            targetScale = 0.95f,
-                            animationSpec = tween(200)
+                            targetScale = 0.95f, // Maintained
+                            animationSpec = tween(300, easing = EaseInOut) // Increased duration
                         )
                     }
                     else -> {
                         // Default exit
                         slideOutHorizontally(
-                            targetOffsetX = { -200 },
-                            animationSpec = tween(350, easing = EaseInOut)
+                            targetOffsetX = { -it / 3 }, // Less aggressive slide
+                            animationSpec = tween(450, easing = EaseInOut) // Increased duration
                         ) + fadeOut(
-                            animationSpec = tween(250)
+                            animationSpec = tween(350, easing = EaseInOut) // Increased duration
                         )
                     }
                 }
