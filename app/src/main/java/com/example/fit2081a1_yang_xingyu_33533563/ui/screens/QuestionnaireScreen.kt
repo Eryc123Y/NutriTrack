@@ -405,62 +405,51 @@ fun TimingsPage(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        Card(
+        // Column that was previously inside the Card
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 2.dp
-            )
+                .padding(16.dp) // Retain padding previously inside the card
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                TimeInput(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = UserTimePref.WAKEUP.questionDescription,
-                    initialTime = timePreferences[UserTimePref.WAKEUP] ?: "",
-                    onTimeSelected = { time -> onTimeSelected(UserTimePref.WAKEUP, time) }
+            TimeInput(
+                modifier = Modifier.fillMaxWidth(),
+                text = UserTimePref.WAKEUP.questionDescription,
+                initialTime = timePreferences[UserTimePref.WAKEUP] ?: "",
+                onTimeSelected = { time -> onTimeSelected(UserTimePref.WAKEUP, time) }
+            )
+            
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
+            
+            TimeInput(
+                modifier = Modifier.fillMaxWidth(),
+                text = UserTimePref.BIGGEST_MEAL.questionDescription,
+                initialTime = timePreferences[UserTimePref.BIGGEST_MEAL] ?: "",
+                onTimeSelected = { time -> onTimeSelected(UserTimePref.BIGGEST_MEAL, time) }
+            )
+            
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
+            
+            TimeInput(
+                modifier = Modifier.fillMaxWidth(),
+                text = UserTimePref.SLEEP.questionDescription,
+                initialTime = timePreferences[UserTimePref.SLEEP] ?: "",
+                onTimeSelected = { time -> onTimeSelected(UserTimePref.SLEEP, time) }
+            )
+            
+            // Display time validation error if any
+            timeValidationError?.let { error ->
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = error,
+                    style = TextStyle(fontSize = 14.sp),
+                    color = MaterialTheme.colorScheme.error
                 )
-                
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                )
-                
-                TimeInput(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = UserTimePref.BIGGEST_MEAL.questionDescription,
-                    initialTime = timePreferences[UserTimePref.BIGGEST_MEAL] ?: "",
-                    onTimeSelected = { time -> onTimeSelected(UserTimePref.BIGGEST_MEAL, time) }
-                )
-                
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                )
-                
-                TimeInput(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = UserTimePref.SLEEP.questionDescription,
-                    initialTime = timePreferences[UserTimePref.SLEEP] ?: "",
-                    onTimeSelected = { time -> onTimeSelected(UserTimePref.SLEEP, time) }
-                )
-                
-                // Display time validation error if any
-                timeValidationError?.let { error ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = error,
-                        style = TextStyle(fontSize = 14.sp),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
             }
         }
         

@@ -142,7 +142,8 @@ fun TimeInput(
             Row(
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .height(56.dp)
+                    .height(56.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 AmPmButton(
                     text = "AM",
@@ -183,7 +184,7 @@ private fun AmPmButton(
     
     Box(
         modifier = Modifier
-            .width(40.dp)
+            .width(48.dp)
             .height(56.dp)
             .clip(
                 if (text == "AM") 
@@ -206,7 +207,8 @@ private fun AmPmButton(
         Text(
             text = text,
             color = textColor,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            fontSize = MaterialTheme.typography.bodyLarge.fontSize
         )
     }
 }
