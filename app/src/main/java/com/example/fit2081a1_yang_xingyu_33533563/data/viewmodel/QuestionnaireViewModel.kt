@@ -149,6 +149,7 @@ class QuestionnaireViewModel(
             _timeValidationError
         )
     ) { values ->
+        @Suppress("UNCHECKED_CAST")
         val foodCategories = values[0] as Map<String, Boolean>
         val personaId = values[1] as String?
         val biggestMeal = values[2] as String?

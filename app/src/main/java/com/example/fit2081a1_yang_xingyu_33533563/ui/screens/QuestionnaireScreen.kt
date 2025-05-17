@@ -422,28 +422,31 @@ fun TimingsPage(
                     .padding(16.dp)
             ) {
                 TimeInput(
+                    modifier = Modifier.fillMaxWidth(),
                     text = UserTimePref.WAKEUP.questionDescription,
                     initialTime = timePreferences[UserTimePref.WAKEUP] ?: "",
                     onTimeSelected = { time -> onTimeSelected(UserTimePref.WAKEUP, time) }
                 )
                 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
+                    modifier = Modifier.padding(vertical = 16.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
                 
                 TimeInput(
+                    modifier = Modifier.fillMaxWidth(),
                     text = UserTimePref.BIGGEST_MEAL.questionDescription,
                     initialTime = timePreferences[UserTimePref.BIGGEST_MEAL] ?: "",
                     onTimeSelected = { time -> onTimeSelected(UserTimePref.BIGGEST_MEAL, time) }
                 )
                 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
+                    modifier = Modifier.padding(vertical = 16.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
                 
                 TimeInput(
+                    modifier = Modifier.fillMaxWidth(),
                     text = UserTimePref.SLEEP.questionDescription,
                     initialTime = timePreferences[UserTimePref.SLEEP] ?: "",
                     onTimeSelected = { time -> onTimeSelected(UserTimePref.SLEEP, time) }
@@ -464,8 +467,7 @@ fun TimingsPage(
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "These preferences help us suggest meals at optimal times based on your daily " +
-                    "schedule.\nNote: Wake up time should be before biggest meal time, which " +
-                    "should be before sleep time.",
+                    "schedule.",
             style = TextStyle(fontSize = 14.sp, fontStyle = FontStyle.Italic),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -18,7 +18,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -59,17 +61,17 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
  * @return Unit
  */
 @Composable
-fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
-    // create ViewModel instances
-    val authViewModel = viewModelProviderFactory.create(AuthViewModel::class.java)
-    val insightsViewModel = viewModelProviderFactory.create(InsightsViewModel::class.java)
-    val profileViewModel = viewModelProviderFactory.create(ProfileViewModel::class.java)
-    val questionnaireViewModel = viewModelProviderFactory.create(QuestionnaireViewModel::class.java)
+fun AppNavigation(
+    viewModelProviderFactory: ViewModelProviderFactory,
+    isDarkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
+    val authViewModel: AuthViewModel = viewModel(factory = viewModelProviderFactory)
+    val insightsViewModel: InsightsViewModel = viewModel(factory = viewModelProviderFactory)
+    val profileViewModel: ProfileViewModel = viewModel(factory = viewModelProviderFactory)
+    val questionnaireViewModel: QuestionnaireViewModel = viewModel(factory = viewModelProviderFactory)
 
     val navController = rememberNavController()
-    val context = LocalContext.current
-    val prefManager = SharedPreferencesManager.getInstance(context)
-    var currentUser = prefManager.getCurrentUser()
 
     NavHost(
         navController = navController,
@@ -183,7 +185,7 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
             LoginScreen(
                 viewModel = authViewModel,
                 onNavigateToHome = {
-                    if (prefManager.getKnownUsers().contains(currentUser)) {
+                    if (authViewModel.isUserRegistered.value == true) {
                         navController.navigate(Screen.Home.route)
                     } else {
                         navController.navigate(Screen.Questionnaire.route)
@@ -481,7 +483,12 @@ fun AppNavigation(viewModelProviderFactory: ViewModelProviderFactory) {
         ) {
             SettingsScreen(
                 profileViewModel = profileViewModel,
-                onNavigate = { route -> navController.navigate(route) }
+                authViewModel = authViewModel,
+                onNavigate = { route -> navController.navigate(route) },
+                onBackClick = { navController.popBackStack() },
+                onLogoutToLogin = { navController.navigate(Screen.Login.route) },
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode
             )
         }
     }

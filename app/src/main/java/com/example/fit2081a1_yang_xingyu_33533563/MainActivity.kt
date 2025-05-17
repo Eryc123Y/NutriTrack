@@ -6,6 +6,10 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.AppNavigation
 import com.example.fit2081a1_yang_xingyu_33533563.ui.theme.FIT2081A1Theme
@@ -13,28 +17,25 @@ import com.example.fit2081a1_yang_xingyu_33533563.ui.theme.FIT2081A1Theme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Enable edge-to-edge display
         enableEdgeToEdge()
-        
         // Optimize for animations by enabling hardware acceleration
         window.setFlags(
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
         )
-        
         // Set render mode to improve animation performance
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        
         // Use hardware-accelerated rendering
         window.decorView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-        
         setContent {
             val app = application as NutriTrackApp
-            FIT2081A1Theme {
-                // Init ViewModelFactory
-                val viewModelProviderFactory = app.viewModelProviderFactory
-                AppNavigation(viewModelProviderFactory)
+            var isDarkMode by remember { mutableStateOf(false) }
+            FIT2081A1Theme(darkTheme = isDarkMode) {
+                AppNavigation(
+                    viewModelProviderFactory = app.viewModelProviderFactory,
+                    isDarkMode = isDarkMode,
+                    onToggleDarkMode =  { newValue -> isDarkMode = newValue }
+                    )
             }
         }
     }

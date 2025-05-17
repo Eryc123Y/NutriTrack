@@ -39,6 +39,9 @@ class AuthViewModel(
     private val _isLoggedIn = MutableStateFlow<Boolean>(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
+    private val _isUserRegistered = MutableStateFlow<Boolean?>(null)
+    val isUserRegistered: StateFlow<Boolean?> = _isUserRegistered.asStateFlow()
+
     // MutableStateFlow to hold the loading status. This is used to indicate whether a
     // loading operation is in progress, helping to improve UI responsiveness and avoid
     // threading issues.
@@ -67,6 +70,7 @@ class AuthViewModel(
                     userRepository.getUserById(storedUserId).firstOrNull()?.let { user ->
                         _currentUser.value = user
                         //_isLoggedIn.value = true
+                        _isUserRegistered.value = user.userIsRegistered
                         _currentUserPhoneNumber.value = user.userPhoneNumber
                     } ?: run {
                         // User ID in prefs but not in DB, treat as logged out
@@ -196,6 +200,28 @@ class AuthViewModel(
                 return false
             }
             else -> return true
+        }
+    }
+
+    /**
+     * Checks if a user with the given ID is already registered in the system.
+     * Updates the isUserRegistered StateFlow with the result.
+     *
+     * @param userId The ID of the user to check
+     */
+    fun checkUserRegistrationStatus(userId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _authError.value = null
+            try {
+                val registrationStatus = userRepository.getUserIsRegistered(userId)
+                _isUserRegistered.value = registrationStatus ?: false
+            } catch (e: Exception) {
+                _authError.value = "Error checking registration status: ${e.message}"
+                _isUserRegistered.value = null
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
