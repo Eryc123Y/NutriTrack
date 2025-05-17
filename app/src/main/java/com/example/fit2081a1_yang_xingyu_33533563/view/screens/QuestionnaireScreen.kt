@@ -76,10 +76,10 @@ fun QuestionnaireScreen(
     val context = LocalContext.current
     val prefManager = SharedPreferencesManager.getInstance(context)
     val userID = prefManager.getCurrentUser()
-    
+
     // State for exit confirmation dialog
     val showExitConfirmation = remember { mutableStateOf(false) }
-    
+
     // We store only 4 pages: food categories, persona, time prefs, summary
     val pageCount = 4
     val pagerState = rememberPagerState { pageCount }
@@ -87,13 +87,13 @@ fun QuestionnaireScreen(
 
     // Sync animations with frame rate for smoother transitions
     AnimationUtils.SyncAnimationsWithFrames()
-    
+
     // Measure frame time to adaptively adjust animation complexity
     val frameMetrics = AnimationUtils.MeasureFrameTime()
-    
+
     // Custom fling behavior for smoother paging with spring physics
     val flingBehavior = rememberCustomPagerFlingBehavior(pagerState)
-    
+
     // Always use FADE transition for smoother, simpler animations
     val transitionEffect = PageTransitionEffect.FADE
 
@@ -109,22 +109,22 @@ fun QuestionnaireScreen(
     val biggestMealTime by viewModel.biggestMealTime.collectAsState()
     val sleepTime by viewModel.sleepTime.collectAsState()
     val wakeUpTime by viewModel.wakeUpTime.collectAsState()
-    
+
     // Time validation error
     val timeValidationError by viewModel.timeValidationError.collectAsState()
-    
+
     // Save status
     val saveStatus by viewModel.saveStatus.collectAsState()
 
     // is questionnaire completed
     val isQuestionnaireCompleted by viewModel.isQuestionnaireCompleted.collectAsState()
-    
+
     // is in editing mode - collect from viewModel
     val isInEditMode by viewModel.isEditing.collectAsState()
-    
+
     // Collect validation state
     val isQuestionnaireValid by viewModel.isQuestionnaireValid.collectAsState()
-    
+
     // Map time preferences to UserTimePref enum - update when any time value changes
     val timePreferences = remember(biggestMealTime, sleepTime, wakeUpTime) {
         mapOf(
@@ -147,7 +147,7 @@ fun QuestionnaireScreen(
             viewModel.resetCompleted()
         }
     }
-    
+
     // Effect to show toast when save status changes
     LaunchedEffect(saveStatus) {
         saveStatus?.let {
@@ -155,18 +155,18 @@ fun QuestionnaireScreen(
             viewModel.clearSaveStatus()
         }
     }
-    
+
     // If the questionnaire is completed, navigate to the home screen
-    LaunchedEffect(isQuestionnaireCompleted) {
-        if (isQuestionnaireCompleted) {
-            // Reset editing mode flag before navigating back
-            viewModel.setEditingMode(false)
-            
-            // Reduce delay to improve responsiveness - 300ms is enough for visual feedback
-            kotlinx.coroutines.delay(300)
-            onSaveComplete()
-        }
-    }
+    // LaunchedEffect(isQuestionnaireCompleted) {
+    //     if (isQuestionnaireCompleted) {
+    //         // Reset editing mode flag before navigating back
+    //         viewModel.setEditingMode(false)
+
+    //         // Reduce delay to improve responsiveness - 300ms is enough for visual feedback
+    //         kotlinx.coroutines.delay(300)
+    //         onSaveComplete()
+    //     }
+    // }
 
     // Handle back press
     BackHandler(enabled = true) {
@@ -184,8 +184,8 @@ fun QuestionnaireScreen(
             }
         } else {
             // For new users, don't allow going back - they must complete questionnaire
-            Toast.makeText(context, 
-                "Please complete the questionnaire before proceeding", 
+            Toast.makeText(context,
+                "Please complete the questionnaire before proceeding",
                 Toast.LENGTH_SHORT).show()
         }
     }
@@ -225,7 +225,7 @@ fun QuestionnaireScreen(
             TopNavigationBar(
                 title = "Food Intake Questionnaire (${pagerState.currentPage + 1}/4)",
                 showBackButton = isInEditMode, // Only show back button in edit mode
-                onBackButtonClick = { 
+                onBackButtonClick = {
                     // Only show confirmation dialog if there are unsaved changes
                     if (viewModel.hasUnsavedChanges(userID.toString())) {
                         showExitConfirmation.value = true
@@ -342,9 +342,9 @@ fun QuestionnaireScreen(
                                 MaterialTheme.colorScheme.primary
                             else
                                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                            
+
                             val size = if (pagerState.currentPage == iteration) 12.dp else 8.dp
-                            
+
                             Box(
                                 modifier = Modifier
                                     .padding(4.dp)
@@ -363,8 +363,12 @@ fun QuestionnaireScreen(
                                         animationSpec = AnimationUtils.smoothSpringSpec
                                     )
                                 } else if (isQuestionnaireValid) {
-                                    viewModel.saveAllPreferences(userID.toString())
-                                    // Navigation will occur when save completes and isQuestionnaireCompleted becomes true
+                                    // viewModel.saveAllPreferences is a suspend function that returns true on success
+                                    if (viewModel.saveAllPreferences(userID.toString())) {
+                                        // If save was successful, onSaveComplete (which handles navigation) is called
+                                        onSaveComplete()
+                                    }
+                                    // Toast message for save status is handled by a separate LaunchedEffect(saveStatus)
                                 }
                             }
                         },
@@ -392,7 +396,7 @@ fun FoodCategoryPage(
     ) {
         QuestionnaireTextRow("Tick all the food categories you can eat", 18)
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         if (allFoodCategories.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
                 Text(
@@ -440,7 +444,7 @@ fun PersonaPage(
             style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         Text(
             text = "Choose the lifestyle that best describes you to get personalized meal recommendations.",
             style = TextStyle(fontSize = 16.sp),
@@ -488,7 +492,7 @@ fun TimingsPage(
             style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         Text(
             text = "Tell us about your daily schedule to help us plan your meals better.",
             style = TextStyle(fontSize = 16.sp),
@@ -507,31 +511,31 @@ fun TimingsPage(
                 initialTime = timePreferences[UserTimePref.WAKEUP] ?: "",
                 onTimeSelected = { time -> onTimeSelected(UserTimePref.WAKEUP, time) }
             )
-            
+
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
-            
+
             TimeInput(
                 modifier = Modifier.fillMaxWidth(),
                 text = UserTimePref.BIGGEST_MEAL.questionDescription,
                 initialTime = timePreferences[UserTimePref.BIGGEST_MEAL] ?: "",
                 onTimeSelected = { time -> onTimeSelected(UserTimePref.BIGGEST_MEAL, time) }
             )
-            
+
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
-            
+
             TimeInput(
                 modifier = Modifier.fillMaxWidth(),
                 text = UserTimePref.SLEEP.questionDescription,
                 initialTime = timePreferences[UserTimePref.SLEEP] ?: "",
                 onTimeSelected = { time -> onTimeSelected(UserTimePref.SLEEP, time) }
             )
-            
+
             // Display time validation error if any
             timeValidationError?.let { error ->
                 Spacer(modifier = Modifier.height(16.dp))
@@ -542,7 +546,7 @@ fun TimingsPage(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "These preferences help us suggest meals at optimal times based on your daily " +
@@ -633,7 +637,7 @@ fun SummaryPage(
                 }
             }
         } else if (selectedPersona.isNotEmpty()){
-             Card(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -652,7 +656,7 @@ fun SummaryPage(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                     Text(
+                    Text(
                         text = "Selected Persona",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
