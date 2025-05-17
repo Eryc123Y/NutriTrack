@@ -87,8 +87,8 @@ fun TimeInput(
     // Convert to 12-hour format
     val is24Hour = initialHour >= 12
     val hour12 = if (initialHour == 0) 12 else if (initialHour > 12) initialHour - 12 else initialHour
-    var hour by remember { mutableStateOf(hour12.toString()) }
-    var minute by remember { mutableStateOf(initialMinute.toString().padStart(2, '0')) }
+    var hour by remember { mutableStateOf(if (hour12 == 0) "" else hour12.toString()) }
+    var minute by remember { mutableStateOf(if (initialMinute == 0) "" else initialMinute.toString()) }
     var isPM by remember { mutableStateOf(is24Hour) }
     
     Column(
@@ -109,16 +109,18 @@ fun TimeInput(
             // Hour input
             OutlinedTextField(
                 value = hour,
-                onValueChange = { 
-                    if (it.isEmpty() || (it.toIntOrNull() != null && it.toInt() in 1..12)) {
-                        hour = it
+                onValueChange = { newValue -> 
+                    // Allow empty input or valid numbers between 1-12
+                    if (newValue.isEmpty() || (newValue.toIntOrNull() != null && newValue.toInt() in 1..12)) {
+                        hour = newValue // Don't pad with zeros for better editing experience
                         updateTime(hour, minute, isPM, onTimeSelected)
                     }
                 },
                 modifier = Modifier.weight(1f),
                 label = { Text("Hour") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center)
+                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                placeholder = { Text("00", textAlign = TextAlign.Center) }
             )
             
             Text(":", fontSize = 20.sp)
@@ -126,16 +128,18 @@ fun TimeInput(
             // Minute input
             OutlinedTextField(
                 value = minute,
-                onValueChange = { 
-                    if (it.isEmpty() || (it.toIntOrNull() != null && it.toInt() in 0..59)) {
-                        minute = it.padStart(2, '0')
+                onValueChange = { newValue -> 
+                    // Allow empty input or valid numbers between 0-59
+                    if (newValue.isEmpty() || (newValue.toIntOrNull() != null && newValue.toInt() in 0..59)) {
+                        minute = newValue
                         updateTime(hour, minute, isPM, onTimeSelected)
                     }
                 },
                 modifier = Modifier.weight(1f),
                 label = { Text("Min") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center)
+                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                placeholder = { Text("00", textAlign = TextAlign.Center) }
             )
             
             // AM/PM toggle
@@ -214,6 +218,9 @@ private fun AmPmButton(
 }
 
 private fun updateTime(hour: String, minute: String, isPM: Boolean, onTimeSelected: (String) -> Unit) {
+    // If either hour or minute is empty, don't update
+    if (hour.isEmpty() || minute.isEmpty()) return
+    
     val h = hour.toIntOrNull() ?: return
     val m = minute.toIntOrNull() ?: return
     
