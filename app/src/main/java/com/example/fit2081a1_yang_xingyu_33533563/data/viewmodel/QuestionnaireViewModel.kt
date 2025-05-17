@@ -278,26 +278,4 @@ class QuestionnaireViewModel(
     fun clearTimeValidationError() {
         _timeValidationError.value = null
     }
-
-    class QuestionnaireViewModelFactory(
-        private val foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository,
-        private val userFoodCategoryPreferenceRepository: UserFoodCategoryPreferenceRepository,
-        private val personaRepository: PersonaRepository,
-        private val userTimePreferenceRepository: UserTimePreferenceRepository,
-        private val userRepository: UserRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(QuestionnaireViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return QuestionnaireViewModel(
-                    foodCategoryDefinitionRepository,
-                    userFoodCategoryPreferenceRepository,
-                    personaRepository,
-                    userTimePreferenceRepository,
-                    userRepository
-                ) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
-        }
-    }
 }

@@ -91,23 +91,4 @@ class InsightsViewModel(
         _errorMessage.value = null
     }
 
-    // Factory remains largely the same, just ensure constructor params match
-    // Renaming to InsightViewModelFactory to match class name pattern
-    class InsightViewModelFactory(
-        private val userScoreRepository: UserScoreRepository,
-        private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository,
-        private val userRepository: UserRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(InsightsViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return InsightsViewModel(
-                    userScoreRepository,
-                    scoreTypeDefinitionRepository,
-                    userRepository
-                ) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
-        }
-    }
 }

@@ -117,21 +117,4 @@ class ProfileViewModel(
         _updateStatus.value = null
     }
 
-    class ProfileViewModelFactory(
-        private val userRepository: UserRepository,
-        private val personaRepository: PersonaRepository,
-        private val userScoreRepository: UserScoreRepository,
-        private val userTimePreferenceRepository: UserTimePreferenceRepository,
-        private val sharedPreferencesManager: SharedPreferencesManager
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return ProfileViewModel(userRepository, personaRepository,
-                    userScoreRepository, userTimePreferenceRepository,
-                    sharedPreferencesManager) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
-        }
-    }
 }
