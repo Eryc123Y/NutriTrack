@@ -2,4 +2,12 @@
 <resources>
 
     <style name="Theme.FIT2081Assignment1_Yang_Xingyu_33533563" parent="android:Theme.Material.Light.NoActionBar" />
+    
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background_color</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="windowSplashScreenAnimationDuration">800</item>
+        <item name="postSplashScreenTheme">@style/Theme.FIT2081Assignment1_Yang_Xingyu_33533563</item>
+    </style>
 </resources>
