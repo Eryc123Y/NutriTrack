@@ -80,7 +80,7 @@ class ViewModelProviderFactory(
                 ) as T
             }
             modelClass.isAssignableFrom(FruitViewModel::class.java) -> {
-                FruitViewModel() as T
+                FruitViewModel(userRepository) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

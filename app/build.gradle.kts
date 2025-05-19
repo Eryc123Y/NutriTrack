@@ -63,6 +63,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.generativeai.vxyz)
     implementation(libs.retrofit)
     implementation(libs.converter.scalars)
     implementation (libs.converter.gson)
@@ -96,4 +97,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.compose.markdown)
 }

@@ -39,13 +39,6 @@ class UserStatsViewModel(
     private val _userFruitScore = MutableStateFlow<Float?>(null)
     val userFruitScore: StateFlow<Float?> = _userFruitScore
 
-    private val _userFruitServingsize = MutableStateFlow<Float?>(null)
-    val userFruitServingsize: StateFlow<Float?> = _userFruitServingsize
-
-    val shouldShowFruitViceQuery: StateFlow<Boolean> = _userFruitServingsize.map { servings ->
-        servings != null && servings < 2
-    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000), true)
-
     suspend fun getUserFruitScore(userId: String): Float {
         return userScoreRepository.getScore(userId, ScoreTypes.FRUITS.scoreId)
     }
@@ -100,20 +93,6 @@ class UserStatsViewModel(
                 }
                 .collect { wakeUpTime ->
                     _userWakeUpTime.value = wakeUpTime
-                }
-        }
-    }
-
-    fun loadUserFruitServingsize(userId: String) {
-        viewModelScope.launch {
-            userRepository.getUserById(userId)
-                .map { it?.userFruitServingsize }
-                .catch { e ->
-                    _errorMessage.value = "Error fetching fruit serving size: ${e.message}"
-                    _userFruitServingsize.value = null
-                }
-                .collect { fruitServingsize ->
-                    _userFruitServingsize.value = fruitServingsize
                 }
         }
     }

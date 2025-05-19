@@ -1,23 +1,36 @@
 package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.GenAIViewModel
-import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.UserStatsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
+import com.example.fit2081a1_yang_xingyu_33533563.view.UiState
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
-import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.rememberLazyListState
+import dev.jeziellago.compose.markdowntext.MarkdownText
+import kotlin.collections.filter
+import kotlin.collections.isNotEmpty
 
 @Composable
 fun CoachScreen(
@@ -25,20 +38,30 @@ fun CoachScreen(
     onBackClick: () -> Unit = {},
     fruitViewModel: FruitViewModel,
     genAIViewModel: GenAIViewModel,
-    userStatsViewModel: UserStatsViewModel
+    // userStatsViewModel: UserStatsViewModel, // Marked as unused, consider removing if not needed
+    sharedPreferencesManager: SharedPreferencesManager
 ) {
     var fruitNameInput by remember { mutableStateOf("") }
     val fruitDetails by fruitViewModel.fruitDetails.collectAsState()
-    val isLoading by fruitViewModel.isLoading.collectAsState()
-    val shouldShowFruitViceQuery by userStatsViewModel.shouldShowFruitViceQuery.collectAsState()
+    val isLoadingFruit by fruitViewModel.isLoading.collectAsState()
+    val shouldShowFruitViceQuery by fruitViewModel.shouldShowFruitViceQuery.collectAsState()
+    val userFruitServingsize by fruitViewModel.userFruitServingsize.collectAsState()
 
-    // TODO: Replace with actual userId from AuthViewModel or similar
-    val currentUserId = "1" // Placeholder, ensure this is the actual logged-in user's ID
+    val currentUserIdString = sharedPreferencesManager.getCurrentUser()
+    val scrollState = rememberScrollState() // For the main screen scroll
 
-    LaunchedEffect(key1 = currentUserId) {
-        if (currentUserId.isNotBlank()) {
-            userStatsViewModel.loadUserFruitServingsize(currentUserId)
+    LaunchedEffect(currentUserIdString) {
+        if (currentUserIdString?.isNotBlank() == true) {
+            fruitViewModel.loadUserFruitServingsize(currentUserIdString)
+            genAIViewModel.setUserId(currentUserIdString.toLongOrNull()) // Ensure user ID is set in GenAIViewModel
+            genAIViewModel.startNewSession() // Start a new chat session when user ID is confirmed
         }
+    }
+
+    // Debug - Remove in production
+    LaunchedEffect(userFruitServingsize, shouldShowFruitViceQuery) {
+        println("DEBUG: User fruit serving size: $userFruitServingsize")
+        println("DEBUG: Should show fruit vice query: $shouldShowFruitViceQuery")
     }
 
     Scaffold(
@@ -60,98 +83,405 @@ fun CoachScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Conditional display for Fruit Advice section
             if (shouldShowFruitViceQuery) {
-                Text(
-                    "You are recommended to increase fruit intake.Ask NutriCoach about a fruit!",
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 16.dp)
+                FruitViceQueryPanel(
+                    fruitNameInput = fruitNameInput,
+                    onFruitNameInputChange = { fruitNameInput = it },
+                    fruitViewModel = fruitViewModel,
+                    isLoading = isLoadingFruit,
+                    fruitDetails = fruitDetails
                 )
+            } else {
+                FruitIntakeGoalMetCard()
+            }
 
-                OutlinedTextField(
-                    value = fruitNameInput,
-                    onValueChange = { fruitNameInput = it },
-                    label = { Text("Enter fruit name") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+            AiChatPanel(genAIViewModel = genAIViewModel, currentUserIdString = currentUserIdString)
 
-                Button(
-                    onClick = {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+fun FruitIntakeGoalMetCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Great job on your fruit intake!",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                "You've met your fruit goals. Keep up the healthy habits!",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun FruitViceQueryPanel(
+    fruitNameInput: String,
+    onFruitNameInputChange: (String) -> Unit,
+    fruitViewModel: FruitViewModel,
+    isLoading: Boolean,
+    fruitDetails: com.example.fit2081a1_yang_xingyu_33533563.api.FruitResponse?
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Need Fruit Advice?",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                "You are recommended to increase fruit intake. Ask NutriCoach about a fruit!",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            OutlinedTextField(
+                value = fruitNameInput,
+                onValueChange = onFruitNameInputChange,
+                label = { Text("Enter fruit name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    if (fruitNameInput.isNotBlank()) {
                         fruitViewModel.fetchFruitDetails(fruitNameInput)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading && fruitNameInput.isNotBlank()
-                ) {
-                    Text(if (isLoading) "Searching..." else "Get Fruit Details")
-                }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading && fruitNameInput.isNotBlank()
+            ) {
+                Text(if (isLoading) "Searching..." else "Get Fruit Details")
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                if (isLoading) {
-                    CircularProgressIndicator()
-                }
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
 
-                fruitDetails?.let { response ->
-                    // Check if the first item in fruitInfo has a key "Error"
-                    response.fruitInfo.firstOrNull()?.get("Error")?.let { errorMessage ->
+            fruitDetails?.let { response ->
+                response.fruitInfo.firstOrNull()?.get("Error")?.let { errorMessage ->
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                } ?: run {
+                    if (response.fruitInfo.isNotEmpty()) {
                         Text(
-                            text = errorMessage,
-                            color = MaterialTheme.colorScheme.error,
-                            style = TextStyle(fontSize = 16.sp),
-                            modifier = Modifier.padding(top = 8.dp)
+                            "Fruit Information:",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
-                    } ?: run {
-                        // If no error, display the fruit information
-                        if (response.fruitInfo.isNotEmpty()) {
-                            Text(
-                                "Fruit Information:",
-                                style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium),
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                                items(response.fruitInfo) { infoMap ->
-                                    infoMap.forEach { (key, value) ->
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 200.dp) // Constrained height for fruit info
+                        ) {
+                            items(response.fruitInfo) { infoMap ->
+                                infoMap.forEach { (key, value) ->
+                                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 2.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            Text("$key:", fontWeight = FontWeight.Bold)
-                                            Text(value)
+                                            Text("$key:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                                            Text(value, style = MaterialTheme.typography.bodySmall, textAlign = androidx.compose.ui.text.style.TextAlign.End)
                                         }
-                                        HorizontalDivider()
+                                        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
                                     }
                                 }
                             }
-                        } else if (!isLoading) {
-                            // Handles cases where fruitInfo is empty but no explicit error was set (e.g. after clearing)
-                            Text(
-                                "No information to display. Try searching for a fruit.",
-                                style = TextStyle(fontSize = 16.sp),
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
                         }
-                    }
-                } ?: run {
-                    if (!isLoading) {
+                    } else if (!isLoading) {
                         Text(
-                            "Enter a fruit name above and click search.",
-                            style = TextStyle(fontSize = 16.sp),
+                            "No information to display. Try searching for a fruit.",
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(top = 8.dp)
                         )
                     }
                 }
-            } else {
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
+    var chatInput by remember { mutableStateOf("") }
+    val conversationHistory by genAIViewModel.conversationHistory.collectAsState()
+    val genAiUiState by genAIViewModel.uiState.collectAsState()
+    val isLoadingAi = genAiUiState is UiState.Loading
+    val searchQuery by genAIViewModel.searchQuery.collectAsState()
+    var showClearConfirmationDialog by remember { mutableStateOf(false) }
+
+    val chatListState = rememberLazyListState()
+
+    val suggestedQuestions = listOf(
+        "What are good sources of protein?",
+        "How much water should I drink daily?",
+        "Benefits of eating apples?",
+        "Healthy breakfast ideas?"
+    )
+
+    val filteredHistory = remember(conversationHistory, searchQuery) {
+        if (searchQuery.isBlank()) {
+            conversationHistory
+        } else {
+            conversationHistory.filter {
+                // Assuming ChatEntity has a `message` field for the content
+                it.message.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+
+    LaunchedEffect(filteredHistory.size) {
+        if (filteredHistory.isNotEmpty() && searchQuery.isBlank()) { // Only autoscroll if not searching
+            chatListState.animateScrollToItem(filteredHistory.size - 1)
+        }
+    }
+    
+    if (showClearConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmationDialog = false },
+            title = { Text("Clear Chat History?") },
+            text = { Text("Are you sure you want to clear the current chat session? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        genAIViewModel.clearCurrentChatSession()
+                        genAIViewModel.updateSearchQuery("") // Clear search query as well
+                        showClearConfirmationDialog = false
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showClearConfirmationDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                        contentDescription = "AI Chat Icon",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "NutriCoach Chat",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                }
+                IconButton(onClick = { showClearConfirmationDialog = true }) {
+                    Icon(Icons.Filled.DeleteOutline, contentDescription = "Clear Chat History")
+                }
+            }
+
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { genAIViewModel.updateSearchQuery(it) },
+                label = { Text("Search chat history") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { genAIViewModel.updateSearchQuery("") }) {
+                            Icon(Icons.Filled.Clear, contentDescription = "Clear search")
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                singleLine = true
+            )
+
+            LazyColumn(
+                state = chatListState,
+                modifier = Modifier.fillMaxWidth().height(300.dp) // Increased height
+                    .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (filteredHistory.isEmpty()) {
+                    item {
+                        Text(
+                            if (searchQuery.isNotBlank()) "No messages found matching your search."
+                            else if (!isLoadingAi) "Ask NutriCoach about healthy eating habits..."
+                            else "", // Empty if loading
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
+                        )
+                    }
+                } else {
+                    items(filteredHistory) { message ->
+                        ChatMessageBubble(
+                            isUserMessage = message.isUserMessage, 
+                            text = message.message
+                        )
+                    }
+                }
+
+                if (isLoadingAi && searchQuery.isBlank()) { // Show loading only if not searching
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                modifier = Modifier.widthIn(max = 280.dp)
+                            ) {
+                                Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically){
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("NutriCoach is thinking...", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Suggested Questions
+            Text("Suggestions:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.align(Alignment.Start).padding(bottom = 4.dp))
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(suggestedQuestions) { question ->
+                    AssistChip(
+                        onClick = { 
+                            chatInput = question 
+                            // Optionally send immediately:
+                            // if (question.isNotBlank() && !isLoadingAi) {
+                            //    genAIViewModel.sendRequest(question, currentUserIdString?.toLongOrNull())
+                            //    chatInput = "" // Clear input after sending suggested q
+                            // }
+                        },
+                        label = { Text(question, style = MaterialTheme.typography.bodySmall) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            if (genAiUiState is UiState.Error) {
+                val error = genAiUiState as UiState.Error
                 Text(
-                    "Great job on your fruit intake! No specific advice needed here right now.",
-                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium),
-                    modifier = Modifier.padding(16.dp)
+                    text = error.toString(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
+
+            OutlinedTextField(
+                value = chatInput,
+                onValueChange = { chatInput = it },
+                label = { Text("Ask NutriCoach...") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            if (chatInput.isNotBlank() && !isLoadingAi) {
+                                genAIViewModel.sendRequest(chatInput, currentUserIdString?.toLongOrNull())
+                                chatInput = ""
+                            }
+                        },
+                        enabled = chatInput.isNotBlank() && !isLoadingAi
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Send message",
+                            tint = if (chatInput.isNotBlank() && !isLoadingAi) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        )
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatMessageBubble(isUserMessage: Boolean, text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = if (isUserMessage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = if (isUserMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.widthIn(max = 280.dp) 
+        ) {
+            MarkdownText(
+                markdown = text,
+                style = MaterialTheme.typography.bodyMedium, // Apply a basic style
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            )
         }
     }
 }

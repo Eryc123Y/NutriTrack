@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,6 +37,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.view.screens.RegisterScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.WelcomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 
@@ -73,6 +75,7 @@ fun AppNavigation(
     val fruitViewModel: FruitViewModel = viewModel(factory = viewModelProviderFactory)
     val genAIViewModel: GenAIViewModel = viewModel(factory = viewModelProviderFactory)
     val userStatsViewModel: UserStatsViewModel = viewModel(factory = viewModelProviderFactory)
+    val context = LocalContext.current
 
     // Collect StateFlow values using correct collectAsState()
     val currentUserId by authViewModel.currentUserId.collectAsState()
@@ -505,7 +508,7 @@ fun AppNavigation(
                 onBackClick = { navController.popBackStack() },
                 fruitViewModel = fruitViewModel,
                 genAIViewModel = genAIViewModel,
-                userStatsViewModel = userStatsViewModel
+                sharedPreferencesManager = SharedPreferencesManager.getInstance(context = context)
             )
         }
 
