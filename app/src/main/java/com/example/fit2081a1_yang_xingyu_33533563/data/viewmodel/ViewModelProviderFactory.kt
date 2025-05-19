@@ -2,6 +2,7 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ChatRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.FoodCategoryDefinitionRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ScoreTypeDefinitionRepository
@@ -10,6 +11,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepo
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
 import kotlin.jvm.java
 
 /**
@@ -30,29 +32,56 @@ class ViewModelProviderFactory(
     private val userScoreRepository: UserScoreRepository,
     private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository,
     private val sharedPreferencesManager: SharedPreferencesManager,
+    private val chatRepository: ChatRepository
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
-                ProfileViewModel(userRepository, personaRepository, userScoreRepository, 
-                    userTimePreferenceRepository, sharedPreferencesManager) as T
+                ProfileViewModel(
+                    userRepository,
+                    personaRepository,
+                    userScoreRepository,
+                    userTimePreferenceRepository,
+                    sharedPreferencesManager
+                ) as T
             }
             modelClass.isAssignableFrom(QuestionnaireViewModel::class.java) -> {
-                QuestionnaireViewModel(foodCategoryDefinitionRepository,
-                    userFoodCategoryPreferenceRepository, personaRepository,
-                    userTimePreferenceRepository, userRepository) as T
+                QuestionnaireViewModel(
+                    foodCategoryDefinitionRepository,
+                    userFoodCategoryPreferenceRepository,
+                    personaRepository,
+                    userTimePreferenceRepository,
+                    userRepository
+                ) as T
             }
             modelClass.isAssignableFrom(AuthViewModel::class.java) -> {
-                AuthViewModel(userRepository, sharedPreferencesManager) as T
+                AuthViewModel(
+                    userRepository,
+                    sharedPreferencesManager
+                ) as T
             }
             modelClass.isAssignableFrom(InsightsViewModel::class.java) -> {
-                InsightsViewModel(userScoreRepository, scoreTypeDefinitionRepository,
-                    userRepository) as T
+                InsightsViewModel(
+                    userScoreRepository,
+                    scoreTypeDefinitionRepository,
+                    userRepository
+                ) as T
             }
-//            modelClass.isAssignableFrom(GenAIViewModel::class.java) -> {
-//                GenAIViewModel() as T
-//            }
+            modelClass.isAssignableFrom(GenAIViewModel::class.java) -> {
+                GenAIViewModel(chatRepository) as T
+            }
+            modelClass.isAssignableFrom(UserStatsViewModel::class.java) -> {
+                UserStatsViewModel(
+                    userRepository,
+                    userScoreRepository,
+                    personaRepository,
+                    userTimePreferenceRepository
+                ) as T
+            }
+            modelClass.isAssignableFrom(FruitViewModel::class.java) -> {
+                FruitViewModel() as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

@@ -26,6 +26,10 @@ class UserRepository(private val userDao: UserDao) {
         userDao.delete(user)
     }
 
+    suspend fun getUserPersonaId(userId: String): String {
+        return userDao.getUserPersonaId(userId)
+    }
+
     suspend fun getHashedCredentialByUserId(userId: String): String? {
         return userDao.getHashedCredentialByUserId(userId)
     }

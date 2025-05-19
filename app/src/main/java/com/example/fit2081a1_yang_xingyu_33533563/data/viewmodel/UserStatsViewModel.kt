@@ -4,17 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class UserStatsViewModel(
+    private val userRepository: UserRepository,
     private val userScoreRepository: UserScoreRepository,
-    private val userPersonaRepository: PersonaRepository,
+    private val personaRepository: PersonaRepository,
     private val userTimePreferenceRepository: UserTimePreferenceRepository
 ) : ViewModel() {
 
@@ -36,13 +39,21 @@ class UserStatsViewModel(
     private val _userFruitScore = MutableStateFlow<Float?>(null)
     val userFruitScore: StateFlow<Float?> = _userFruitScore
 
+    private val _userFruitServingsize = MutableStateFlow<Float?>(null)
+    val userFruitServingsize: StateFlow<Float?> = _userFruitServingsize
+
+    val shouldShowFruitViceQuery: StateFlow<Boolean> = _userFruitServingsize.map { servings ->
+        servings != null && servings < 2
+    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000), true)
+
     suspend fun getUserFruitScore(userId: String): Float {
         return userScoreRepository.getScore(userId, ScoreTypes.FRUITS.scoreId)
     }
 
     fun getUserPersona(userId: String) {
         viewModelScope.launch {
-            userPersonaRepository.getPersonaById(userId)
+            val userPersonaId = userRepository.getUserPersonaId(userId)
+            personaRepository.getPersonaById(userPersonaId)
                 .map { it?.toString() }
                 .catch { e ->
                     _errorMessage.value = "Error fetching user persona: ${e.message}"
@@ -89,6 +100,20 @@ class UserStatsViewModel(
                 }
                 .collect { wakeUpTime ->
                     _userWakeUpTime.value = wakeUpTime
+                }
+        }
+    }
+
+    fun loadUserFruitServingsize(userId: String) {
+        viewModelScope.launch {
+            userRepository.getUserById(userId)
+                .map { it?.userFruitServingsize }
+                .catch { e ->
+                    _errorMessage.value = "Error fetching fruit serving size: ${e.message}"
+                    _userFruitServingsize.value = null
+                }
+                .collect { fruitServingsize ->
+                    _userFruitServingsize.value = fruitServingsize
                 }
         }
     }

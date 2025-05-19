@@ -111,6 +111,7 @@ object InitDataUtils {
                 val userIdIndex = header.indexOf(UserInfo.USERID.infoName)
                 val phoneNumberIndex = header.indexOf(UserInfo.PHONE_NUMBER.infoName)
                 val genderIndex = header.indexOf(UserInfo.GENDER.infoName)
+                val fruitServeSizeIndex = header.indexOf("Fruitservesize")
                 
                 // Process each line (skip header)
                 for (i in 1 until lines.size) {
@@ -119,6 +120,7 @@ object InitDataUtils {
                     val userId = values[userIdIndex]
                     val phoneNumber = values[phoneNumberIndex]
                     val gender = values[genderIndex]
+                    val fruitServeSize = values.getOrNull(fruitServeSizeIndex)?.toFloatOrNull()
                     
                     // Create and insert user entity
                     val userEntity = UserEntity(
@@ -126,6 +128,7 @@ object InitDataUtils {
                         userName = null, // Default to null, update on registration
                         userPhoneNumber = phoneNumber,
                         userGender = gender,
+                        userFruitServingsize = fruitServeSize,
                         userPersonaId = null, // Will be set by user later
                         userHashedCredential = null, // Will be set upon registration
                         userIsRegistered = false

@@ -3,6 +3,8 @@ package com.example.fit2081a1_yang_xingyu_33533563
 import android.app.Application
 import android.util.Log
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.AppDatabase
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.dao.PersonaDao
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ChatRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.FoodCategoryDefinitionRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ScoreTypeDefinitionRepository
@@ -34,6 +36,7 @@ class NutriTrackApp : Application() {
     lateinit var userScoreRepository: UserScoreRepository
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
     lateinit var authViewModel: AuthViewModel
+    lateinit var chatRepository: ChatRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -60,6 +63,7 @@ class NutriTrackApp : Application() {
         userFoodCategoryPreferenceRepository = UserFoodCategoryPreferenceRepository(database.userFoodCategoryPreferenceDao())
         userTimePreferenceRepository = UserTimePreferenceRepository(database.userTimePreferenceDao())
         userScoreRepository = UserScoreRepository(database.userScoreDao())
+        chatRepository = ChatRepository(database.chatMessageDao())
         
         // Initialize ViewModel factory
         viewModelProviderFactory = ViewModelProviderFactory(
@@ -70,7 +74,8 @@ class NutriTrackApp : Application() {
             userTimePreferenceRepository = userTimePreferenceRepository,
             userScoreRepository = userScoreRepository,
             scoreTypeDefinitionRepository = scoreTypeDefinitionRepository,
-            sharedPreferencesManager = SharedPreferencesManager.getInstance(applicationContext)
+            chatRepository = chatRepository,
+            sharedPreferencesManager = SharedPreferencesManager.getInstance(applicationContext),
         )
 
         // Initialize database with data

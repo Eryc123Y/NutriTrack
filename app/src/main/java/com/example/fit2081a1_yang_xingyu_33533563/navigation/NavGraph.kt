@@ -25,6 +25,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewMod
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ViewModelProviderFactory
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.GenAIViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.UserStatsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.CoachScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.HomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.InsightScreen
@@ -33,6 +35,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.view.screens.QuestionnaireScre
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.RegisterScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.SettingsScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.WelcomeScreen
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 
@@ -67,6 +70,9 @@ fun AppNavigation(
     val insightsViewModel: InsightsViewModel = viewModel(factory = viewModelProviderFactory)
     val profileViewModel: ProfileViewModel = viewModel(factory = viewModelProviderFactory)
     val questionnaireViewModel: QuestionnaireViewModel = viewModel(factory = viewModelProviderFactory)
+    val fruitViewModel: FruitViewModel = viewModel(factory = viewModelProviderFactory)
+    val genAIViewModel: GenAIViewModel = viewModel(factory = viewModelProviderFactory)
+    val userStatsViewModel: UserStatsViewModel = viewModel(factory = viewModelProviderFactory)
 
     // Collect StateFlow values using correct collectAsState()
     val currentUserId by authViewModel.currentUserId.collectAsState()
@@ -495,7 +501,11 @@ fun AppNavigation(
             }
         ) {
             CoachScreen(
-                onNavigate = { route -> navController.navigate(route) }
+                onNavigate = { route -> navController.navigate(route) },
+                onBackClick = { navController.popBackStack() },
+                fruitViewModel = fruitViewModel,
+                genAIViewModel = genAIViewModel,
+                userStatsViewModel = userStatsViewModel
             )
         }
 

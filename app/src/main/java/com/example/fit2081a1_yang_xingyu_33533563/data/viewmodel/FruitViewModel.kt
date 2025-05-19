@@ -1,4 +1,4 @@
-package com.example.fit2081a1_yang_xingyu_33533563.viewmodel
+package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class CoachViewModel : ViewModel() {
+class FruitViewModel : ViewModel() {
 
     private val repository = FruitViceRepoProvider.getRepository()
 
@@ -33,7 +33,8 @@ class CoachViewModel : ViewModel() {
                 _fruitDetails.value = repository.getFruitDetails(trimmedFruitName)
             } else {
                 // Optionally, set an error or specific state for empty input
-                _fruitDetails.value = FruitResponse(listOf(mapOf("Error" to "Please enter a fruit name.")))
+                _fruitDetails.value =
+                    FruitResponse(listOf(mapOf("Error" to "Please enter a fruit name.")))
             }
             _isLoading.value = false
         }
@@ -45,4 +46,4 @@ class CoachViewModel : ViewModel() {
     fun clearFruitDetails() {
         _fruitDetails.value = null
     }
-} 
+}

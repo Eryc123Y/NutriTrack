@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.dao.*
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.*
 @Database(
@@ -18,7 +20,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.*
         ScoreTypeDefinitionEntity::class,
         ChatMessageEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -50,10 +52,17 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "nutritrack_database"
                 )
+                    .addMigrations(MIGRATION_2_3)
                     .fallbackToDestructiveMigration(false)
                 .build()
                 INSTANCE = instance
                 instance
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE users ADD COLUMN userFruitServingsize REAL")
             }
         }
     }
