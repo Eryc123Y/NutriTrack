@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import java.util.UUID
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.ChatMessageEntity as ChatEntity
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * GenAIViewModel is a ViewModel class that handles the logic for the GenAI feature.
@@ -34,10 +35,12 @@ class GenAIViewModel(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     
     private var vmCurrentUserId: Long? = null
+    // vmCurrentSessionId is initialized once and will be used for saving messages.
+    // It no longer changes with each call to startNewSession.
     private var vmCurrentSessionId: String = UUID.randomUUID().toString()
 
     private val _currentUserIdSF = MutableStateFlow<Long?>(null)
-    private val _currentSessionIdSF = MutableStateFlow(this.vmCurrentSessionId)
+    // private val _currentSessionIdSF = MutableStateFlow(this.vmCurrentSessionId) // Removed
 
     companion object {
         private const val SUGGESTED_FOLLOW_UPS_DELIMITER = "SUGGESTED_FOLLOW_UPS:"
@@ -212,18 +215,14 @@ class GenAIViewModel(
         }
     }
 
-    // Reactive conversation history for the current user and session
+    // Reactive conversation history for the current user
     @OptIn(ExperimentalCoroutinesApi::class)
     val conversationHistory: StateFlow<List<ChatEntity>> =
         _currentUserIdSF.flatMapLatest { userId ->
             if (userId == null) {
                 flowOf(emptyList())
             } else {
-                _currentSessionIdSF.flatMapLatest { sessionId ->
-                    chatRepository.getUserConversationFlow(userId).map { messages ->
-                        messages.filter { it.sessionId == sessionId }
-                    }
-                }
+                chatRepository.getUserConversationFlow(userId)
             }
         }.stateIn(
             scope = viewModelScope,
@@ -275,8 +274,6 @@ class GenAIViewModel(
             var userStatsForJson: UserStats? = null
             if (requestUserId != null) {
                 val userIdStr = requestUserId.toString()
-
-                // Use the new comprehensive method to get all user stats at once
                 userStatsForJson = userStatsViewModel.getUserStats(userIdStr)
             }
             val userStatsJson = userStatsToJson(userStatsForJson)
@@ -291,34 +288,43 @@ class GenAIViewModel(
                     sessionId = requestSessionId
                 )
                 
-                val response = genAIModel.generateContent(themedPrompt)
-                
-                response.text?.let { rawAiResponse ->
-                    println("GenAIViewModel: Raw AI Response received: '$rawAiResponse'")
-                    var mainAnswer = rawAiResponse
-                    var followUpQuestions = emptyList<String>()
+                val responseFlow = genAIModel.generateContentStream(themedPrompt)
+                var accumulatedResponse = ""
+                var finalFollowUpQuestions = emptyList<String>()
 
-                    val followUpDelimiterIndex = rawAiResponse.indexOf(SUGGESTED_FOLLOW_UPS_DELIMITER)
-                    if (followUpDelimiterIndex != -1) {
-                        mainAnswer = rawAiResponse.substring(0, followUpDelimiterIndex).trim()
-                        val followUpsString = rawAiResponse.substring(followUpDelimiterIndex + SUGGESTED_FOLLOW_UPS_DELIMITER.length).trim()
-                        if (followUpsString.isNotBlank()) {
-                            followUpQuestions = followUpsString.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-                        }
+                responseFlow.collect { responseChunk ->
+                    responseChunk.text?.let { textPart ->
+                        accumulatedResponse += textPart
+                        // Update UI with partial response using the new Streaming state
+                        _uiState.value = UiState.Streaming(accumulatedResponse)
+                        println("GenAIViewModel: Streamed AI Response chunk: '$textPart'")
                     }
-                    
-                    println("GenAIViewModel: Parsed Main Answer: '$mainAnswer', Follow-ups: $followUpQuestions")
-
-                    chatRepository.saveAiResponse(
-                        response = mainAnswer, 
-                        userId = requestUserId,
-                        sessionId = requestSessionId,
-                    )
-                    _uiState.value = UiState.Success(mainAnswer, followUpQuestions)
-                } ?: run {
-                    println("GenAIViewModel: No response text for UserID: $requestUserId, SessionID: $requestSessionId. Finish Reason: ${response.candidates.firstOrNull()?.finishReason}, Safety: ${response.candidates.firstOrNull()?.safetyRatings}")
-                    _uiState.value = UiState.Error.UnidentifiedError("No response generated. Check logs for details.")
                 }
+                
+                // Once streaming is complete, parse the full response for follow-ups
+                println("GenAIViewModel: Raw AI Response received (full): '$accumulatedResponse'")
+                var mainAnswer = accumulatedResponse
+                val followUpDelimiterIndex = accumulatedResponse.indexOf(SUGGESTED_FOLLOW_UPS_DELIMITER)
+
+                if (followUpDelimiterIndex != -1) {
+                    mainAnswer = accumulatedResponse.substring(0, followUpDelimiterIndex).trim()
+                    val followUpsString = accumulatedResponse.substring(followUpDelimiterIndex + SUGGESTED_FOLLOW_UPS_DELIMITER.length).trim()
+                    if (followUpsString.isNotBlank()) {
+                        finalFollowUpQuestions = followUpsString.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+                    }
+                }
+                
+                println("GenAIViewModel: Parsed Main Answer: '$mainAnswer', Follow-ups: $finalFollowUpQuestions")
+
+                // Save the final main answer to repository
+                chatRepository.saveAiResponse(
+                    response = mainAnswer,
+                    userId = requestUserId,
+                    sessionId = requestSessionId,
+                )
+                // Final UI update with main answer and follow-ups using the Success state
+                _uiState.value = UiState.Success(mainAnswer, finalFollowUpQuestions)
+
             } catch (e: Exception) {
                 println("GenAIViewModel: Error during API call for UserID: $requestUserId, SessionID: $requestSessionId: ${e.javaClass.simpleName} - ${e.message}")
                 val errorMessage = e.message ?: "Unknown error occurred"
@@ -326,6 +332,19 @@ class GenAIViewModel(
                     errorMessage.contains("403") -> _uiState.value = UiState.Error.ApiError("API permission denied (403). Verify API key and model access.")
                     errorMessage.contains("404") -> _uiState.value = UiState.Error.ApiError("Model not found (404). Check model name.")
                     errorMessage.contains("MissingFieldException") -> _uiState.value = UiState.Error.ApiError("API response format issue.")
+                    // Check for specific streaming-related exceptions if any arise
+                    e is CancellationException -> {
+                         // This might happen if the stream is cancelled, e.g. viewmodel scope cancelled
+                         println("GenAIViewModel: Flow was cancelled. ${e.message}")
+                         _uiState.value = UiState.Error.NetworkError("Stream cancelled: ${e.message}")
+                    }
+                    // It's good practice to check for common network exceptions
+                    e is java.net.UnknownHostException -> {
+                        _uiState.value = UiState.Error.NetworkError("Network error: Cannot resolve host. Check internet connection.")
+                    }
+                    e is java.net.SocketTimeoutException -> {
+                        _uiState.value = UiState.Error.NetworkError("Network error: Connection timed out.")
+                    }
                     else -> _uiState.value = UiState.Error.NetworkError("Error: $errorMessage")
                 }
                 // e.printStackTrace() // Optionally uncomment for full stack trace during development
@@ -341,13 +360,14 @@ class GenAIViewModel(
      * Start a new conversation session
      */
     fun startNewSession() {
-        val newSessionId = UUID.randomUUID().toString()
-        this.vmCurrentSessionId = newSessionId
-        _currentSessionIdSF.value = newSessionId
+        // val newSessionId = UUID.randomUUID().toString() // No longer generating a new session ID here
+        // this.vmCurrentSessionId = newSessionId // No longer updating vmCurrentSessionId here
+        // _currentSessionIdSF.value = newSessionId // No longer updating _currentSessionIdSF
         _uiState.value = UiState.Initial
         // Search query should ideally be cleared if the context (session) changes completely.
         // updateSearchQuery("") // Consider if this is desired here.
-        println("GenAIViewModel: Started new session: ${this.vmCurrentSessionId} for UserID: ${this.vmCurrentUserId}")
+        // Log the existing session ID that will be used.
+        println("GenAIViewModel: Started new session (or re-focused). Using SessionID: ${this.vmCurrentSessionId} for UserID: ${this.vmCurrentUserId}")
     }
     
     /**
@@ -371,16 +391,16 @@ class GenAIViewModel(
      * Clear all messages from the current session
      */
     fun clearCurrentChatSession() {
-        val sessionToClear = this.vmCurrentSessionId
+        val sessionToClear = this.vmCurrentSessionId // Keep for logging if needed
         val userContext = this.vmCurrentUserId
-        viewModelScope.launch(Dispatchers.IO) {
-            chatRepository.clearSessionMessages(sessionToClear)
-            // The conversationHistory flow will automatically update to an empty list
-            // for the current session due to its reactive nature.
-            // Clearing search query makes sense as the context is cleared.
-            updateSearchQuery("")
-            println("GenAIViewModel: Cleared messages for SessionID: $sessionToClear, UserID: $userContext")
-        }
+        userContext?.let { userIdToClear -> // Ensure userContext (userId) is not null
+            viewModelScope.launch(Dispatchers.IO) {
+                chatRepository.clearUserMessages(userIdToClear) // Changed from clearSessionMessages
+                // The conversationHistory flow will automatically update.
+                updateSearchQuery("")
+                println("GenAIViewModel: Cleared all messages for UserID: $userIdToClear (initiated via clearCurrentChatSession)")
+            }
+        } ?: println("GenAIViewModel: Cannot clear chat session, UserID is null.")
     }
     
     /**

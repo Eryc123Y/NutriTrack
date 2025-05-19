@@ -260,11 +260,10 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
 
     // Updated, more context-aware suggested questions
     val staticSuggestedQuestions = listOf(
-        "What are healthy snack options?",
-        "How can I increase my protein intake?",
-        "Benefits of drinking more water?",
-        "Suggest a healthy breakfast under 300 calories.",
-        "Is fruit sugar bad for me?"
+        "How's my overall nutrition score?",
+        "Any suggestions for me to improve my diet?",
+        "How can I eat healthier?",
+        "What is a balanced diet?",
     )
 
     val filteredHistory = remember(conversationHistory, searchQuery) {
@@ -278,9 +277,27 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
         }
     }
 
+    // Autoscroll when a new message is added to the history (and not searching)
     LaunchedEffect(filteredHistory.size) {
-        if (filteredHistory.isNotEmpty() && searchQuery.isBlank()) { // Only autoscroll if not searching
+        if (filteredHistory.isNotEmpty() && searchQuery.isBlank()) { 
             chatListState.animateScrollToItem(filteredHistory.size - 1)
+        }
+    }
+
+    // Autoscroll when AI is loading or streaming (and not searching)
+    LaunchedEffect(genAiUiState) {
+        if (searchQuery.isBlank()) {
+            when (genAiUiState) {
+                is UiState.Loading, is UiState.Streaming -> {
+                    // Scroll to the end of the list where the loading/streaming indicator will appear
+                    // The actual item count for scrolling can be just after the filteredHistory
+                    val targetIndex = filteredHistory.size // The loading/streaming item is after the history
+                    if (targetIndex >= 0) { // Ensure index is valid
+                        chatListState.animateScrollToItem(targetIndex)
+                    }
+                }
+                else -> { /* Do nothing for other states */ }
+            }
         }
     }
     
@@ -363,12 +380,11 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                     .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (filteredHistory.isEmpty()) {
+                if (filteredHistory.isEmpty() && genAiUiState !is UiState.Streaming && genAiUiState !is UiState.Loading) { // Adjusted condition
                     item {
                         Text(
                             if (searchQuery.isNotBlank()) "No messages found matching your search."
-                            else if (!isLoadingAi) "Ask NutriCoach about healthy eating habits..."
-                            else "", // Empty if loading
+                            else "Ask NutriCoach about healthy eating habits...", // Show this only if not loading/streaming and no history
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
@@ -383,7 +399,8 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                     }
                 }
 
-                if (isLoadingAi && searchQuery.isBlank()) { // Show loading only if not searching
+                // Show AI thinking indicator (specific to UiState.Loading)
+                if (genAiUiState is UiState.Loading && searchQuery.isBlank()) {
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -401,6 +418,16 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                                 }
                             }
                         }
+                    }
+                }
+
+                // Show streaming AI message
+                if (genAiUiState is UiState.Streaming && searchQuery.isBlank()) {
+                    item {
+                        ChatMessageBubble(
+                            isUserMessage = false, // AI message
+                            text = (genAiUiState as UiState.Streaming).currentMessageContent
+                        )
                     }
                 }
             }

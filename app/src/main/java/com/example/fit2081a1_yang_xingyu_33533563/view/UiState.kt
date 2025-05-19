@@ -10,8 +10,10 @@ sealed interface UiState {
 
     object Loading : UiState
 
+    data class Streaming(val currentMessageContent: String) : UiState
+
     data class Success(
-        val outputText: String,
+        val finalMessageContent: String,
         val suggestedFollowUps: List<String> = emptyList()
     ) : UiState
 
