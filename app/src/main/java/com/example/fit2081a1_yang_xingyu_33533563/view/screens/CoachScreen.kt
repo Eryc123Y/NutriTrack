@@ -258,11 +258,13 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
 
     val chatListState = rememberLazyListState()
 
-    val suggestedQuestions = listOf(
-        "What are good sources of protein?",
-        "How much water should I drink daily?",
-        "Benefits of eating apples?",
-        "Healthy breakfast ideas?"
+    // Updated, more context-aware suggested questions
+    val staticSuggestedQuestions = listOf(
+        "What are healthy snack options?",
+        "How can I increase my protein intake?",
+        "Benefits of drinking more water?",
+        "Suggest a healthy breakfast under 300 calories.",
+        "Is fruit sugar bad for me?"
     )
 
     val filteredHistory = remember(conversationHistory, searchQuery) {
@@ -405,24 +407,42 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
 
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Suggested Questions
-            Text("Suggestions:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.align(Alignment.Start).padding(bottom = 4.dp))
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(suggestedQuestions) { question ->
-                    AssistChip(
-                        onClick = { 
-                            chatInput = question 
-                            // Optionally send immediately:
-                            // if (question.isNotBlank() && !isLoadingAi) {
-                            //    genAIViewModel.sendRequest(question, currentUserIdString?.toLongOrNull())
-                            //    chatInput = "" // Clear input after sending suggested q
-                            // }
-                        },
-                        label = { Text(question, style = MaterialTheme.typography.bodySmall) }
-                    )
+            // Display AI-generated follow-up questions OR static suggestions
+            val currentUiState = genAiUiState
+            if (currentUiState is UiState.Success && currentUiState.suggestedFollowUps.isNotEmpty()) {
+                Text("NutriCoach suggests:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.align(Alignment.Start).padding(bottom = 4.dp))
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(currentUiState.suggestedFollowUps) { question ->
+                        AssistChip(
+                            onClick = { 
+                                chatInput = question 
+                                // Optionally send immediately:
+                                // if (question.isNotBlank() && !isLoadingAi) {
+                                //    genAIViewModel.sendRequest(question, currentUserIdString?.toLongOrNull())
+                                //    chatInput = "" 
+                                // }
+                            },
+                            label = { Text(question, style = MaterialTheme.typography.bodySmall) }
+                        )
+                    }
+                }
+            } else if (!isLoadingAi) { // Show static suggestions if AI is not loading and no AI suggestions
+                 Text("Suggestions:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.align(Alignment.Start).padding(bottom = 4.dp))
+                 LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(staticSuggestedQuestions) { question ->
+                        AssistChip(
+                            onClick = { 
+                                chatInput = question 
+                            },
+                            label = { Text(question, style = MaterialTheme.typography.bodySmall) }
+                        )
+                    }
                 }
             }
 

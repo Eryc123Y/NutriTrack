@@ -10,7 +10,10 @@ sealed interface UiState {
 
     object Loading : UiState
 
-    data class Success(val outputText: String) : UiState
+    data class Success(
+        val outputText: String,
+        val suggestedFollowUps: List<String> = emptyList()
+    ) : UiState
 
     /**
      * Error state with different types of errors.

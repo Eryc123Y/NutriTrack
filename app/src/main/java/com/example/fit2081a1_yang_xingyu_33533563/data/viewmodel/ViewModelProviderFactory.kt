@@ -69,14 +69,18 @@ class ViewModelProviderFactory(
                 ) as T
             }
             modelClass.isAssignableFrom(GenAIViewModel::class.java) -> {
-                GenAIViewModel(chatRepository) as T
+                GenAIViewModel(
+                    chatRepository,
+                    create(UserStatsViewModel::class.java) as UserStatsViewModel
+                ) as T
             }
             modelClass.isAssignableFrom(UserStatsViewModel::class.java) -> {
                 UserStatsViewModel(
                     userRepository,
                     userScoreRepository,
                     personaRepository,
-                    userTimePreferenceRepository
+                    userTimePreferenceRepository,
+                    userFoodCategoryPreferenceRepository
                 ) as T
             }
             modelClass.isAssignableFrom(FruitViewModel::class.java) -> {
