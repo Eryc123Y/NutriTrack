@@ -40,25 +40,23 @@ class FruitViceRepo {
                 formattedInfo.add(mapOf(FruitInfo.FRUIT_FAMILY.displayName to it))
             }
 
+            // Define a mapping from API nutrition keys to FruitInfo enums
+            val nutritionKeyToFruitInfo = mapOf(
+                "calories" to FruitInfo.FRUIT_CALORIES,
+                "fat" to FruitInfo.FRUIT_FAT,
+                "sugar" to FruitInfo.FRUIT_SUGAR,
+                "carbohydrates" to FruitInfo.FRUIT_CARBOHYDRATE,
+                "protein" to FruitInfo.FRUIT_PROTEIN
+            )
+
             apiDto.nutritions?.let { nutritionMap ->
-                nutritionMap["calories"]?.let {
-                    formattedInfo.add(mapOf(FruitInfo.FRUIT_CALORIES.displayName to it.toString()))
-                }
-                nutritionMap["fat"]?.let {
-                    formattedInfo.add(mapOf(FruitInfo.FRUIT_FAT.displayName to it.toString()))
-                }
-                nutritionMap["sugar"]?.let {
-                    formattedInfo.add(mapOf(FruitInfo.FRUIT_SUGAR.displayName to it.toString()))
-                }
-                nutritionMap["carbohydrates"]?.let {
-                    formattedInfo.add(mapOf(FruitInfo.FRUIT_CARBOHYDRATE.displayName to it.toString()))
-                }
-                nutritionMap["protein"]?.let {
-                    formattedInfo.add(mapOf(FruitInfo.FRUIT_PROTEIN.displayName to it.toString()))
+                nutritionMap.forEach { (key, value) ->
+                    nutritionKeyToFruitInfo[key]?.let { fruitInfoEnum ->
+                        formattedInfo.add(mapOf(fruitInfoEnum.displayName to value.toString()))
+                    }
                 }
             }
             // If all data is null or empty, it might also mean the fruit doesn't have much data
-            // or wasn't found in a way that threw an HTTP exception (e.g. API returns 200 with empty/null fields)
             if (formattedInfo.isEmpty() && apiDto.name == null && apiDto.family == null && apiDto.nutritions == null) {
                  FruitResponse(listOf(mapOf("Error" to "Fruit not found or no data available.")))
             } else {
