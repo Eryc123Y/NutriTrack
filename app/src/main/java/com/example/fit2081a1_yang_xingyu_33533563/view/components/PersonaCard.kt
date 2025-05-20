@@ -38,7 +38,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.getPersonaImagePainter
 fun PersonaCard(
     persona: PersonaEntity,
     isSelected: Boolean,
-    onPersonaClick: (String) -> Unit // Passes personaID on click
+    onPersonaSelect: (String) -> Unit // Renamed: This is called when persona is confirmed from modal
 ) {
     val scale by animateFloatAsState(targetValue = if (isSelected) 1.05f else 1.0f, label = "scale")
     val borderColor by animateColorAsState(
@@ -56,8 +56,7 @@ fun PersonaCard(
             .scale(scale)
             .border(borderWidth, borderColor, CardDefaults.shape)
             .clip(CardDefaults.shape)
-            .clickable {
-                onPersonaClick(persona.personaID)
+            .clickable { // Click now only shows the modal
                 showInfoModal = true
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, pressedElevation = 4.dp)
@@ -92,7 +91,11 @@ fun PersonaCard(
         PersonaInfoModal(
             persona = persona,
             showDialog = showInfoModal,
-            onDismiss = { showInfoModal = false }
+            onDismiss = { showInfoModal = false },
+            onConfirm = { personaId -> // Pass the onPersonaSelect to the modal's confirm action
+                onPersonaSelect(personaId)
+                // showInfoModal = false; // Modal's onConfirm will also call its onDismiss
+            }
         )
     }
 } 

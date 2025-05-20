@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.combine
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -26,7 +25,7 @@ import java.time.format.DateTimeParseException
 class QuestionnaireViewModel(
     private val foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository,
     private val userFoodCategoryPreferenceRepository: UserFoodCategoryPreferenceRepository,
-    private val personaRepository: PersonaRepository,
+    personaRepository: PersonaRepository,
     private val userTimePreferenceRepository: UserTimePreferenceRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
@@ -99,7 +98,7 @@ class QuestionnaireViewModel(
     
     /**
      * Validates if the times are in logical order.
-     * Ensures times are in HH:mm format.
+     * Ensures times are in HH:mm format (24-hour).
      * Wake up time, biggest meal time, and sleep time should be logical.
      */
     private fun validateTimesLogic() {
@@ -109,12 +108,17 @@ class QuestionnaireViewModel(
         val biggestMealStr = _biggestMealTime.value
         val sleepStr = _sleepTime.value
 
-        if (wakeUpStr.isNullOrBlank() || biggestMealStr.isNullOrBlank() || sleepStr.isNullOrBlank()) {
-            // This case should ideally be caught by the overall form validation (isQuestionnaireValid)
-            // but we can set a generic error if needed, or rely on field-specific "required" indicators.
-            // For now, let isQuestionnaireValid handle fully blank fields.
-            // If any field is PARTIALLY filled then becomes blank, this check is useful.
-             _timeValidationError.value = "All time fields are required."
+        // Check for blank strings first, as parsing them will fail
+        if (wakeUpStr.isBlank()) {
+            _timeValidationError.value = "Wake up time is required (HH:mm)."
+            return
+        }
+        if (biggestMealStr.isBlank()) {
+            _timeValidationError.value = "Biggest meal time is required (HH:mm)."
+            return
+        }
+        if (sleepStr.isBlank()) {
+            _timeValidationError.value = "Sleep time is required (HH:mm)."
             return
         }
 
@@ -130,15 +134,17 @@ class QuestionnaireViewModel(
 
             // Scenario 1: Sleep is on the same day as wake up (e.g., wake 07:00, sleep 22:00)
             if (sleep.isAfter(wakeUp)) {
-                if (meal.isBefore(wakeUp) || meal.isAfter(sleep)) {
-                    _timeValidationError.value = "Biggest meal time must be between wake up and sleep time."
+                if (!meal.isAfter(wakeUp) || !meal.isBefore(sleep)) { // Meal must be strictly between wakeUp and sleep
+                    _timeValidationError.value = "Biggest meal time must be after wake up and before sleep time."
                     return
                 }
             }
-            // Scenario 2: Sleep is on the next day (e.g., wake 07:00, sleep 01:00)
-            else { // sleep.isBefore(wakeUp)
-                if (meal.isBefore(wakeUp) && meal.isAfter(sleep)) {
-                    _timeValidationError.value = "Biggest meal time must be within your awake period (after wake up on day 1 or before sleep on day 2)."
+            // Scenario 2: Sleep is on the next day (e.g., wake 22:00, sleep 07:00)
+            else { // sleep.isBefore(wakeUp) or sleep == wakeUp (already handled)
+                // Meal can be after wakeUp (day1) OR before sleep (day2)
+                // It cannot be between sleep (early morning day2) and wakeUp (late morning/evening day1)
+                if (meal.isAfter(sleep) && meal.isBefore(wakeUp)) {
+                    _timeValidationError.value = "Biggest meal time must be within your awake period (e.g., after wake up on day 1 or before sleep on day 2)."
                     return
                 }
             }
@@ -146,7 +152,8 @@ class QuestionnaireViewModel(
             _timeValidationError.value = null
 
         } catch (e: DateTimeParseException) {
-            _timeValidationError.value = "Invalid time format. Please use HH:mm."
+            e.printStackTrace()
+            _timeValidationError.value = "Invalid time format. Please use HH:mm (e.g., 07:00 or 15:30)."
         }
     }
 
@@ -378,16 +385,12 @@ class QuestionnaireViewModel(
     fun clearSaveStatus() {
         _saveStatus.value = null
     }
-    
-    fun clearTimeValidationError() {
-        _timeValidationError.value = null
-    }
-    
+
     /**
      * Check if there have been any changes made since the questionnaire was loaded
      * Used to determine if we should show a confirmation when abandoning edits
      */
-    fun hasUnsavedChanges(userId: String): Boolean {
+    fun hasUnsavedChanges(): Boolean {
         // If not in edit mode, no unsaved changes
         if (!_isEditing.value) {
             return false
@@ -437,9 +440,9 @@ class QuestionnaireViewModel(
             }
             
             // Check if all required preferences are set
-            val hasSelectedCategories = foodCategoryMap.any { it.value }
-            val hasSelectedPersona = !_selectedPersonaId.value.isNullOrBlank()
-            val hasValidTimes = _biggestMealTime.value.isNotBlank() &&
+            foodCategoryMap.any { it.value }
+            !_selectedPersonaId.value.isNullOrBlank()
+            _biggestMealTime.value.isNotBlank() &&
                     _sleepTime.value.isNotBlank() &&
                     _wakeUpTime.value.isNotBlank()
             
@@ -450,6 +453,7 @@ class QuestionnaireViewModel(
             // Return the completion status directly
             return _isQuestionnaireCompleted.value
         } catch (e: Exception) {
+            e.printStackTrace()
             // If there's any error, assume questionnaire is not completed
             _isQuestionnaireCompleted.value = false
             return false

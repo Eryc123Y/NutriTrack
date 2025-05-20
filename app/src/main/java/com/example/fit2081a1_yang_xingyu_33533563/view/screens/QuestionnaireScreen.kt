@@ -77,55 +77,38 @@ fun QuestionnaireScreen(
     val prefManager = SharedPreferencesManager.getInstance(context)
     val userID = prefManager.getCurrentUser()
 
-    // State for exit confirmation dialog
     val showExitConfirmation = remember { mutableStateOf(false) }
 
-    // We store only 4 pages: food categories, persona, time prefs, summary
     val pageCount = 4
     val pagerState = rememberPagerState { pageCount }
     val coroutineScope = rememberCoroutineScope()
 
-    // Sync animations with frame rate for smoother transitions
     AnimationUtils.SyncAnimationsWithFrames()
 
-    // Measure frame time to adaptively adjust animation complexity
-    val frameMetrics = AnimationUtils.MeasureFrameTime()
+    AnimationUtils.MeasureFrameTime()
 
-    // Custom fling behavior for smoother paging with spring physics
     val flingBehavior = rememberCustomPagerFlingBehavior(pagerState)
 
-    // Always use FADE transition for smoother, simpler animations
     val transitionEffect = PageTransitionEffect.FADE
 
-    // Food category state - using ViewModel
     val allFoodCategories = viewModel.allFoodCategories.collectAsState().value
     val selectedFoodCategoryKeys = viewModel.foodCategoryKeyBooleanMap.collectAsState().value
 
-    // Persona state - using ViewModel
     val allPersonas = viewModel.allPersonas.collectAsState().value
     val selectedPersonaId = viewModel.selectedPersonaId.collectAsState().value ?: ""
 
-    // Time preferences state - using ViewModel
     val biggestMealTime by viewModel.biggestMealTime.collectAsState()
     val sleepTime by viewModel.sleepTime.collectAsState()
     val wakeUpTime by viewModel.wakeUpTime.collectAsState()
 
-    // Time validation error
     val timeValidationError by viewModel.timeValidationError.collectAsState()
 
-    // Save status
     val saveStatus by viewModel.saveStatus.collectAsState()
 
-    // is questionnaire completed
-    val isQuestionnaireCompleted by viewModel.isQuestionnaireCompleted.collectAsState()
-
-    // is in editing mode - collect from viewModel
     val isInEditMode by viewModel.isEditing.collectAsState()
 
-    // Collect validation state
     val isQuestionnaireValid by viewModel.isQuestionnaireValid.collectAsState()
 
-    // Map time preferences to UserTimePref enum - update when any time value changes
     val timePreferences = remember(biggestMealTime, sleepTime, wakeUpTime) {
         mapOf(
             UserTimePref.BIGGEST_MEAL to (biggestMealTime ?: ""),
@@ -172,7 +155,7 @@ fun QuestionnaireScreen(
     BackHandler(enabled = true) {
         if (isInEditMode) {
             // Only show confirmation dialog if there are unsaved changes
-            if (viewModel.hasUnsavedChanges(userID.toString())) {
+            if (viewModel.hasUnsavedChanges()) {
                 showExitConfirmation.value = true
             } else {
                 // No changes, just go back with proper cleanup
@@ -227,7 +210,7 @@ fun QuestionnaireScreen(
                 showBackButton = isInEditMode, // Only show back button in edit mode
                 onBackButtonClick = {
                     // Only show confirmation dialog if there are unsaved changes
-                    if (viewModel.hasUnsavedChanges(userID.toString())) {
+                    if (viewModel.hasUnsavedChanges()) {
                         showExitConfirmation.value = true
                     } else {
                         // No changes, just go back with proper cleanup
@@ -283,8 +266,10 @@ fun QuestionnaireScreen(
                                         viewModel.toggleFoodCategory(category, checked) }
                                 )
                                 1 -> PersonaPage(
-                                    selectedPersona = selectedPersonaId,
-                                    onPersonaSelected = { viewModel.selectPersona(it) },
+                                    selectedPersonaId = selectedPersonaId,
+                                    onPersonaSelected = { personaId ->
+                                        viewModel.selectPersona(personaId)
+                                    },
                                     personas = allPersonas
                                 )
                                 2 -> TimingsPage(
@@ -429,7 +414,7 @@ fun FoodCategoryPage(
 
 @Composable
 fun PersonaPage(
-    selectedPersona: String,
+    selectedPersonaId: String,
     onPersonaSelected: (String) -> Unit,
     personas: List<PersonaEntity> = emptyList()
 ) {
@@ -466,8 +451,10 @@ fun PersonaPage(
                 ) { persona ->
                     PersonaCard(
                         persona = persona,
-                        isSelected = selectedPersona == persona.personaID,
-                        onPersonaClick = { personaId -> onPersonaSelected(personaId) }
+                        isSelected = selectedPersonaId == persona.personaID,
+                        onPersonaSelect = { selectedId ->
+                            onPersonaSelected(selectedId)
+                        }
                     )
                 }
             }
