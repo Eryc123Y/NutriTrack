@@ -370,17 +370,12 @@ class GenAIViewModel(
         // which will update currentSessionId and _currentSessionIdSF.
         println("GenAIViewModel: User ID changed from $oldUserId to: ${this.vmCurrentUserId}. A new session should follow if user changed.")
     }
-    
-    /**
-     * Get user-specific conversation history
-     */
-    fun getUserConversationHistory(userId: String) = chatRepository.getUserConversationFlow(userId)
-    
+
     /**
      * Clear all messages from the current session
      */
     fun clearCurrentChatSession() {
-        val sessionToClear = this.vmCurrentSessionId // Keep for logging if needed
+        this.vmCurrentSessionId // Keep for logging if needed
         val userContext = this.vmCurrentUserId
         userContext?.let { userIdToClear -> // Ensure userContext (userId) is not null
             viewModelScope.launch(Dispatchers.IO) {
@@ -391,33 +386,5 @@ class GenAIViewModel(
             }
         } ?: println("GenAIViewModel: Cannot clear chat session, UserID is null.")
     }
-    
-    /**
-     * Clear all messages for the current user
-     */
-    fun clearUserHistory() {
-        this.vmCurrentUserId?.let { userIdToClear ->
-            viewModelScope.launch(Dispatchers.IO) {
-                chatRepository.clearUserMessages(userIdToClear)
-                // If current user's history is cleared, the current session is part of that.
-                // So, might need to also effectively "reset" the current session view.
-                // The conversationHistory will update.
-                // Consider also calling startNewSession() or updateSearchQuery("").
-                updateSearchQuery("")
-                println("GenAIViewModel: Cleared all messages for UserID: $userIdToClear")
-            }
-        }
-    }
-    
-    /**
-     * Clear all chat history
-     */
-    fun clearAllHistory() {
-        viewModelScope.launch(Dispatchers.IO) {
-            chatRepository.clearAllMessages()
-            // This clears everything. The current session view will become empty.
-            updateSearchQuery("")
-            println("GenAIViewModel: Cleared all chat history from repository.")
-        }
-    }
+
 }
