@@ -1,7 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
