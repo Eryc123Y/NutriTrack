@@ -233,8 +233,7 @@ class AuthViewModel(
                 return false
             }
             phone != _currentUserPhoneNumber.value -> {
-                _authError.value = "Phone number does not match, should be " +
-                        "${_currentUserPhoneNumber.value}"
+                _authError.value = "Phone number does not match."
                 return false
             }
             else -> return true
