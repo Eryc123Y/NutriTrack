@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -63,6 +64,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -480,12 +482,6 @@ fun TimingsPage(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        Text(
-            text = "Tell us about your daily schedule to help us plan your meals better.",
-            style = TextStyle(fontSize = 16.sp),
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
         // Column that was previously inside the Card
         Column(
             modifier = Modifier
@@ -551,138 +547,151 @@ fun SummaryPage(
     timePreferences: Map<UserTimePref, String>,
     allPersonas: List<PersonaEntity> = emptyList()
 ) {
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = "Summary",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 8.dp).align(Alignment.CenterHorizontally)
-        )
+        item {
+            Text(
+                text = "Summary",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
 
         // Food categories summary Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Selected Food Categories",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                val selectedCategories = checkedState.entries
-                    .filter { it.value }
-                    .map { FoodCategory.fromFoodDefId(it.key).foodName }
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Selected Food Categories",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    val selectedCategories = checkedState.entries
+                        .filter { it.value }
+                        .map { FoodCategory.fromFoodDefId(it.key).foodName }
 
-                if (selectedCategories.isNotEmpty()) {
-                    selectedCategories.forEach { categoryName ->
+                    if (selectedCategories.isNotEmpty()) {
+                        selectedCategories.forEach { categoryName ->
+                            Text(
+                                text = "• $categoryName",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+                            )
+                        }
+                    } else {
                         Text(
-                            text = "• $categoryName",
+                            text = "None selected",
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+                            fontStyle = FontStyle.Italic
                         )
                     }
-                } else {
-                    Text(
-                        text = "None selected",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontStyle = FontStyle.Italic
-                    )
                 }
             }
         }
 
         // Persona summary Card
         val personaEntity = allPersonas.find { it.personaID == selectedPersona }
-        if (personaEntity != null) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Selected Persona",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(
-                        text = personaEntity.personaName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    personaEntity.personaDescription?.let {
+        item {
+            if (personaEntity != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 4.dp)
+                            text = "Selected Persona",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
+                        Text(
+                            text = personaEntity.personaName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        personaEntity.personaDescription?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
                     }
                 }
-            }
-        } else if (selectedPersona.isNotEmpty()){
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Selected Persona",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(text = "ID: $selectedPersona (Name not found)", style = MaterialTheme.typography.bodyLarge)
+            } else if (selectedPersona.isNotEmpty()){
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Selected Persona",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(text = "ID: $selectedPersona (Name not found)", style = MaterialTheme.typography.bodyLarge)
+                    }
                 }
-            }
-        } else {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Selected Persona",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(text = "None selected", style = MaterialTheme.typography.bodyLarge, fontStyle = FontStyle.Italic)
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Selected Persona",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(text = "None selected", style = MaterialTheme.typography.bodyLarge, fontStyle = FontStyle.Italic)
+                    }
                 }
             }
         }
 
-
         // Time preferences summary Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Your Preferred Times",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                UserTimePref.entries.forEach { pref ->
-                    val time = timePreferences[pref] ?: ""
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = pref.timePrefName, style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text = time.ifEmpty { "Not set" },
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontStyle = if (time.isEmpty()) FontStyle.Italic else FontStyle.Normal
-                        )
-                    }
-                    if (pref != UserTimePref.entries.last()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Your Preferred Times",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    UserTimePref.entries.forEach { pref ->
+                        val time = timePreferences[pref] ?: ""
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = pref.timePrefName, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = time.ifEmpty { "Not set" },
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontStyle = if (time.isEmpty()) FontStyle.Italic else FontStyle.Normal
+                            )
+                        }
+                        if (pref != UserTimePref.entries.last()) {
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        }
                     }
                 }
             }
+        }
+        
+        // Add some padding at the bottom for better UX
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

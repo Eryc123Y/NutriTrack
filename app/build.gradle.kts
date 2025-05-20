@@ -70,6 +70,7 @@ dependencies {
     implementation (libs.converter.gson)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.room.runtime)
     implementation(libs.generativeai)
     ksp(libs.room.compiler)

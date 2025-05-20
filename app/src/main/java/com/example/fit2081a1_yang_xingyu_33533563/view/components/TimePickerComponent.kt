@@ -22,6 +22,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @Composable
 fun TimeInput(
@@ -32,12 +35,14 @@ fun TimeInput(
 ) {
     var hourText by remember { mutableStateOf("") }
     var minuteText by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Initialize time from prop
     LaunchedEffect(initialTime) {
         if (initialTime.matches(Regex("^([01]?[0-9]|2[0-3]):[0-5][0-9]$"))) {
             val parts = initialTime.split(":")
-            hourText = parts[0]
-            minuteText = parts[1]
+            hourText = parts[0].padStart(2, '0')
+            minuteText = parts[1].padStart(2, '0')
         } else {
             hourText = ""
             minuteText = ""
@@ -62,26 +67,35 @@ fun TimeInput(
             OutlinedTextField(
                 value = hourText,
                 onValueChange = { newValue ->
-                    val num = newValue.take(2).filter { it.isDigit() }
-                    if (num.isEmpty()) {
+                    // Allow only up to 2 digits and validate range
+                    val filtered = newValue.filter { it.isDigit() }.take(2)
+                    if (filtered.isEmpty()) {
                         hourText = ""
+                        errorMessage = null
                     } else {
-                        val intVal = num.toIntOrNull()
-                        if (intVal != null && intVal >= 0 && intVal <= 23) {
-                            hourText = num
-                        } else if (num.length == 1 && "012".contains(num)) {
-                            hourText = num
-                        } else if (num.length == 2 && intVal == null) {
-                            hourText = num.first().toString()
+                        val intVal = filtered.toIntOrNull()
+                        if (intVal != null && intVal in 0..23) {
+                            hourText = filtered.padStart(2, '0') // Pad with leading zeros
+                            errorMessage = null
+                        } else {
+                            errorMessage = "Hour must be between 0-23"
+                            if (filtered.length <= 2) {
+                                hourText = filtered // Still allow typing but show error
+                            }
                         }
                     }
-                    updateTime(hourText, minuteText, onTimeSelected)
+                    
+                    if (hourText.isNotEmpty() && minuteText.isNotEmpty()) {
+                        validateAndUpdateTime(hourText, minuteText, onTimeSelected, errorMessage)
+                    }
                 },
                 modifier = Modifier.weight(1f),
-                label = { Text("Hour (00-23)") },
+                label = { Text("Hour") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                placeholder = { Text("HH", textAlign = TextAlign.Center) }
+                placeholder = { Text("HH", textAlign = TextAlign.Center) },
+                isError = errorMessage != null && errorMessage!!.contains("Hour"),
+                singleLine = true
             )
             
             Text(":", fontSize = 20.sp, modifier = Modifier.padding(horizontal = 4.dp))
@@ -89,56 +103,71 @@ fun TimeInput(
             OutlinedTextField(
                 value = minuteText,
                 onValueChange = { newValue -> 
-                    val num = newValue.take(2).filter { it.isDigit() }
-                     if (num.isEmpty()) {
+                    // Allow only up to 2 digits and validate range
+                    val filtered = newValue.filter { it.isDigit() }.take(2)
+                    if (filtered.isEmpty()) {
                         minuteText = ""
+                        errorMessage = null
                     } else {
-                        val intVal = num.toIntOrNull()
-                        if (intVal != null && intVal >= 0 && intVal <= 59) {
-                            minuteText = num
-                        } else if (num.length == 1 && "012345".contains(num)) {
-                           minuteText = num
-                        } else if (num.length == 2 && intVal == null) {
-                            minuteText = num.first().toString()
+                        val intVal = filtered.toIntOrNull()
+                        if (intVal != null && intVal in 0..59) {
+                            minuteText = filtered.padStart(2, '0') // Pad with leading zeros
+                            errorMessage = null
+                        } else {
+                            errorMessage = "Minute must be between 0-59"
+                            if (filtered.length <= 2) {
+                                minuteText = filtered // Still allow typing but show error
+                            }
                         }
                     }
-                    updateTime(hourText, minuteText, onTimeSelected)
+                    
+                    if (hourText.isNotEmpty() && minuteText.isNotEmpty()) {
+                        validateAndUpdateTime(hourText, minuteText, onTimeSelected, errorMessage)
+                    }
                 },
                 modifier = Modifier.weight(1f),
-                label = { Text("Min (00-59)") },
+                label = { Text("Minute") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                placeholder = { Text("MM", textAlign = TextAlign.Center) }
+                placeholder = { Text("MM", textAlign = TextAlign.Center) },
+                isError = errorMessage != null && errorMessage!!.contains("Minute"),
+                singleLine = true
+            )
+        }
+        
+        // Error message
+        errorMessage?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }
 }
 
-private fun updateTime(hourText: String, minuteText: String, onTimeSelected: (String) -> Unit) {
-    val hour = hourText.toIntOrNull()
-    val minute = minuteText.toIntOrNull()
-
-    if (hour != null && hour in 0..23 && minute != null && minute in 0..59) {
-        val formattedTime = String.format("%02d:%02d", hour, minute)
-        onTimeSelected(formattedTime)
-    } else {
-        if (hourText.isNotBlank() && minuteText.isNotBlank()) {
-            try {
-                val h = hourText.toInt()
-                val m = minuteText.toInt()
-                if (h in 0..23 && m in 0..59) {
-                    onTimeSelected(String.format("%02d:%02d", h, m))
-                } else {
-                    onTimeSelected("$hourText:$minuteText")
+private fun validateAndUpdateTime(hourText: String, minuteText: String, onTimeSelected: (String) -> Unit, errorMessage: String?) {
+    // Only update if there are no validation errors
+    if (errorMessage == null) {
+        try {
+            val hour = hourText.toInt()
+            val minute = minuteText.toInt()
+            
+            if (hour in 0..23 && minute in 0..59) {
+                val formattedTime = String.format("%02d:%02d", hour, minute)
+                
+                // Validate using LocalTime to ensure it's a proper time
+                try {
+                    LocalTime.parse(formattedTime, DateTimeFormatter.ofPattern("HH:mm"))
+                    onTimeSelected(formattedTime)
+                } catch (e: DateTimeParseException) {
+                    // This shouldn't happen given our prior validation, but just in case
+                    e.printStackTrace()
                 }
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                onTimeSelected("$hourText:$minuteText")
             }
-        } else if (hourText.isBlank() && minuteText.isBlank()){
-            onTimeSelected("")
-        } else {
-            onTimeSelected("$hourText:$minuteText")
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
         }
     }
 }
