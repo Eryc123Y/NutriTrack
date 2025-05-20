@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -208,7 +209,7 @@ fun DashboardContent(
                                 pattern = pattern
                             )
                             if (index < patterns.size - 1) {
-                                Divider(
+                                HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 8.dp),
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                                 )
@@ -310,7 +311,8 @@ fun UserStatsContent(
                     ) {
                         Column {
                             Text(
-                                text = if (userStat.userName.isNullOrBlank()) "unregistered user" else userStat.userName,
+                                text = if (userStat.userName.toString() == "null")
+                                    "unregistered user" else userStat.userName,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
