@@ -51,6 +51,9 @@ class AuthViewModel(
     private val _authError = MutableStateFlow<String?>(null)
     val authError: StateFlow<String?> = _authError.asStateFlow()
 
+    private val _passwordChangeStatus = MutableStateFlow<String?>(null)
+    val passwordChangeStatus: StateFlow<String?> = _passwordChangeStatus.asStateFlow()
+
     // loading the current user when the ViewModel is created. This is nullable if no
     // any user is stored in the shared preferences.
     init {
@@ -313,6 +316,10 @@ class AuthViewModel(
         _authError.value = null
     }
 
+    fun clearPasswordChangeStatus() {
+        _passwordChangeStatus.value = null
+    }
+
     fun loadUserPhoneNumber(userId: String) {
         viewModelScope.launch {
             try {
@@ -324,6 +331,70 @@ class AuthViewModel(
                 }
             } catch (e: Exception) {
                 _authError.value = "Error loading user phone number: ${e.message}"
+            }
+        }
+    }
+
+    /**
+     * Validates new password and its confirmation.
+     * Sets _passwordChangeStatus with an error message if validation fails.
+     * @return Boolean indicating whether the new password is valid.
+     */
+    private fun validateNewPassword(newPassword: String, confirmNewPassword: String): Boolean {
+        val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$"
+        when {
+            newPassword.isBlank() || confirmNewPassword.isBlank() -> {
+                _passwordChangeStatus.value = "New password fields cannot be empty."
+                return false
+            }
+            newPassword != confirmNewPassword -> {
+                _passwordChangeStatus.value = "New passwords do not match."
+                return false
+            }
+            newPassword.length < 8 -> {
+                _passwordChangeStatus.value = "New password must be at least 8 characters long."
+                return false
+            }
+            !newPassword.matches(Regex(passwordPattern)) -> {
+                _passwordChangeStatus.value = "New password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
+                return false
+            }
+            else -> return true
+        }
+    }
+
+    fun changePassword(userId: String, currentPassword: String, newPassword: String, confirmNewPassword: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _passwordChangeStatus.value = null // Clear previous status
+
+            if (!validateNewPassword(newPassword, confirmNewPassword)) {
+                _isLoading.value = false
+                // _passwordChangeStatus is already set by validateNewPassword if it fails
+                return@launch
+            }
+
+            try {
+                val user = userRepository.getUserById(userId).firstOrNull()
+                if (user?.userHashedCredential == null) {
+                    _passwordChangeStatus.value = "Could not retrieve current user credential."
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                if (verifyPassword(currentPassword, user.userHashedCredential)) {
+                    // Current password is correct, proceed to change
+                    val newHashedPassword = hashPassword(newPassword)
+                    val updatedUser = user.copy(userHashedCredential = newHashedPassword)
+                    userRepository.updateUser(updatedUser)
+                    _passwordChangeStatus.value = "Password changed successfully."
+                } else {
+                    _passwordChangeStatus.value = "Incorrect current password."
+                }
+            } catch (e: Exception) {
+                _passwordChangeStatus.value = "Error changing password: ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
     }

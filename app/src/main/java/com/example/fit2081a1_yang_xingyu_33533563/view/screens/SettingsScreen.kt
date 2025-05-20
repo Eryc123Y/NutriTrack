@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -89,6 +90,11 @@ fun SettingsScreen(
     var clinicianKeyInput by remember { mutableStateOf("") }
     var showInvalidCodeError by remember { mutableStateOf(false) }
 
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var currentPasswordInput by remember { mutableStateOf("") }
+    var newPasswordInput by remember { mutableStateOf("") }
+    var confirmNewPasswordInput by remember { mutableStateOf("") }
+
     // Collect user data from profileViewModel
     val currentUser by profileViewModel.currentUser.collectAsState()
 
@@ -132,6 +138,13 @@ fun SettingsScreen(
                     authViewModel.logout()
                     onLogoutToLogin()
                 },
+                onChangePasswordClick = {
+                    authViewModel.clearPasswordChangeStatus()
+                    currentPasswordInput = ""
+                    newPasswordInput = ""
+                    confirmNewPasswordInput = ""
+                    showChangePasswordDialog = true
+                },
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = onToggleDarkMode
             )
@@ -164,6 +177,33 @@ fun SettingsScreen(
             showError = showInvalidCodeError
         )
     }
+
+    if (showChangePasswordDialog && currentUser != null) {
+        ChangePasswordDialog(
+            currentPassword = currentPasswordInput,
+            newPassword = newPasswordInput,
+            confirmNewPassword = confirmNewPasswordInput,
+            onCurrentPasswordChange = { currentPasswordInput = it },
+            onNewPasswordChange = { newPasswordInput = it },
+            onConfirmNewPasswordChange = { confirmNewPasswordInput = it },
+            passwordChangeStatus = authViewModel.passwordChangeStatus.collectAsState().value,
+            onDismissRequest = { 
+                showChangePasswordDialog = false
+                authViewModel.clearPasswordChangeStatus()
+             },
+            onConfirm = {
+                currentUser?.userId?.let {
+                    authViewModel.changePassword(
+                        it,
+                        currentPasswordInput,
+                        newPasswordInput,
+                        confirmNewPasswordInput
+                    )
+                }
+            },
+            isLoading = authViewModel.isLoading.collectAsState().value
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -175,6 +215,7 @@ fun UserSettingsContent(
     userPhoneNumber: String,
     onClinicianLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
+    onChangePasswordClick: () -> Unit,
     isDarkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit
 ) {
@@ -224,6 +265,15 @@ fun UserSettingsContent(
 
         // Account Actions Section
         InfoCard(title = "Account") {
+            Button(
+                onClick = onChangePasswordClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Lock, contentDescription = "Change Password Icon", modifier = Modifier.padding(end = 8.dp))
+                Text("Change Password")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = onLogoutClick,
                 modifier = Modifier.fillMaxWidth(),
@@ -287,6 +337,82 @@ fun ClinicianLoginDialog(
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("Login")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChangePasswordDialog(
+    currentPassword: String,
+    newPassword: String,
+    confirmNewPassword: String,
+    onCurrentPasswordChange: (String) -> Unit,
+    onNewPasswordChange: (String) -> Unit,
+    onConfirmNewPasswordChange: (String) -> Unit,
+    passwordChangeStatus: String?,
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    isLoading: Boolean
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Change Password") },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = onCurrentPasswordChange,
+                    label = { Text("Current Password") },
+                    singleLine = true,
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = onNewPasswordChange,
+                    label = { Text("New Password") },
+                    singleLine = true,
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = confirmNewPassword,
+                    onValueChange = onConfirmNewPasswordChange,
+                    label = { Text("Confirm New Password") },
+                    singleLine = true,
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                passwordChangeStatus?.let {
+                    val isError = !it.contains("success", ignoreCase = true)
+                    Text(
+                        text = it,
+                        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm, 
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp)) 
+                } else {
+                    Text("Confirm")
+                }
             }
         },
         dismissButton = {

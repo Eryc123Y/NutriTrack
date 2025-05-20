@@ -88,7 +88,8 @@ class ViewModelProviderFactory(
             modelClass.isAssignableFrom(ClinicianDashboardViewModel::class.java) -> {
                 ClinicianDashboardViewModel(
                     userRepository,
-                    userScoreRepository
+                    userScoreRepository,
+                    create(GenAIViewModel::class.java) as GenAIViewModel
                 ) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

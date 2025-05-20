@@ -32,7 +32,6 @@ object InitDataUtils {
      */
     suspend fun isDatabaseInitializationNeeded(userRepository: UserRepository): Boolean {
         return userRepository.getAllUsers().first().isEmpty()
-        //return true // todo uncomment this line after testing
     }
 
     /**

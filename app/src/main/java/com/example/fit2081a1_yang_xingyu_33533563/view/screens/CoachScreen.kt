@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,6 +33,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.fit2081a1_yang_xingyu_33533563.api.FruitResponse
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import kotlinx.coroutines.delay
 import kotlin.collections.filter
 import kotlin.collections.isNotEmpty
 
@@ -248,22 +250,29 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
         conversationHistory.filter { !it.isUserMessage }
     }
 
-    LaunchedEffect(filteredHistory.size) {
-        if (filteredHistory.isNotEmpty() && searchQuery.isBlank()) { 
-            chatListState.animateScrollToItem(filteredHistory.size - 1)
-        }
-    }
-
-    LaunchedEffect(genAiUiState) {
+    LaunchedEffect(filteredHistory.size, genAiUiState) { // Added genAiUiState to scroll correctly during streaming
         if (searchQuery.isBlank()) {
-            when (genAiUiState) {
-                is UiState.Loading, is UiState.Streaming -> {
-                    val targetIndex = filteredHistory.size
-                    if (targetIndex >= 0) {
-                        chatListState.animateScrollToItem(targetIndex)
+            val targetIndex = if (genAiUiState is UiState.Streaming || genAiUiState is UiState.Loading) {
+                filteredHistory.size // Scroll to the loading/streaming bubble
+            } else if (filteredHistory.isNotEmpty()){
+                filteredHistory.size -1 // Scroll to the last actual message
+            } else {
+                -1 // No items
+            }
+            if (targetIndex >= 0) {
+                try {
+                    if (genAiUiState is UiState.Streaming) {
+                        // Delay slightly when streaming to allow UI to catch up with rapid updates
+                        // especially if TYPING_DELAY_MS in ViewModel is very low.
+                        delay(100L) 
+                        chatListState.scrollToItem(targetIndex) // Use scrollToItem for immediate jump during streaming
+                    } else {
+                        chatListState.animateScrollToItem(targetIndex) // Use animate for other cases
                     }
+                } catch (e: Exception) {
+                    // Handle potential exceptions if the list is modified during scroll
+                    Log.e("CoachScreen", "Error scrolling to item: ${e.message}")
                 }
-                else -> {  }
             }
         }
     }
@@ -371,22 +380,32 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (filteredHistory.isEmpty() && genAiUiState !is UiState.Streaming && genAiUiState !is UiState.Loading) {
+            if (filteredHistory.isEmpty() && genAiUiState !is UiState.Streaming && genAiUiState !is UiState.Loading && searchQuery.isBlank()) {
                 item {
                     Text(
-                        if (searchQuery.isNotBlank()) "No messages found matching your search."
-                        else "Ask NutriCoach about healthy eating habits...",
+                        "Ask NutriCoach about healthy eating habits...",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
                     )
                 }
-            } else {
-                items(filteredHistory) { message ->
-                    ChatMessageBubble(
-                        isUserMessage = message.isUserMessage, 
-                        text = message.message
+            } else if (filteredHistory.isEmpty() && searchQuery.isNotBlank()) {
+                 item {
+                    Text(
+                       "No messages found matching your search.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
                     )
+                }
+            }else {
+                items(filteredHistory) { message ->
+                    if (message.isUserMessage) {
+                        UserMessageBubble(text = message.message)
+                    } else {
+                        // Use MarkdownText for historical AI messages
+                        AiMessageBubble(text = message.message, useMarkdown = true)
+                    }
                 }
             }
 
@@ -420,11 +439,12 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                 }
             }
 
+            // When AI is streaming, display the animated text
             if (genAiUiState is UiState.Streaming && searchQuery.isBlank()) {
                 item {
-                    ChatMessageBubble(
-                        isUserMessage = false,
-                        text = (genAiUiState as UiState.Streaming).currentMessageContent
+                    AiMessageBubble(
+                        text = (genAiUiState as UiState.Streaming).currentMessageContent,
+                        useMarkdown = true // AI responses should be markdown
                     )
                 }
             }
@@ -505,24 +525,56 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
 }
 
 @Composable
-fun ChatMessageBubble(isUserMessage: Boolean, text: String) {
+fun AiMessageBubble(text: String, useMarkdown: Boolean = false) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (isUserMessage) Arrangement.End else Arrangement.Start
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.Start
     ) {
-        Surface(
+        Card(
+            modifier = Modifier.weight(1f, fill = false), // Prevents the card from taking full width if text is short
             shape = MaterialTheme.shapes.medium,
-            color = if (isUserMessage) MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = if (isUserMessage) MaterialTheme.colorScheme.onPrimaryContainer
-            else MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.widthIn(max = 280.dp) 
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ) {
-            MarkdownText(
-                markdown = text,
-                style = MaterialTheme.typography.bodyMedium, // Apply a basic style
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
+            Box(modifier = Modifier.padding(12.dp)) {
+                if (useMarkdown) {
+                    MarkdownText(
+                        markdown = text,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.weight(0.2f)) // Pushes the bubble to the left by adding space on the right
+    }
+}
+
+@Composable
+fun UserMessageBubble(text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.End
+    ) {
+        Spacer(modifier = Modifier.weight(0.2f)) // Pushes the bubble to the right by adding space on the left
+        Card(
+            modifier = Modifier.weight(1f, fill = false), // Prevents the card from taking full width if text is short
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+        ) {
+            Box(modifier = Modifier.padding(12.dp)) {
+                MarkdownText(
+                    markdown = text,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
