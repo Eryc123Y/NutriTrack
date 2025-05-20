@@ -34,37 +34,23 @@ fun readColumn(context: Context, columnTitle: String, filePath: String = "testUs
             val header = lines[0].split(",").map { it.trim() }
             val columnIndex = header.indexOf(columnTitle) // -1 if not found
             if (columnIndex == -1) {
-                // Consider logging this instead of crashing if a column might be optional
-                // For InitDataUtils, these columns are expected.
                 throw IllegalArgumentException("Column '$columnTitle' not found in CSV header of $filePath")
             }
             for (line in lines.subList(1, lines.size)) {
                 val row = line.split(",")
-                // Ensure row has enough columns before accessing by columnIndex
-                // to prevent IndexOutOfBoundsException if a row is malformed (shorter than header)
                 if (columnIndex < row.size) {
-                    column.add(row[columnIndex].trim()) // Trim individual cell values too
+                    column.add(row[columnIndex].trim())
                 } else {
-                    // Handle malformed row, e.g., add an empty string or log a warning
-                    column.add("") // Add empty string for missing cell in this column
-                    // System.err.println("Warning: Malformed row in $filePath. Expected at least ${columnIndex + 1} columns, got ${row.size}. Line: '$line'")
+                    column.add("")
                 }
             }
         }
     } catch (e: IOException) {
-        // Log or rethrow IOException if needed, printStackTrace is okay for this context
         e.printStackTrace()
-        // Optionally rethrow or return empty list to signal failure more clearly
-        // throw e // or return emptyList()
     } catch (e: IllegalArgumentException) {
-        // This is already thrown if column title is not found
         e.printStackTrace()
-        throw e // Rethrow to ensure InitDataUtils knows the column is missing
+        throw e
     }
 
     return column
 }
-
-// Removed getUserFromCSV function
-
-// Removed retrieveUserScore function

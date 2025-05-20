@@ -23,6 +23,4 @@ enum class FruitInfo(val displayName: String) {
  */
 data class FruitResponse(
     var fruitInfo: List<Map<String, String>>
-) {
-
-}
+)
