@@ -3,11 +3,6 @@ package com.example.fit2081a1_yang_xingyu_33533563.util
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.FoodCategory
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserTimePref
-
 /**
  * Created by Xingyu Yang
  * SharedPreferencesManager is used to manage the shared preferences
@@ -19,7 +14,6 @@ class SharedPreferencesManager(context: Context) {
         PREFERENCES_FILE("shared_preferences"),
         CURRENT_USER_ID("currentUserID"),
         KNOWN_USERS("known_users"),
-        USER_PREFIX("user_"),
     }
 
     companion object {
@@ -61,10 +55,4 @@ class SharedPreferencesManager(context: Context) {
         sharedPreferences.edit() { remove(PreferenceKey.CURRENT_USER_ID.key) }
     }
 
-    fun saveAdminCode(adminCode: String) {
-        // Use the lazy-initialized sharedPreferences object
-        sharedPreferences.edit {
-            putString("admin_code", adminCode)
-        } // or editor.commit()
-    }
 }
