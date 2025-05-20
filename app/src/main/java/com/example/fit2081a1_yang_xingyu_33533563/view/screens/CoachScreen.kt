@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -552,23 +553,21 @@ fun InfoCard(
                 
                 if (onHistoryClick != null && onClearClick != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Button(
+                        IconButton(
                             onClick = onHistoryClick,
-                            modifier = Modifier.padding(end = 8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Filled.Search,
-                                    contentDescription = "View All AI Responses",
-                                    modifier = Modifier.size(18.dp)
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = MaterialTheme.shapes.small
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("History", style = MaterialTheme.typography.labelMedium)
-                            }
+                        ) {
+                            Icon(
+                                Icons.Filled.History,
+                                contentDescription = "View Chat History",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                         
                         IconButton(

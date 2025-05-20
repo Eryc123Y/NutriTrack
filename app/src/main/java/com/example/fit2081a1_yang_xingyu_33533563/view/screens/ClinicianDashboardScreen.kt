@@ -153,12 +153,12 @@ fun DashboardContent(
                                 score = maleAverage,
                                 modifier = Modifier.weight(1f)
                             )
-                            
-                            Divider(
+
+                            HorizontalDivider(
                                 modifier = Modifier
                                     .height(48.dp)
-                                    .width(1.dp),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                    .width(1.dp),color =
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
                             )
                             
                             ScoreDisplay(
