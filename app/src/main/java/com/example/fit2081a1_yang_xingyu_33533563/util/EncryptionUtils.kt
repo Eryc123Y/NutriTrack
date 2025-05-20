@@ -1,6 +1,7 @@
 package com.example.fit2081a1_yang_xingyu_33533563.util
 
 import android.util.Base64
+import android.util.Log
 import org.mindrot.jbcrypt.BCrypt
 import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
@@ -69,7 +70,7 @@ fun verifyClinicianCode(code: String): Boolean {
         BCrypt.checkpw(code, CLINICIAN_BCRYPT_HASH)
     } catch (e: Exception) {
         // Log error or handle appropriately if BCrypt throws an exception (e.g., invalid hash format)
-        e.printStackTrace()
+        Log.e("EncryptionUtils", "Error verifying clinician code: ${e.message}", e)
         false
     }
 }
