@@ -1,6 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.view.components
 
-import android.content.Context
+// import android.content.Context // Removed unused import
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fit2081a1_yang_xingyu_33533563.data.csv.retrieveUserScore
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.util.getColorforScore
 
@@ -46,18 +45,19 @@ fun ScoreText(
 }
 
 @Composable
-fun ScoreProgressIndicator(context: Context, scoreType: ScoreTypes, userID: String, modifier: Modifier = Modifier) {
-    val scoreValue = retrieveUserScore(context, userID, scoreType)
-
-    // Convert to 0.0-1.0 range for LinearProgressIndicator
-    val progress = scoreValue / scoreType.maxScore.toFloat()
+fun ScoreProgressIndicator(
+    scoreValue: Float,
+    maxScore: Int,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (maxScore > 0) scoreValue / maxScore.toFloat() else 0f
 
     LinearProgressIndicator(
         progress = { progress },
         modifier = modifier
             .height(10.dp),
         trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        color = getColorforScore(scoreValue.toInt(), scoreType.maxScore),
+        color = getColorforScore(scoreValue.toInt(), maxScore),
         gapSize = 0.dp,
         drawStopIndicator = {}
     )
@@ -130,7 +130,7 @@ fun CircularScoreIndicator(
             modifier = Modifier.fillMaxSize(),
             strokeWidth = strokeWidth,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            color = getColorforScore(score, ScoreTypes.TOTAL.maxScore)
+            color = getColorforScore(score, maxScore)
         )
 
         Column(
@@ -151,12 +151,13 @@ fun CircularScoreIndicator(
 }
 
 @Composable
-fun TotalScoreCard(userID: String, context: Context) {
-    val totalScoreType = ScoreTypes.TOTAL
-    val score = retrieveUserScore(context, userID, totalScoreType).toInt()
-
+fun TotalScoreCard(
+    score: Int,
+    maxScore: Int,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -177,7 +178,7 @@ fun TotalScoreCard(userID: String, context: Context) {
 
             CircularScoreIndicator(
                 score = score,
-                maxScore = totalScoreType.maxScore
+                maxScore = maxScore
             )
 
             Text(

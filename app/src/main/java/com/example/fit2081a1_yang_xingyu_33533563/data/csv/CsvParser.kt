@@ -1,11 +1,12 @@
 package com.example.fit2081a1_yang_xingyu_33533563.data.csv
 
 import android.content.Context
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Gender
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserInfo
+// Unused imports can be removed later if CsvParser no longer needs them for readColumn
+// import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Gender
+// import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
+// import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
+// import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
+// import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.UserInfo
 import java.io.BufferedReader
 import java.io.IOException
 
@@ -27,118 +28,43 @@ fun readColumn(context: Context, columnTitle: String, filePath: String = "testUs
         context.assets.open(filePath).use { inputStream ->
             val bufferedReader = BufferedReader(inputStream.reader())
             val lines = bufferedReader.readLines()
+            if (lines.isEmpty()) { // Handle empty CSV file
+                throw IOException("CSV file is empty: $filePath")
+            }
             val header = lines[0].split(",").map { it.trim() }
             val columnIndex = header.indexOf(columnTitle) // -1 if not found
             if (columnIndex == -1) {
-                throw IllegalArgumentException("Column $columnTitle not found")
+                // Consider logging this instead of crashing if a column might be optional
+                // For InitDataUtils, these columns are expected.
+                throw IllegalArgumentException("Column '$columnTitle' not found in CSV header of $filePath")
             }
             for (line in lines.subList(1, lines.size)) {
-                val row = line.split(",").map { it.trim() }
-                column.add(row[columnIndex])
+                val row = line.split(",")
+                // Ensure row has enough columns before accessing by columnIndex
+                // to prevent IndexOutOfBoundsException if a row is malformed (shorter than header)
+                if (columnIndex < row.size) {
+                    column.add(row[columnIndex].trim()) // Trim individual cell values too
+                } else {
+                    // Handle malformed row, e.g., add an empty string or log a warning
+                    column.add("") // Add empty string for missing cell in this column
+                    // System.err.println("Warning: Malformed row in $filePath. Expected at least ${columnIndex + 1} columns, got ${row.size}. Line: '$line'")
+                }
             }
         }
     } catch (e: IOException) {
+        // Log or rethrow IOException if needed, printStackTrace is okay for this context
         e.printStackTrace()
+        // Optionally rethrow or return empty list to signal failure more clearly
+        // throw e // or return emptyList()
+    } catch (e: IllegalArgumentException) {
+        // This is already thrown if column title is not found
+        e.printStackTrace()
+        throw e // Rethrow to ensure InitDataUtils knows the column is missing
     }
 
     return column
 }
 
-/**
- * Create a User instance from a CSV file by user ID
- * @param context: Context
- * @param userId: String
- * @param filePath: String
- * @return User
- */
-fun getUserFromCSV(context: Context, userId: String, filePath: String = "testUsers.csv"): User {
-    try {
-        val userID = UserInfo.USERID.infoName
-        val gender = UserInfo.GENDER.infoName
-        val phoneNumber = UserInfo.PHONE_NUMBER.infoName
+// Removed getUserFromCSV function
 
-        context.assets.open(filePath).use { inputStream ->
-            val reader = inputStream.reader()
-            val lines = reader.readLines()
-
-            // Parse header
-            val header = lines[0].split(",").map { it.trim() }
-
-            // Find user by ID
-            for (i in 1 until lines.size) {
-                val values = lines[i].split(",").map { it.trim() }
-                val rowMap = header.zip(values).toMap()
-
-                // Use direct column name "User_ID" instead of enum for consistency
-                if (rowMap[userID] == userId) {
-                    // Create user with more robust gender handling
-                    val id = rowMap[userID] ?: ""
-                    val phoneNumber = rowMap[phoneNumber] ?: ""
-
-                    // Determine gender directly from Sex column like retrieveUserScore does
-                    val gender = if (rowMap[gender]?.equals("Male", ignoreCase = true) == true)
-                        Gender.MALE
-                    else
-                        Gender.FEMALE
-
-                    val nutritionScores = NutritionScores.fromCsvMap(rowMap, gender)
-
-                    return User(id, phoneNumber, gender, nutritionScores)
-                }
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-
-    throw IllegalArgumentException("User with ID $userId not found")
-}
-
-/**
- * Retrieve a user's score of one given scoreType from a CSV file by user ID
- * @param context: Context
- * @param userId: String
- * @param filePath: String
- * @param scoreType: ScoreTypes
- * @return Float
- */
-fun retrieveUserScore(context: Context,
-                      userId: String,
-                      scoreType: ScoreTypes,
-                      filePath: String = "testUsers.csv"): Float {
-    try {
-        val userID = UserInfo.USERID.infoName
-        val gender = UserInfo.GENDER.infoName
-
-        context.assets.open(filePath).use { inputStream ->
-            val reader = inputStream.reader()
-            val lines = reader.readLines()
-
-            // Parse header
-            val header = lines[0].split(",").map { it.trim() }
-
-            // Find user by ID
-            for (i in 1 until lines.size) {
-                val values = lines[i].split(",").map { it.trim() }
-                val rowMap = header.zip(values).toMap()
-
-                if (rowMap[userID] == userId) {
-                    // Directly determine gender from the Sex column
-                    val gender = if (rowMap[gender]?.equals("Male", ignoreCase = true) == true)
-                        Gender.MALE
-                    else
-                        Gender.FEMALE
-
-                    // Get the correct column name based on gender
-                    val columnName = scoreType.getColumnName(gender)
-
-                    // Return the score value
-                    return rowMap[columnName]?.toFloatOrNull() ?: 0f
-                }
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    throw IllegalArgumentException("User with ID $userId not found")
-}
+// Removed retrieveUserScore function

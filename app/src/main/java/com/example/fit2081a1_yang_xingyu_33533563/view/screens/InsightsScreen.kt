@@ -28,9 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.fit2081a1_yang_xingyu_33533563.data.csv.getUserFromCSV
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
+import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
@@ -57,6 +57,7 @@ fun InsightScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val displayableScores by viewModel.displayableScores.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val userNutritionScoresForShare by viewModel.userNutritionScoresForShare.collectAsState()
     
     // Load data using ViewModel
     LaunchedEffect(userID) {
@@ -106,9 +107,19 @@ fun InsightScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Total score card
-                    TotalScoreCard(userID, context)
+                    val totalScoreData = displayableScores.find { it.displayName == ScoreTypes.TOTAL.displayName }
+                    totalScoreData?.let {
+                        TotalScoreCard(
+                            score = it.scoreValue.toInt(),
+                            maxScore = it.maxScore
+                        )
+                    } ?: if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                    } else {
+                        Text("Total score not available.", modifier = Modifier.padding(16.dp))
+                    }
                     
-                    if (displayableScores.isNotEmpty()) {
+                    if (displayableScores.any { it.displayName != ScoreTypes.TOTAL.displayName }) {
                         Text(
                             text = "Score Categories",
                             style = MaterialTheme.typography.titleLarge,
@@ -128,17 +139,10 @@ fun InsightScreen(
                         Text("No scores available or user ID not found.", modifier = Modifier.padding(16.dp))
                     }
                     
-                    // User data for ShareButton might need to be fetched or passed differently if not using local getUserFromCSV
-                    var userForShare by remember { mutableStateOf<User?>(null) }
-                    LaunchedEffect(userID) {
-                        if (userID.isNotEmpty()) {
-                             userForShare = withContext(Dispatchers.IO) {
-                                getUserFromCSV(context, userID)
-                            }
-                        }
-                    }
-                    userForShare?.let { userData ->
-                        ShareButton(userData)
+                    // Use userNutritionScoresForShare from ViewModel for ShareButton
+                    userNutritionScoresForShare?.let { nutritionScores ->
+                        val dummyUserForShare = User(id = userID, phoneNumber = "", gender = com.example.fit2081a1_yang_xingyu_33533563.data.legacy.Gender.FEMALE, nutritionScores = nutritionScores)
+                        ShareButton(dummyUserForShare)
                     }
                     ImproveDietButton(onClick = onNavigateToCoach)
                 }

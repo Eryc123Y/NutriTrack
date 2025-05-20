@@ -20,6 +20,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserFood
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
+import com.example.fit2081a1_yang_xingyu_33533563.data.csv.readColumn
 import java.io.BufferedReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -99,50 +100,51 @@ object InitDataUtils {
         context: Context,
         userRepository: UserRepository,
     ): List<String> {
-        val userIds = mutableListOf<String>()
+        val userIdsToReturn = mutableListOf<String>()
         
         try {
-            context.assets.open("testUsers.csv").use { inputStream ->
-                val bufferedReader = BufferedReader(inputStream.reader())
-                val lines = bufferedReader.readLines()
-                val header = lines[0].split(",")
+            // Fetch columns using CsvParser.readColumn
+            val userIdCol = readColumn(context, UserInfo.USERID.infoName, "testUsers.csv")
+            val phoneNumberCol = readColumn(context, UserInfo.PHONE_NUMBER.infoName, "testUsers.csv")
+            val genderCol = readColumn(context, UserInfo.GENDER.infoName, "testUsers.csv")
+            val fruitServeSizeCol = readColumn(context, "Fruitservesize", "testUsers.csv")
+
+            // Ensure all columns have the same size (number of users)
+            if (userIdCol.isEmpty()) {
+                // No users found or error in reading UserID column
+                return userIdsToReturn
+            }
+            val userCount = userIdCol.size
+            if (phoneNumberCol.size != userCount || genderCol.size != userCount || fruitServeSizeCol.size != userCount) {
+                throw IllegalArgumentException("CSV column size mismatch during user initialization.")
+            }
+
+            for (i in 0 until userCount) {
+                val userId = userIdCol[i]
+                val phoneNumber = phoneNumberCol[i]
+                val gender = genderCol[i]
+                val fruitServeSize = fruitServeSizeCol[i].toFloatOrNull()
+
+                // Create and insert user entity
+                val userEntity = UserEntity(
+                    userId = userId,
+                    userName = null, // Default to null, update on registration
+                    userPhoneNumber = phoneNumber,
+                    userGender = gender,
+                    userFruitServingsize = fruitServeSize,
+                    userPersonaId = null, // Will be set by user later
+                    userHashedCredential = null, // Will be set upon registration
+                    userIsRegistered = false
+                )
                 
-                // Find column indices
-                val userIdIndex = header.indexOf(UserInfo.USERID.infoName)
-                val phoneNumberIndex = header.indexOf(UserInfo.PHONE_NUMBER.infoName)
-                val genderIndex = header.indexOf(UserInfo.GENDER.infoName)
-                val fruitServeSizeIndex = header.indexOf("Fruitservesize")
-                
-                // Process each line (skip header)
-                for (i in 1 until lines.size) {
-                    val values = lines[i].split(",")
-                    
-                    val userId = values[userIdIndex]
-                    val phoneNumber = values[phoneNumberIndex]
-                    val gender = values[genderIndex]
-                    val fruitServeSize = values.getOrNull(fruitServeSizeIndex)?.toFloatOrNull()
-                    
-                    // Create and insert user entity
-                    val userEntity = UserEntity(
-                        userId = userId,
-                        userName = null, // Default to null, update on registration
-                        userPhoneNumber = phoneNumber,
-                        userGender = gender,
-                        userFruitServingsize = fruitServeSize,
-                        userPersonaId = null, // Will be set by user later
-                        userHashedCredential = null, // Will be set upon registration
-                        userIsRegistered = false
-                    )
-                    
-                    userRepository.insertUser(userEntity)
-                    userIds.add(userId)
-                }
+                userRepository.insertUser(userEntity)
+                userIdsToReturn.add(userId)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
         
-        return userIds
+        return userIdsToReturn
     }
 
     /**
@@ -195,48 +197,71 @@ object InitDataUtils {
         scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository,
     ) {
         try {
-            context.assets.open("testUsers.csv").use { inputStream ->
-                val bufferedReader = BufferedReader(inputStream.reader())
-                val lines = bufferedReader.readLines()
-                val header = lines[0].split(",").map { it.trim() }
-                
-                // Find column indices
-                val userIdIndex = header.indexOf(UserInfo.USERID.infoName)
-                val genderIndex = header.indexOf(UserInfo.GENDER.infoName)
-                
-                if (userIdIndex == -1 || genderIndex == -1) {
-                    throw IllegalArgumentException("Required columns not found in CSV")
-                }
-                
-                // Process each line (skip header)
-                for (i in 1 until lines.size) {
-                    val values = lines[i].split(",").map { it.trim() }
-                    val rowMap = header.zip(values).toMap()
-                    
-                    val userId = values[userIdIndex]
-                    val gender = if (values[genderIndex].equals("Male", ignoreCase = true)) 
-                        Gender.MALE else Gender.FEMALE
-                    
-                    // For each score type, get the value and insert a score entity
-                    ScoreTypes.entries.forEach { scoreType ->
-                        val columnName = scoreType.getColumnName(gender)
-                        val scoreValue = rowMap[columnName]?.toFloatOrNull() ?: 0f
+            // Fetch UserID and Gender columns
+            val userIdCol = readColumn(context, UserInfo.USERID.infoName, "testUsers.csv")
+            val genderCol = readColumn(context, UserInfo.GENDER.infoName, "testUsers.csv") // UserInfo.GENDER.infoName is "Sex"
 
-                        val scoreDefinitionId = scoreTypeDefinitionRepository
-                            .getScoreTypeKeyByName(scoreType.displayName)
+            if (userIdCol.isEmpty()) {
+                // No users found or error in reading UserID column
+                return
+            }
+            val userCount = userIdCol.size
+            if (genderCol.size != userCount) {
+                throw IllegalArgumentException("CSV column size mismatch for UserID and Gender during score initialization.")
+            }
 
-                        val scoreEntity = UserScoreEntity(
-                            scoreUserId = userId,
-                            scoreTypeKey = scoreDefinitionId,
-                            scoreValue = scoreValue
-                        )
-                        
-                        userScoreRepository.insert(scoreEntity)
+            // Pre-fetch all unique score columns
+            val uniqueScoreColumnNames = mutableSetOf<String>()
+            ScoreTypes.entries.forEach { scoreType ->
+                uniqueScoreColumnNames.add(scoreType.getColumnName(Gender.MALE))
+                uniqueScoreColumnNames.add(scoreType.getColumnName(Gender.FEMALE))
+            }
+
+            val scoreDataMap = mutableMapOf<String, List<String>>()
+            uniqueScoreColumnNames.forEach { columnName ->
+                try {
+                    scoreDataMap[columnName] = readColumn(context, columnName, "testUsers.csv")
+                    // Validate column size
+                    if (scoreDataMap[columnName]?.size != userCount) {
+                         // Log this or handle, but don't stop all initialization if one optional score column is problematic
+                        System.err.println("Warning: Column '$columnName' size mismatch or missing. Expected $userCount rows.")
+                        // Fill with empty strings to prevent crashes, default score will be 0f
+                        scoreDataMap[columnName] = List(userCount) { "" }
                     }
+                } catch (e: IllegalArgumentException) {
+                    // Column not found, likely this score type is not in the CSV for any gender
+                    System.err.println("Warning: Column '$columnName' not found in CSV. Users will get default 0f for this score where applicable.")
+                    // Fill with empty strings to prevent crashes, default score will be 0f
+                    scoreDataMap[columnName] = List(userCount) { "" }
+                }
+            }
+
+            // Process each user
+            for (i in 0 until userCount) {
+                val userId = userIdCol[i]
+                val genderString = genderCol[i]
+                val gender = if (genderString.equals("Male", ignoreCase = true)) Gender.MALE else Gender.FEMALE
+
+                // For each score type, get the value and insert a score entity
+                ScoreTypes.entries.forEach { scoreType ->
+                    val columnNameForScore = scoreType.getColumnName(gender)
+                    val scoreValueString = scoreDataMap[columnNameForScore]?.getOrNull(i)
+                    val scoreValue = scoreValueString?.toFloatOrNull() ?: 0f
+
+                    val scoreDefinitionId = scoreTypeDefinitionRepository
+                        .getScoreTypeKeyByName(scoreType.displayName)
+
+                    val scoreEntity = UserScoreEntity(
+                        scoreUserId = userId,
+                        scoreTypeKey = scoreDefinitionId,
+                        scoreValue = scoreValue
+                    )
+                    
+                    userScoreRepository.insert(scoreEntity)
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            e.printStackTrace() // Keep existing error handling for major issues
         }
     }
 
