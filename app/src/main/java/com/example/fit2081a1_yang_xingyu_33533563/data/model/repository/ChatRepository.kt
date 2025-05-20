@@ -29,7 +29,7 @@ class ChatRepository(private val chatMessageDao: ChatMessageDao) {
     /**
      * Get messages for a specific user
      */
-    fun getMessagesByUser(userId: Long): Flow<List<ChatMessageEntity>> {
+    fun getMessagesByUser(userId: String): Flow<List<ChatMessageEntity>> {
         return chatMessageDao.getMessagesByUser(userId)
     }
 
@@ -43,7 +43,7 @@ class ChatRepository(private val chatMessageDao: ChatMessageDao) {
     /**
      * Get conversation for a specific user
      */
-    fun getUserConversationFlow(userId: Long): Flow<List<ChatMessageEntity>> {
+    fun getUserConversationFlow(userId: String): Flow<List<ChatMessageEntity>> {
         return chatMessageDao.getUserConversationFlow(userId)
     }
 
@@ -52,7 +52,7 @@ class ChatRepository(private val chatMessageDao: ChatMessageDao) {
      */
     suspend fun saveUserMessage(
         message: String,
-        userId: Long? = null,
+        userId: String? = null,
         sessionId: String = UUID.randomUUID().toString()
     ): Long {
         val chatMessage = ChatMessageEntity(
@@ -70,7 +70,7 @@ class ChatRepository(private val chatMessageDao: ChatMessageDao) {
      */
     suspend fun saveAiResponse(
         response: String,
-        userId: Long? = null,
+        userId: String? = null,
         sessionId: String? = null
     ): Long {
         val chatMessage = ChatMessageEntity(
@@ -89,7 +89,7 @@ class ChatRepository(private val chatMessageDao: ChatMessageDao) {
     suspend fun saveConversationTurn(
         userMessage: String,
         aiResponse: String,
-        userId: Long? = null,
+        userId: String? = null,
         sessionId: String = UUID.randomUUID().toString()
     ): List<Long> {
         val messages = listOf(
@@ -135,7 +135,7 @@ class ChatRepository(private val chatMessageDao: ChatMessageDao) {
     /**
      * Delete all messages for a specific user
      */
-    suspend fun clearUserMessages(userId: Long) {
+    suspend fun clearUserMessages(userId: String) {
         chatMessageDao.deleteUserMessages(userId)
     }
 }

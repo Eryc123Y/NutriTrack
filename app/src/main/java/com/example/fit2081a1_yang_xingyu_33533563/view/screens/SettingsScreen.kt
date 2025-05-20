@@ -55,6 +55,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.InfoCard
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
 
 /**
@@ -94,6 +95,7 @@ fun SettingsScreen(
     val userId = currentUser?.userId ?: "N/A"
     val userName = currentUser?.userName ?: "N/A"
     val userGender = currentUser?.userGender ?: "N/A"
+    val userPhoneNumber = currentUser?.userPhoneNumber ?: "N/A"
 
 
     Scaffold (
@@ -129,7 +131,7 @@ fun SettingsScreen(
                     userId = userId,
                     userName = userName,
                     userGender = userGender,
-                    onSetAvatarClick = { /* TODO: Implement avatar setting logic */ },
+                    userPhoneNumber = userPhoneNumber,
                     onClinicianLoginClick = { showClinicianLoginDialog = true },
                     onLogoutClick = {
                         authViewModel.logout()
@@ -167,7 +169,7 @@ fun UserSettingsContent(
     userId: String,
     userName: String,
     userGender: String,
-    onSetAvatarClick: () -> Unit,
+    userPhoneNumber: String,
     onClinicianLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
     isDarkMode: Boolean,
@@ -179,106 +181,53 @@ fun UserSettingsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Profile Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Profile", style = MaterialTheme.typography.titleLarge)
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder
-                        contentDescription = "User Avatar",
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                UserInfoRow("User ID:", userId)
-                UserInfoRow("Name:", userName)
-                UserInfoRow("Gender:", userGender)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = onSetAvatarClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Face, contentDescription = "Set Avatar Icon", modifier = Modifier.padding(end = 8.dp))
-                    Text("Set Avatar")
-                }
-            }
+        InfoCard(title = "Profile") {
+            UserInfoRow("User ID:", userId)
+            UserInfoRow("Name:", userName)
+            UserInfoRow("Gender:", userGender)
+            UserInfoRow("Phone Number:", userPhoneNumber)
         }
 
         // App Settings Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("App Settings", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                ListItem(
-                    headlineContent = { Text("Dark Mode") },
-                    leadingContent = {
-                        Icon(
-                            if (isDarkMode) Icons.Filled.ModeNight else Icons.Filled.WbSunny,
-                            contentDescription = "Dark Mode Icon"
-                        )
-                    },
-                    trailingContent = {
-                        Switch(
-                            checked = isDarkMode,
-                            onCheckedChange = onToggleDarkMode
-                        )
-                    }
-                )
-                // Add other app settings like notifications, units, etc. here
-                // Example:
-                // SettingItem(title = "Notification Preferences", onClick = { /* TODO */ })
-                // SettingItem(title = "Measurement Units", onClick = { /* TODO */ })
-            }
+        InfoCard(title = "App Settings") {
+            ListItem(
+                headlineContent = { Text("Dark Mode") },
+                leadingContent = {
+                    Icon(
+                        if (isDarkMode) Icons.Filled.ModeNight else Icons.Filled.WbSunny,
+                        contentDescription = "Dark Mode Icon"
+                    )
+                },
+                trailingContent = {
+                    Switch(
+                        checked = isDarkMode,
+                        onCheckedChange = onToggleDarkMode
+                    )
+                }
+            )
+            // Add other app settings like notifications, units, etc. here
         }
         
         // Clinician Access Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Clinician Portal", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                 Button(
-                    onClick = onClinicianLoginClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Lock, contentDescription = "Clinician Login Icon", modifier = Modifier.padding(end = 8.dp))
-                    Text("Clinician Login")
-                }
+        InfoCard(title = "Clinician Portal") {
+             Button(
+                onClick = onClinicianLoginClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Lock, contentDescription = "Clinician Login Icon", modifier = Modifier.padding(end = 8.dp))
+                Text("Clinician Login")
             }
         }
 
-
         // Account Actions Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Account", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = onLogoutClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout Icon", modifier = Modifier.padding(end = 8.dp))
-                    Text("Log Out")
-                }
+        InfoCard(title = "Account") {
+            Button(
+                onClick = onLogoutClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout Icon", modifier = Modifier.padding(end = 8.dp))
+                Text("Log Out")
             }
         }
         

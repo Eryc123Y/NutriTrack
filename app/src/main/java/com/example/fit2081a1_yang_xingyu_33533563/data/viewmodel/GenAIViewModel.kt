@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
@@ -34,12 +33,12 @@ class GenAIViewModel(
     private val _uiState = MutableStateFlow<UiState>(UiState.Initial)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     
-    private var vmCurrentUserId: Long? = null
+    private var vmCurrentUserId: String? = null
     // vmCurrentSessionId is initialized once and will be used for saving messages.
     // It no longer changes with each call to startNewSession.
     private var vmCurrentSessionId: String = UUID.randomUUID().toString()
 
-    private val _currentUserIdSF = MutableStateFlow<Long?>(null)
+    private val _currentUserIdSF = MutableStateFlow<String?>(null)
     // private val _currentSessionIdSF = MutableStateFlow(this.vmCurrentSessionId) // Removed
 
     companion object {
@@ -193,9 +192,6 @@ class GenAIViewModel(
             stats.allScores?.let { scores ->
                 if (scores.isNotEmpty()) {
                     val scoreParts = scores.map { (key, value) ->
-                        // Attempt to find a display name for the score key, otherwise use the key itself.
-                        // This requires ScoreTypes to be accessible here, or passing a mapping.
-                        // For simplicity, using the key directly. Consider enhancing if display names are crucial.
                         val scoreName = ScoreTypes.entries.find { it.scoreId == key }?.displayName?.replace(" ", "") ?: key
                         "\"$scoreName\": $value"
                     }
@@ -256,7 +252,7 @@ class GenAIViewModel(
                "What are benefits of X?,How can I track Y better?,Tell me more about Z."
     }
 
-    fun sendRequest(prompt: String, userIdFromRequest: Long? = null) {
+    fun sendRequest(prompt: String, userIdFromRequest: String? = null) {
         _uiState.value = UiState.Loading
         
         if (userIdFromRequest != null && this.vmCurrentUserId != userIdFromRequest) {
@@ -273,8 +269,7 @@ class GenAIViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             var userStatsForJson: UserStats? = null
             if (requestUserId != null) {
-                val userIdStr = requestUserId.toString()
-                userStatsForJson = userStatsViewModel.getUserStats(userIdStr)
+                userStatsForJson = userStatsViewModel.getUserStats(requestUserId)
             }
             val userStatsJson = userStatsToJson(userStatsForJson)
 
@@ -338,7 +333,6 @@ class GenAIViewModel(
                          println("GenAIViewModel: Flow was cancelled. ${e.message}")
                          _uiState.value = UiState.Error.NetworkError("Stream cancelled: ${e.message}")
                     }
-                    // It's good practice to check for common network exceptions
                     e is java.net.UnknownHostException -> {
                         _uiState.value = UiState.Error.NetworkError("Network error: Cannot resolve host. Check internet connection.")
                     }
@@ -360,12 +354,7 @@ class GenAIViewModel(
      * Start a new conversation session
      */
     fun startNewSession() {
-        // val newSessionId = UUID.randomUUID().toString() // No longer generating a new session ID here
-        // this.vmCurrentSessionId = newSessionId // No longer updating vmCurrentSessionId here
-        // _currentSessionIdSF.value = newSessionId // No longer updating _currentSessionIdSF
         _uiState.value = UiState.Initial
-        // Search query should ideally be cleared if the context (session) changes completely.
-        // updateSearchQuery("") // Consider if this is desired here.
         // Log the existing session ID that will be used.
         println("GenAIViewModel: Started new session (or re-focused). Using SessionID: ${this.vmCurrentSessionId} for UserID: ${this.vmCurrentUserId}")
     }
@@ -373,7 +362,7 @@ class GenAIViewModel(
     /**
      * Set the current user ID
      */
-    fun setUserId(userId: Long?) {
+    fun setUserId(userId: String?) {
         val oldUserId = this.vmCurrentUserId
         this.vmCurrentUserId = userId
         _currentUserIdSF.value = userId
@@ -385,7 +374,7 @@ class GenAIViewModel(
     /**
      * Get user-specific conversation history
      */
-    fun getUserConversationHistory(userId: Long) = chatRepository.getUserConversationFlow(userId)
+    fun getUserConversationHistory(userId: String) = chatRepository.getUserConversationFlow(userId)
     
     /**
      * Clear all messages from the current session

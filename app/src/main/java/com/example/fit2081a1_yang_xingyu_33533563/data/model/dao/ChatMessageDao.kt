@@ -55,7 +55,7 @@ interface ChatMessageDao {
      * Get all messages for a specific user
      */
     @Query("SELECT * FROM chat_messages WHERE userId = :userId ORDER BY timestamp DESC")
-    fun getMessagesByUser(userId: Long): Flow<List<ChatMessageEntity>>
+    fun getMessagesByUser(userId: String): Flow<List<ChatMessageEntity>>
 
     /**
      * Get a conversation as pairs of messages (user question and AI response)
@@ -67,7 +67,7 @@ interface ChatMessageDao {
      * Get conversation for a specific user
      */
     @Query("SELECT * FROM chat_messages WHERE userId = :userId ORDER BY timestamp ASC")
-    fun getUserConversationFlow(userId: Long): Flow<List<ChatMessageEntity>>
+    fun getUserConversationFlow(userId: String): Flow<List<ChatMessageEntity>>
 
     /**
      * Delete all messages
@@ -85,5 +85,5 @@ interface ChatMessageDao {
      * Delete all messages for a specific user
      */
     @Query("DELETE FROM chat_messages WHERE userId = :userId")
-    suspend fun deleteUserMessages(userId: Long)
+    suspend fun deleteUserMessages(userId: String)
 }
