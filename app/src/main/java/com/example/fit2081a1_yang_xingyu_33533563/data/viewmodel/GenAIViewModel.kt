@@ -38,8 +38,7 @@ class GenAIViewModel(
     // It no longer changes with each call to startNewSession.
     private var vmCurrentSessionId: String = UUID.randomUUID().toString()
 
-    private val _currentUserIdSF = MutableStateFlow<String?>(null)
-    // private val _currentSessionIdSF = MutableStateFlow(this.vmCurrentSessionId) // Removed
+    private val _currentUserId = MutableStateFlow<String?>(null)
 
     companion object {
         private const val SUGGESTED_FOLLOW_UPS_DELIMITER = "SUGGESTED_FOLLOW_UPS:"
@@ -214,7 +213,7 @@ class GenAIViewModel(
     // Reactive conversation history for the current user
     @OptIn(ExperimentalCoroutinesApi::class)
     val conversationHistory: StateFlow<List<ChatEntity>> =
-        _currentUserIdSF.flatMapLatest { userId ->
+        _currentUserId.flatMapLatest { userId ->
             if (userId == null) {
                 flowOf(emptyList())
             } else {
@@ -230,17 +229,17 @@ class GenAIViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    // Try simpler model first to verify API key works
     private val genAIModel = GenerativeModel(
-        // Keeping user's preference for the preview model
         modelName = "gemini-2.5-flash-preview-04-17",
-        // Correct API key for the model
         apiKey = BuildConfig.MAPS_API_KEY
     )
 
-    private fun buildThemedPrompt(userQuery: String, userStatsJson: String?, nutritionalGuidelinesJson: String): String {
-        val statsInfo = userStatsJson?.takeIf { it.length > 2 && it != "{}" }?.let { " User's current stats (in JSON): $it." } ?: ""
-        val guidelinesInfo = " Refer to these comprehensive nutritional guidelines (in JSON format) for your answer and when providing recommendations: $nutritionalGuidelinesJson."
+    private fun buildThemedPrompt(userQuery: String, userStatsJson: String?,
+                                  nutritionalGuidelinesJson: String): String {
+        val statsInfo = userStatsJson?.takeIf { it.length > 2 && it != "{}" }?.let {
+            " User's current stats (in JSON): $it." } ?: ""
+        val guidelinesInfo = " Refer to these comprehensive nutritional guidelines (in JSON format)" +
+                " for your answer and when providing recommendations: $nutritionalGuidelinesJson."
         // Updated prompt to request follow-up questions
         return "You are NutriCoach, a helpful and friendly AI nutrition assistant.$statsInfo$guidelinesInfo " +
                "Please provide a concise and informative answer to the user's query: \"$userQuery\". " +
@@ -257,10 +256,10 @@ class GenAIViewModel(
         
         if (userIdFromRequest != null && this.vmCurrentUserId != userIdFromRequest) {
             this.vmCurrentUserId = userIdFromRequest
-            _currentUserIdSF.value = userIdFromRequest
+            _currentUserId.value = userIdFromRequest
         } else if (this.vmCurrentUserId == null && userIdFromRequest != null) {
             this.vmCurrentUserId = userIdFromRequest
-            _currentUserIdSF.value = userIdFromRequest
+            _currentUserId.value = userIdFromRequest
         }
 
         val requestUserId = this.vmCurrentUserId
@@ -274,8 +273,11 @@ class GenAIViewModel(
             val userStatsJson = userStatsToJson(userStatsForJson)
 
             try {
-                val themedPrompt = buildThemedPrompt(prompt, userStatsJson, NUTRITIONAL_GUIDELINES_JSON)
-                println("GenAIViewModel: Sending themed prompt: '$themedPrompt' for UserID: $requestUserId, SessionID: $requestSessionId")
+                val themedPrompt = buildThemedPrompt(
+                    prompt,
+                    userStatsJson,
+                    NUTRITIONAL_GUIDELINES_JSON
+                )
 
                 chatRepository.saveUserMessage(
                     message = prompt, 
@@ -292,12 +294,9 @@ class GenAIViewModel(
                         accumulatedResponse += textPart
                         // Update UI with partial response using the new Streaming state
                         _uiState.value = UiState.Streaming(accumulatedResponse)
-                        println("GenAIViewModel: Streamed AI Response chunk: '$textPart'")
                     }
                 }
-                
                 // Once streaming is complete, parse the full response for follow-ups
-                println("GenAIViewModel: Raw AI Response received (full): '$accumulatedResponse'")
                 var mainAnswer = accumulatedResponse
                 val followUpDelimiterIndex = accumulatedResponse.indexOf(SUGGESTED_FOLLOW_UPS_DELIMITER)
 
@@ -321,7 +320,6 @@ class GenAIViewModel(
                 _uiState.value = UiState.Success(mainAnswer, finalFollowUpQuestions)
 
             } catch (e: Exception) {
-                println("GenAIViewModel: Error during API call for UserID: $requestUserId, SessionID: $requestSessionId: ${e.javaClass.simpleName} - ${e.message}")
                 val errorMessage = e.message ?: "Unknown error occurred"
                 when {
                     errorMessage.contains("403") -> _uiState.value = UiState.Error.ApiError("API permission denied (403). Verify API key and model access.")
@@ -329,8 +327,6 @@ class GenAIViewModel(
                     errorMessage.contains("MissingFieldException") -> _uiState.value = UiState.Error.ApiError("API response format issue.")
                     // Check for specific streaming-related exceptions if any arise
                     e is CancellationException -> {
-                         // This might happen if the stream is cancelled, e.g. viewmodel scope cancelled
-                         println("GenAIViewModel: Flow was cancelled. ${e.message}")
                          _uiState.value = UiState.Error.NetworkError("Stream cancelled: ${e.message}")
                     }
                     e is java.net.UnknownHostException -> {
@@ -341,7 +337,7 @@ class GenAIViewModel(
                     }
                     else -> _uiState.value = UiState.Error.NetworkError("Error: $errorMessage")
                 }
-                // e.printStackTrace() // Optionally uncomment for full stack trace during development
+                 e.printStackTrace()
             }
         }
     }
@@ -365,10 +361,7 @@ class GenAIViewModel(
     fun setUserId(userId: String?) {
         val oldUserId = this.vmCurrentUserId
         this.vmCurrentUserId = userId
-        _currentUserIdSF.value = userId
-        // The CoachScreen calls startNewSession() after this,
-        // which will update currentSessionId and _currentSessionIdSF.
-        println("GenAIViewModel: User ID changed from $oldUserId to: ${this.vmCurrentUserId}. A new session should follow if user changed.")
+        _currentUserId.value = userId
     }
 
     /**

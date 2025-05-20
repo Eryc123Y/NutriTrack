@@ -30,6 +30,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.fit2081a1_yang_xingyu_33533563.api.FruitResponse
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlin.collections.filter
 import kotlin.collections.isNotEmpty
@@ -40,14 +41,12 @@ fun CoachScreen(
     onBackClick: () -> Unit = {},
     fruitViewModel: FruitViewModel,
     genAIViewModel: GenAIViewModel,
-    // userStatsViewModel: UserStatsViewModel, // Marked as unused, consider removing if not needed
     sharedPreferencesManager: SharedPreferencesManager
 ) {
     var fruitNameInput by remember { mutableStateOf("") }
     val fruitDetails by fruitViewModel.fruitDetails.collectAsState()
     val isLoadingFruit by fruitViewModel.isLoading.collectAsState()
     val shouldShowFruitViceQuery by fruitViewModel.shouldShowFruitViceQuery.collectAsState()
-    val userFruitServingSize by fruitViewModel.userFruitServingsize.collectAsState()
 
     val currentUserIdString = sharedPreferencesManager.getCurrentUser()
     val scrollState = rememberScrollState() // For the main screen scroll
@@ -129,7 +128,7 @@ fun FruitViceQueryPanel(
     onFruitNameInputChange: (String) -> Unit,
     fruitViewModel: FruitViewModel,
     isLoading: Boolean,
-    fruitDetails: com.example.fit2081a1_yang_xingyu_33533563.api.FruitResponse?
+    fruitDetails: FruitResponse?
 ) {
     InfoCard(title = "Need Fruit Advice?") {
         Text(
@@ -264,7 +263,7 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                         chatListState.animateScrollToItem(targetIndex)
                     }
                 }
-                else -> { /* Do nothing */ }
+                else -> {  }
             }
         }
     }
@@ -402,10 +401,19 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                             color = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.widthIn(max = 280.dp)
                         ) {
-                            Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically){
-                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            Row(modifier = Modifier.padding(
+                                horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically){
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("NutriCoach is thinking...", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                Text(
+                                    "NutriCoach is thinking...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
                             }
                         }
                     }
@@ -486,7 +494,9 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                     Icon(
                         Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send message",
-                        tint = if (chatInput.isNotBlank() && !isLoadingAi) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        tint = if (chatInput.isNotBlank()
+                            && !isLoadingAi) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     )
                 }
             }
@@ -502,8 +512,10 @@ fun ChatMessageBubble(isUserMessage: Boolean, text: String) {
     ) {
         Surface(
             shape = MaterialTheme.shapes.medium,
-            color = if (isUserMessage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = if (isUserMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+            color = if (isUserMessage) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = if (isUserMessage) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.widthIn(max = 280.dp) 
         ) {
             MarkdownText(
@@ -547,7 +559,8 @@ fun InfoCard(
                     }
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleLarge
+                            .copy(fontWeight = FontWeight.Bold)
                     )
                 }
                 

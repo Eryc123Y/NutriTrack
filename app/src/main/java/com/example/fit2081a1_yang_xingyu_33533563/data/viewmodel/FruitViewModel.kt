@@ -3,6 +3,7 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.api.FruitResponse
+import com.example.fit2081a1_yang_xingyu_33533563.api.FruitViceRepo
 import com.example.fit2081a1_yang_xingyu_33533563.api.FruitViceRepoProvider
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,7 @@ class FruitViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val fruitApiRepository = FruitViceRepoProvider.getRepository()
+    private val fruitApiRepository = FruitViceRepo.getRepository()
 
     // StateFlow to hold the fruit details or error messages
     private val _fruitDetails = MutableStateFlow<FruitResponse?>(null)

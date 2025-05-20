@@ -3,7 +3,6 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserEntity
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.view.UiState
@@ -20,8 +19,6 @@ import kotlinx.coroutines.withContext
  * Integrates with GenAIViewModel for AI analysis and UserStatsViewModel for user data
  */
 class ClinicianDashboardViewModel(
-    private val genAIViewModel: GenAIViewModel,
-    private val userStatsViewModel: UserStatsViewModel,
     private val userRepository: UserRepository,
     private val userScoreRepository: UserScoreRepository
 ) : ViewModel() {

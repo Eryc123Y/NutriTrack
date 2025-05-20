@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.api
 
+import androidx.lifecycle.ViewModelProvider.NewInstanceFactory.Companion.instance
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -7,6 +8,23 @@ import java.io.IOException
 
 class FruitViceRepo {
     private val fruitViceService: FruitViceService
+
+
+    companion object {
+
+        private var instance : FruitViceRepo? = null
+
+        /**
+         * Provides a singleton instance of FruitViceRepo.
+         */
+        fun getRepository(): FruitViceRepo {
+            if (instance == null) {
+                instance = FruitViceRepo()
+            }
+            return instance!!
+        }
+
+    }
 
     init {
         val retrofit = Retrofit.Builder()

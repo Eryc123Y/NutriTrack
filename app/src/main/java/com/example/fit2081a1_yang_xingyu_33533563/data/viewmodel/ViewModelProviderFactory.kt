@@ -11,7 +11,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepo
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
-import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
 import kotlin.jvm.java
 
 /**
@@ -88,8 +87,6 @@ class ViewModelProviderFactory(
             }
             modelClass.isAssignableFrom(ClinicianDashboardViewModel::class.java) -> {
                 ClinicianDashboardViewModel(
-                    create(GenAIViewModel::class.java),
-                    create(UserStatsViewModel::class.java),
                     userRepository,
                     userScoreRepository
                 ) as T
