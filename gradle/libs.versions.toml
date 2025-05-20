@@ -1,12 +1,14 @@
 [versions]
 agp = "8.10.0"
 androidxLifecycleViewmodelCompose = "2.7.1"
+charts = "0.2.4-alpha"
 coilNetworkOkhttp = "3.1.0"
 coilCompose = "3.1.0"
 composeMarkdown = "0.5.7"
 converterScalars = "2.9.0"
 coreSplashscreen = "1.0.1"
 generativeaiVersion = "X.Y.Z"
+jbcrypt = "0.4"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -19,6 +21,7 @@ lifecycleViewmodelCompose = "2.9.0"
 lifecycleViewmodelComposeVersion = "2.6.2"
 materialIconsCoreAndroid = "1.7.8"
 navigationCompose = "2.8.9"
+plot = "0.1.1"
 retrofit = "2.9.0"
 roomCommonJvm = "2.7.1"
 roomCompilerVersion = "2.7.1"
@@ -26,6 +29,7 @@ roomKtx = "2.7.1"
 roomRuntime = "2.7.1"
 roomRuntimeAndroid = "2.7.1"
 generativeai = "0.9.0"
+vico = "2.1.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,12 +44,14 @@ androidx-material-icons-extended = { module = "androidx.compose.material:materia
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+charts = { module = "com.github.tehras:charts", version.ref = "charts" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
 compose-markdown = { module = "com.github.jeziellago:compose-markdown", version.ref = "composeMarkdown" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterScalars" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
 generativeai-vxyz = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeaiVersion" }
+jbcrypt = { module = "org.mindrot:jbcrypt", version.ref = "jbcrypt" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -61,9 +67,13 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
 androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
+plot = { module = "com.github.madrapps:plot", version.ref = "plot" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompilerVersion" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
+vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
+vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

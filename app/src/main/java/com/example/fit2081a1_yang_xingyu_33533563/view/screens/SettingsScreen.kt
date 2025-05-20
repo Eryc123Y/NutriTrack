@@ -54,6 +54,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.R
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.AuthViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
+import com.example.fit2081a1_yang_xingyu_33533563.util.verifyClinicianCode
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.InfoCard
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
@@ -84,9 +85,9 @@ fun SettingsScreen(
     onToggleDarkMode: (Boolean) -> Unit, // Callback to notify theme change
     isDarkMode: Boolean // Current dark mode state
 ) {
-    var isClinicianMode by remember { mutableStateOf(false) }
     var showClinicianLoginDialog by remember { mutableStateOf(false) }
     var clinicianKeyInput by remember { mutableStateOf("") }
+    var showInvalidCodeError by remember { mutableStateOf(false) }
 
     // Collect user data from profileViewModel
     val currentUser by profileViewModel.currentUser.collectAsState()
@@ -101,18 +102,16 @@ fun SettingsScreen(
     Scaffold (
         topBar = {
             TopNavigationBar(
-                title = if (isClinicianMode) "Clinician Dashboard" else "Settings",
-                showBackButton = false, // Set to true if back navigation is needed from dashboard
+                title = "Settings",
+                showBackButton = false,
                 onBackButtonClick = onBackClick
             )
         },
         bottomBar = {
-            if (!isClinicianMode) { // Hide bottom bar in clinician mode or adapt as needed
-                BottomNavigationBar(
-                    currentRoute = Screen.Settings.route,
-                    onNavigate = onNavigate
-                )
-            }
+            BottomNavigationBar(
+                currentRoute = Screen.Settings.route,
+                onNavigate = onNavigate
+            )
         }
     ){ innerPadding ->
         Column(
@@ -122,43 +121,47 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            // verticalArrangement = Arrangement.Center // Remove to allow content to flow from top
         ) {
-            if (isClinicianMode) {
-                ClinicianDashboardContent()
-            } else {
-                UserSettingsContent(
-                    userId = userId,
-                    userName = userName,
-                    userGender = userGender,
-                    userPhoneNumber = userPhoneNumber,
-                    onClinicianLoginClick = { showClinicianLoginDialog = true },
-                    onLogoutClick = {
-                        authViewModel.logout()
-                        onLogoutToLogin()
-                                    },
-                    isDarkMode = isDarkMode, // Pass dark mode state
-                    onToggleDarkMode = onToggleDarkMode // Pass dark mode toggle
-                )
-            }
+            UserSettingsContent(
+                userId = userId,
+                userName = userName,
+                userGender = userGender,
+                userPhoneNumber = userPhoneNumber,
+                onClinicianLoginClick = { showClinicianLoginDialog = true },
+                onLogoutClick = {
+                    authViewModel.logout()
+                    onLogoutToLogin()
+                },
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
         }
     }
 
     if (showClinicianLoginDialog) {
         ClinicianLoginDialog(
             clinicianKeyInput = clinicianKeyInput,
-            onClinicianKeyInputChange = { clinicianKeyInput = it },
-            onDismissRequest = { showClinicianLoginDialog = false },
+            onClinicianKeyInputChange = { 
+                clinicianKeyInput = it 
+                showInvalidCodeError = false // Reset error when input changes
+            },
+            onDismissRequest = { 
+                showClinicianLoginDialog = false
+                showInvalidCodeError = false
+                clinicianKeyInput = ""
+            },
             onConfirm = {
-                if (clinicianKeyInput == "1234") { // Hardcoded key
-                    isClinicianMode = true
+                if (verifyClinicianCode(clinicianKeyInput)) {
+                    // Navigate to the Clinician Dashboard screen
+                    onNavigate(Screen.ClinicianDashboard.route)
                     showClinicianLoginDialog = false
                     clinicianKeyInput = "" // Reset key input
+                    showInvalidCodeError = false
                 } else {
-                    // Optional: Show error message for incorrect key
-                    showClinicianLoginDialog = false // Or keep dialog open and show error
+                    showInvalidCodeError = true
                 }
-            }
+            },
+            showError = showInvalidCodeError
         )
     }
 }
@@ -249,38 +252,37 @@ fun UserInfoRow(label: String, value: String) {
     HorizontalDivider()
 }
 
-
-@Composable
-fun ClinicianDashboardContent() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Clinician Dashboard", style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold))
-        // Add more clinician-specific UI elements here
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClinicianLoginDialog(
     clinicianKeyInput: String,
     onClinicianKeyInputChange: (String) -> Unit,
     onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    showError: Boolean = false
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text("Clinician Login") },
         text = {
-            OutlinedTextField(
-                value = clinicianKeyInput,
-                onValueChange = onClinicianKeyInputChange,
-                label = { Text("Enter Clinician Key") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column {
+                OutlinedTextField(
+                    value = clinicianKeyInput,
+                    onValueChange = onClinicianKeyInputChange,
+                    label = { Text("Enter Clinician Key") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = showError
+                )
+                if (showError) {
+                    Text(
+                        text = "Invalid clinician code. Please try again.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {

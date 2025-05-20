@@ -63,6 +63,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.jbcrypt)
     implementation(libs.generativeai.vxyz)
     implementation(libs.retrofit)
     implementation(libs.converter.scalars)

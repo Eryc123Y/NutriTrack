@@ -20,4 +20,5 @@ enum class Screen(val route: String) {
     NutriCoach("nutricoach"),
     Settings("settings"),
     Questionnaire("questionnaire"),
+    ClinicianDashboard("clinician_dashboard"),
 }

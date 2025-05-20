@@ -28,6 +28,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationB
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.graphics.vector.ImageVector
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlin.collections.filter
 import kotlin.collections.isNotEmpty
@@ -56,12 +57,6 @@ fun CoachScreen(
             genAIViewModel.setUserId(currentUserIdString)
             genAIViewModel.startNewSession() // Start a new chat session when user ID is confirmed
         }
-    }
-
-    // Debug - Remove in production
-    LaunchedEffect(userFruitServingSize, shouldShowFruitViceQuery) {
-        println("DEBUG: User fruit serving size: $userFruitServingSize")
-        println("DEBUG: Should show fruit vice query: $shouldShowFruitViceQuery")
     }
 
     Scaffold(
@@ -233,6 +228,7 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
     val chatListState = rememberLazyListState()
 
     val staticSuggestedQuestions = listOf(
+        "Give me a motivational message!",
         "How's my overall nutrition score?",
         "Any nutrition tips for me?",
         "How can I eat healthier?",
@@ -322,7 +318,7 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(response.message)
+                                    MarkdownText(response.message)
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
                                         text = "Time: ${response.timestamp}",
@@ -346,25 +342,12 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
         )
     }
 
-    InfoCard(title = "NutriCoach Chat") {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.End // Adjusted to End for buttons
-        ) {
-            Row {
-                IconButton(onClick = { showAllAiResponsesDialog = true }) {
-                    Icon(
-                        Icons.Filled.Search,
-                        contentDescription = "View All AI Responses"
-                    )
-                }
-                IconButton(onClick = { showClearConfirmationDialog = true }) {
-                    Icon(Icons.Filled.DeleteOutline, contentDescription = "Clear Chat History")
-                }
-            }
-        }
-
+    InfoCard(
+        title = "NutriCoach Chat",
+        icon = Icons.AutoMirrored.Filled.Chat,
+        onHistoryClick = { showAllAiResponsesDialog = true },
+        onClearClick = { showClearConfirmationDialog = true }
+    ) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { genAIViewModel.updateSearchQuery(it) },
@@ -527,6 +510,84 @@ fun ChatMessageBubble(isUserMessage: Boolean, text: String) {
                 style = MaterialTheme.typography.bodyMedium, // Apply a basic style
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun InfoCard(
+    title: String,
+    icon: ImageVector? = null,
+    onHistoryClick: (() -> Unit)? = null,
+    onClearClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+                
+                if (onHistoryClick != null && onClearClick != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Button(
+                            onClick = onHistoryClick,
+                            modifier = Modifier.padding(end = 8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Filled.Search,
+                                    contentDescription = "View All AI Responses",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("History", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                        
+                        IconButton(
+                            onClick = onClearClick,
+                            modifier = Modifier.background(
+                                MaterialTheme.colorScheme.errorContainer,
+                                shape = MaterialTheme.shapes.small
+                            )
+                        ) {
+                            Icon(
+                                Icons.Filled.DeleteOutline, 
+                                contentDescription = "Clear Chat History",
+                                tint = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            }
+            content()
         }
     }
 }

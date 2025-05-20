@@ -40,6 +40,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.FruitViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ClinicianDashboardViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.view.screens.ClinicianDashboardScreen
 
 /**
  * Created by Xingyu Yang
@@ -75,6 +77,7 @@ fun AppNavigation(
     val fruitViewModel: FruitViewModel = viewModel(factory = viewModelProviderFactory)
     val genAIViewModel: GenAIViewModel = viewModel(factory = viewModelProviderFactory)
     val userStatsViewModel: UserStatsViewModel = viewModel(factory = viewModelProviderFactory)
+    val clinicianDashboardViewModel: ClinicianDashboardViewModel = viewModel(factory = viewModelProviderFactory)
     val context = LocalContext.current
 
     // Collect StateFlow values using correct collectAsState()
@@ -568,6 +571,32 @@ fun AppNavigation(
                 onLogoutToLogin = { navController.navigate(Screen.Login.route) },
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = onToggleDarkMode
+            )
+        }
+        
+        //ClinicianDashboardScreen
+        composable(
+            Screen.ClinicianDashboard.route,
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { it }, // Full width slide
+                    animationSpec = tween(500, easing = FastOutSlowInEasing) // Increased duration
+                ) + fadeIn(
+                    animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing) // Increased duration
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { -it / 3 }, // Less aggressive slide
+                    animationSpec = tween(450, easing = EaseInOut) // Increased duration
+                ) + fadeOut(
+                    animationSpec = tween(350, easing = EaseInOut) // Increased duration
+                )
+            }
+        ) {
+            ClinicianDashboardScreen(
+                viewModel = clinicianDashboardViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

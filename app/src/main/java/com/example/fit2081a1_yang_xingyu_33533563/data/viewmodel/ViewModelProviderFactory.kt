@@ -86,6 +86,14 @@ class ViewModelProviderFactory(
             modelClass.isAssignableFrom(FruitViewModel::class.java) -> {
                 FruitViewModel(userRepository) as T
             }
+            modelClass.isAssignableFrom(ClinicianDashboardViewModel::class.java) -> {
+                ClinicianDashboardViewModel(
+                    create(GenAIViewModel::class.java),
+                    create(UserStatsViewModel::class.java),
+                    userRepository,
+                    userScoreRepository
+                ) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }
