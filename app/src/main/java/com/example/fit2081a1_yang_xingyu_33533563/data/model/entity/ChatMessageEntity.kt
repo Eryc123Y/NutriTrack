@@ -16,7 +16,7 @@ import java.util.Date
             entity = UserEntity::class,
             parentColumns = ["userId"],
             childColumns = ["userId"],
-            onDelete = ForeignKey.CASCADE // Or SET_NULL, depending on desired behavior
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [Index(value = ["userId"])]

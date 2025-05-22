@@ -3,9 +3,6 @@ package com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserFoodPreferenceEntity
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.entity.UserScoreEntity
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.FoodCategoryDefinitionRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserFoodCategoryPreferenceRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
@@ -16,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -49,25 +45,18 @@ class UserStatsViewModel(
     val errorMessage: StateFlow<String?> = _errorMessage
 
     private val _userPersona = MutableStateFlow<String?>(null)
-    val userPersona: StateFlow<String?> = _userPersona
 
     private val _userBiggestMealTime = MutableStateFlow<String?>(null)
-    val userBiggestMealTime: StateFlow<String?> = _userBiggestMealTime
 
     private val _userSleepTime = MutableStateFlow<String?>(null)
-    val userSleepTime: StateFlow<String?> = _userSleepTime
 
     private val _userWakeUpTime = MutableStateFlow<String?>(null)
-    val userWakeUpTime: StateFlow<String?> = _userWakeUpTime
 
     private val _userFruitScore = MutableStateFlow<Float?>(null)
-    val userFruitScore: StateFlow<Float?> = _userFruitScore
-    
+
     private val _userScores = MutableStateFlow<Map<String, Float>>(emptyMap())
-    val userScores: StateFlow<Map<String, Float>> = _userScores
-    
+
     private val _userFoodPreferences = MutableStateFlow<Map<String, Boolean>>(emptyMap())
-    val userFoodPreferences: StateFlow<Map<String, Boolean>> = _userFoodPreferences
 
     /**
      * Get a complete UserStats object for the given user ID.
@@ -99,11 +88,7 @@ class UserStatsViewModel(
         )
     }
 
-    suspend fun getUserFruitScore(userId: String): Float {
-        return userScoreRepository.getScore(userId, ScoreTypes.FRUITS.scoreId)
-    }
-    
-    suspend fun getUserAllScores(userId: String) {
+    fun getUserAllScores(userId: String) {
         viewModelScope.launch {
             try {
                 val scores = userScoreRepository.getScoresByUserId(userId).firstOrNull() ?: emptyList()
@@ -119,7 +104,7 @@ class UserStatsViewModel(
         }
     }
     
-    suspend fun getUserFoodPreferences(userId: String) {
+    fun getUserFoodPreferences(userId: String) {
         viewModelScope.launch {
             try {
                 val preferences = userFoodCategoryPreferenceRepository

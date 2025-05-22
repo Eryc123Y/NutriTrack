@@ -27,7 +27,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ProfileViewMode
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.QuestionnaireViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ViewModelProviderFactory
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.GenAIViewModel
-import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.UserStatsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.CoachScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.HomeScreen
 import com.example.fit2081a1_yang_xingyu_33533563.view.screens.InsightScreen
@@ -51,6 +50,7 @@ import com.example.fit2081a1_yang_xingyu_33533563.view.screens.ClinicianDashboar
 
 /**
  * Composable function for navigation of the app
+ * Transition Animation Done by AI
  *
  * Router:
  * WelcomeScreen -> LoginScreen -> MainScreens
@@ -76,16 +76,12 @@ fun AppNavigation(
     val questionnaireViewModel: QuestionnaireViewModel = viewModel(factory = viewModelProviderFactory)
     val fruitViewModel: FruitViewModel = viewModel(factory = viewModelProviderFactory)
     val genAIViewModel: GenAIViewModel = viewModel(factory = viewModelProviderFactory)
-    val userStatsViewModel: UserStatsViewModel = viewModel(factory = viewModelProviderFactory)
     val clinicianDashboardViewModel: ClinicianDashboardViewModel = viewModel(factory = viewModelProviderFactory)
     val context = LocalContext.current
 
     // Collect StateFlow values using correct collectAsState()
     val currentUserId by authViewModel.currentUserId.collectAsState()
-    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    val isQuestionnaireCompleted by questionnaireViewModel.isQuestionnaireCompleted.collectAsState()
-    val isEditing by questionnaireViewModel.isEditing.collectAsState()
-    
+
     // Navigation controller
     val navController = rememberNavController()
 

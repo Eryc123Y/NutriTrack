@@ -16,6 +16,7 @@ import kotlin.math.min
 
 /**
  * This file contains custom page transition effects for HorizontalPager
+ * Designed by AI
  */
 
 /**
@@ -123,7 +124,7 @@ private fun depthPageTransition(
     pagerState: PagerState
 ): Modifier = Modifier.graphicsLayer {
     val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction)
-    val absPageOffset = pageOffset.absoluteValue
+    pageOffset.absoluteValue
     val smoothFraction = calculateSmoothFraction(page, pagerState)
     
     // Enhanced scale with improved interpolation

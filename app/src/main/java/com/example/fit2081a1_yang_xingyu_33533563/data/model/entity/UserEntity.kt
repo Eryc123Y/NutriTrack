@@ -23,10 +23,10 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["userPersonaId"])]
 )
 data class UserEntity(
-    @PrimaryKey val userId: String,      // from csv or generated
-    val userName: String? = null,                    // To be chosen upon registration or from CSV
+    @PrimaryKey val userId: String,      // from csv
+    val userName: String? = null,                    // To be chosen upon registration
     val userPhoneNumber: String,             // from csv
-    val userGender: String?,                  // from csv (needs TypeConverter: Male/Female)
+    val userGender: String?,                  //
     val userFruitServingsize: Float? = null, // from csv
     val userPersonaId: String? = null, // Foreign key to PersonaEntity
     val userHashedCredential: String? = null, // to be used for login, set upon registration

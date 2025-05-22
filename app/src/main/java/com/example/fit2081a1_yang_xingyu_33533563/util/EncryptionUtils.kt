@@ -69,7 +69,6 @@ fun verifyClinicianCode(code: String): Boolean {
     return try {
         BCrypt.checkpw(code, CLINICIAN_BCRYPT_HASH)
     } catch (e: Exception) {
-        // Log error or handle appropriately if BCrypt throws an exception (e.g., invalid hash format)
         Log.e("EncryptionUtils", "Error verifying clinician code: ${e.message}", e)
         false
     }

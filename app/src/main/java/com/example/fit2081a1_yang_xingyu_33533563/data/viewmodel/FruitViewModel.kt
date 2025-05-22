@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fit2081a1_yang_xingyu_33533563.api.FruitResponse
 import com.example.fit2081a1_yang_xingyu_33533563.api.FruitViceRepo
-import com.example.fit2081a1_yang_xingyu_33533563.api.FruitViceRepoProvider
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +29,6 @@ class FruitViewModel(
 
     // StateFlow for user's fruit serving size
     private val _userFruitServingsize = MutableStateFlow<Float?>(null)
-    val userFruitServingsize: StateFlow<Float?> = _userFruitServingsize.asStateFlow()
 
     // StateFlow to determine if fruit advice query panel should be shown
     val shouldShowFruitViceQuery: StateFlow<Boolean> = _userFruitServingsize.map { servings ->
@@ -77,10 +75,4 @@ class FruitViewModel(
         }
     }
 
-    /**
-     * Clears the fruit details and error messages.
-     */
-    fun clearFruitDetails() {
-        _fruitDetails.value = null
-    }
 }

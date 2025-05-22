@@ -40,9 +40,7 @@ class ViewModelProviderFactory(
                 ProfileViewModel(
                     userRepository,
                     personaRepository,
-                    userScoreRepository,
-                    userTimePreferenceRepository,
-                    sharedPreferencesManager
+                    userScoreRepository
                 ) as T
             }
             modelClass.isAssignableFrom(QuestionnaireViewModel::class.java) -> {
@@ -63,14 +61,13 @@ class ViewModelProviderFactory(
             modelClass.isAssignableFrom(InsightsViewModel::class.java) -> {
                 InsightsViewModel(
                     userScoreRepository,
-                    scoreTypeDefinitionRepository,
-                    userRepository
+                    scoreTypeDefinitionRepository
                 ) as T
             }
             modelClass.isAssignableFrom(GenAIViewModel::class.java) -> {
                 GenAIViewModel(
                     chatRepository,
-                    create(UserStatsViewModel::class.java) as UserStatsViewModel
+                    create(UserStatsViewModel::class.java)
                 ) as T
             }
             modelClass.isAssignableFrom(UserStatsViewModel::class.java) -> {
@@ -89,7 +86,7 @@ class ViewModelProviderFactory(
                 ClinicianDashboardViewModel(
                     userRepository,
                     userScoreRepository,
-                    create(GenAIViewModel::class.java) as GenAIViewModel
+                    create(GenAIViewModel::class.java)
                 ) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

@@ -22,14 +22,12 @@ class AuthViewModel(
 ) : ViewModel() {
     // MutableStateFlow to hold the current user entity. Can be updated and observed.
     private val _currentUser = MutableStateFlow<UserEntity?>(null)
-    val currentUser: StateFlow<UserEntity?> = _currentUser.asStateFlow()
 
     // MutableStateFlow to hold the current user ID.
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
 
     private val _currentUserPhoneNumber = MutableStateFlow<String?>(null)
-    val currentUserPhoneNumber: StateFlow<String?> = _currentUserPhoneNumber.asStateFlow()
 
     private val _userIds = MutableStateFlow<List<String>>(emptyList())
     val userIds: StateFlow<List<String>> = _userIds.asStateFlow()
@@ -39,7 +37,6 @@ class AuthViewModel(
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
     private val _isUserRegistered = MutableStateFlow<Boolean?>(null)
-    val isUserRegistered: StateFlow<Boolean?> = _isUserRegistered.asStateFlow()
 
     // MutableStateFlow to hold the loading status. This is used to indicate whether a
     // loading operation is in progress, helping to improve UI responsiveness and avoid
@@ -243,28 +240,6 @@ class AuthViewModel(
     }
 
     /**
-     * Checks if a user with the given ID is already registered in the system.
-     * Updates the isUserRegistered StateFlow with the result.
-     *
-     * @param userId The ID of the user to check
-     */
-    fun checkUserRegistrationStatus(userId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _authError.value = null
-            try {
-                val registrationStatus = userRepository.getUserIsRegistered(userId)
-                _isUserRegistered.value = registrationStatus ?: false
-            } catch (e: Exception) {
-                _authError.value = "Error checking registration status: ${e.message}"
-                _isUserRegistered.value = null
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    /**
      * A function to reset related status after a user quit the app but not logout
      * In this case, the user will need to re-login, but shared preferences still preserve the
      * current user ID
@@ -356,7 +331,8 @@ class AuthViewModel(
                 return false
             }
             !newPassword.matches(Regex(passwordPattern)) -> {
-                _passwordChangeStatus.value = "New password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
+                _passwordChangeStatus.value = "New password must contain at least one uppercase " +
+                        "letter, one lowercase letter, one digit, and one special character."
                 return false
             }
             else -> return true

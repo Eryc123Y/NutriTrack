@@ -444,7 +444,7 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                 item {
                     AiMessageBubble(
                         text = (genAiUiState as UiState.Streaming).currentMessageContent,
-                        useMarkdown = true // AI responses should be markdown
+                        useMarkdown = true
                     )
                 }
             }

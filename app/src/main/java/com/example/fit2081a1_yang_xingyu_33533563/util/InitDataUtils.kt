@@ -21,7 +21,6 @@ import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserRepo
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserTimePreferenceRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.csv.readColumn
-import java.io.BufferedReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -29,6 +28,7 @@ import kotlinx.coroutines.withContext
 object InitDataUtils {
     /**
      * Check if database initialization is needed by checking if any users exist
+     * avoid db clashes
      */
     suspend fun isDatabaseInitializationNeeded(userRepository: UserRepository): Boolean {
         return userRepository.getAllUsers().first().isEmpty()
@@ -227,7 +227,7 @@ object InitDataUtils {
                         // Fill with empty strings to prevent crashes, default score will be 0f
                         scoreDataMap[columnName] = List(userCount) { "" }
                     }
-                } catch (e: IllegalArgumentException) {
+                } catch (_: IllegalArgumentException) {
                     // Column not found, likely this score type is not in the CSV for any gender
                     System.err.println("Warning: Column '$columnName' not found in CSV. Users will get default 0f for this score where applicable.")
                     // Fill with empty strings to prevent crashes, default score will be 0f

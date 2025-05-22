@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 @Preview(showBackground = true)
 @Composable
 fun WelcomeScreen(onNavigateToLogin: () -> Unit = {}) {
-    // Navigate to login after a delay
+    // Navigate to login after a delay to show splash screen
     LaunchedEffect(Unit) {
         delay(3000) // 3 seconds delay
         onNavigateToLogin()

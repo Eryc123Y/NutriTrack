@@ -11,14 +11,11 @@ import android.util.Log
 fun getFoodImagePainter(foodDefId: String): Painter {
     val context = LocalContext.current
     val resourceName = "foodimg_$foodDefId"
-    // It's generally safer to check for 0 return value from getIdentifier
     val resourceId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
 
     return if (resourceId != 0) {
         painterResource(id = resourceId)
     } else {
-        // Fallback to a default placeholder image if the specific one isn't found.
-        // Replace with your actual placeholder drawable.
         painterResource(id = R.drawable.ic_launcher_background) // Example placeholder
     }
 }
@@ -36,7 +33,6 @@ fun getPersonaImagePainter(personaId: String): Painter {
         painterResource(id = resourceId)
     } else {
         Log.e("ImageDebug", "Fallback image used for persona_$personaId")
-        // Fallback to a default placeholder image
-        painterResource(id = R.drawable.ic_launcher_foreground) // Example placeholder, change as needed
+        painterResource(id = R.drawable.ic_launcher_foreground)
     }
 } 

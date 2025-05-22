@@ -44,25 +44,6 @@ fun ScoreText(
 }
 
 @Composable
-fun ScoreProgressIndicator(
-    scoreValue: Float,
-    maxScore: Int,
-    modifier: Modifier = Modifier
-) {
-    val progress = if (maxScore > 0) scoreValue / maxScore.toFloat() else 0f
-
-    LinearProgressIndicator(
-        progress = { progress },
-        modifier = modifier
-            .height(10.dp),
-        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        color = getColorforScore(scoreValue.toInt(), maxScore),
-        gapSize = 0.dp,
-        drawStopIndicator = {}
-    )
-}
-
-@Composable
 fun ScoreProgressBarRow(
     displayName: String,
     currentValue: Float,

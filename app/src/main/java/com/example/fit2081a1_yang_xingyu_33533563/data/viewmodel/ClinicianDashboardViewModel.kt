@@ -21,6 +21,7 @@ import org.json.JSONObject
 /**
  * ViewModel for the Clinician Dashboard screen
  * Integrates with GenAIViewModel for AI analysis and UserStatsViewModel for user data
+ * parsing done by AI
  */
 class ClinicianDashboardViewModel(
     private val userRepository: UserRepository,

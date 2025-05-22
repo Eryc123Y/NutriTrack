@@ -8,14 +8,12 @@ import com.example.fit2081a1_yang_xingyu_33533563.BuildConfig
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ChatRepository
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.GenerationConfig
 import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -29,6 +27,7 @@ import kotlinx.coroutines.delay
 /**
  * GenAIViewModel is a ViewModel class that handles the logic for the GenAI feature.
  * It communicates with the repository to fetch and update data, and integrates user stats.
+ * Solution from AI
  */
 class GenAIViewModel(
     private val chatRepository: ChatRepository,
@@ -39,14 +38,9 @@ class GenAIViewModel(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     
     private var vmCurrentUserId: String? = null
-    // vmCurrentSessionId is initialized once and will be used for saving messages.
-    // It no longer changes with each call to startNewSession.
     private var vmCurrentSessionId: String = UUID.randomUUID().toString()
-
     private val _currentUserId = MutableStateFlow<String?>(null)
-    
-    // Remove the commented-out clinician user ID
-    // private val clinicianUserId = "clinician_system_user"
+
 
     companion object {
         private const val SUGGESTED_FOLLOW_UPS_DELIMITER = "SUGGESTED_FOLLOW_UPS:"
@@ -497,7 +491,8 @@ class GenAIViewModel(
 
                 if (followUpDelimiterIndex != -1) {
                     mainAnswer = internalAccumulatedResponse.substring(0, followUpDelimiterIndex).trim()
-                    val followUpsString = internalAccumulatedResponse.substring(followUpDelimiterIndex + SUGGESTED_FOLLOW_UPS_DELIMITER.length).trim()
+                    val followUpsString = internalAccumulatedResponse
+                        .substring(followUpDelimiterIndex + SUGGESTED_FOLLOW_UPS_DELIMITER.length).trim()
                     if (followUpsString.isNotBlank()) {
                         finalFollowUpQuestions = followUpsString.split(',').map { it.trim() }.filter { it.isNotEmpty() }
                     }
@@ -561,7 +556,7 @@ class GenAIViewModel(
      * Set the current user ID
      */
     fun setUserId(userId: String?) {
-        val oldUserId = this.vmCurrentUserId
+        this.vmCurrentUserId
         this.vmCurrentUserId = userId
         _currentUserId.value = userId
     }

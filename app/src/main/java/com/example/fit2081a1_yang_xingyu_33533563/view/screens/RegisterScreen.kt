@@ -84,9 +84,8 @@ fun RegisterScreen(
 
             UserIdDropdown(
                 userIdState = userIdState,
-                userIds = viewModel.userIds.collectAsState().value, // Replace with actual user IDs
+                userIds = viewModel.userIds.collectAsState().value,
                 buttonShape = logInButtonShape,
-                //modifier = Modifier.padding(bottom = 16.dp)
             )
 
             RegistrationTextField(
@@ -146,7 +145,6 @@ fun RegisterScreen(
                             phone = phoneNumberState.value,
                             password = passwordState.value
                         )
-                        // Registration success/failure will be handled by the LaunchedEffect observing isLoggedIn
                     }
                 },
                 isLoading = isLoading,

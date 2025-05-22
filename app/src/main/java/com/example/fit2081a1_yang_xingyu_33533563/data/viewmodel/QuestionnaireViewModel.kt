@@ -121,7 +121,7 @@ class QuestionnaireViewModel(
             _timeValidationError.value = "Sleep time is required (HH:mm)."
             return
         }
-
+        // validation logic by AI
         try {
             val wakeUp = LocalTime.parse(wakeUpStr, timeFormatter)
             val meal = LocalTime.parse(biggestMealStr, timeFormatter)
@@ -228,19 +228,19 @@ class QuestionnaireViewModel(
      * @return Boolean true if save was successful and questionnaire is complete, false otherwise.
      */
     suspend fun saveAllPreferences(userId: String): Boolean {
-        // viewModelScope.launch { // No longer need to launch a new coroutine here, as this will be called from one
+
             if (!isQuestionnaireValid.value) {
                 _saveStatus.value = if (_timeValidationError.value != null) {
                     _timeValidationError.value
                 } else {
                     "Please ensure all questionnaire sections are completed correctly."
                 }
-                // return@launch // Becomes return false
+
                 return false
             }
             if (userId.isBlank()) {
                 _saveStatus.value = "Error: User ID is missing."
-                // return@launch // Becomes return false
+
                 return false
             }
             try {
@@ -277,12 +277,9 @@ class QuestionnaireViewModel(
                         wakeUpTime = _wakeUpTime.value
                     )
                 )
-                
-                // Mark as completed and reset editing mode
-                // _isQuestionnaireCompleted.value = true // This state will be managed by checkQuestionnaireCompleted or similar logic
-                _isEditing.value = false 
-                // Ensure the completion status is correctly updated after save & exiting edit mode
-                checkQuestionnaireCompleted() // Call this to update isQuestionnaireCompleted state based on current valid data
+
+                _isEditing.value = false
+                checkQuestionnaireCompleted()
 
                 _saveStatus.value = "Preferences saved successfully!"
                 return true // Successfully saved
@@ -295,28 +292,13 @@ class QuestionnaireViewModel(
 
     fun resetCompleted() {
         _isQuestionnaireCompleted.value = false
-        
-        // Force the questionnaire to stay in "not completed" state
-        // This ensures it doesn't get automatically marked as completed based on loaded data
-//        viewModelScope.launch {
-//            // Small delay to ensure this takes precedence over any other state changes
-//            kotlinx.coroutines.delay(100)
-//            _isQuestionnaireCompleted.value = false
-//        }
     }
 
-    // Make this suspend so cancelEditing can await its completion
     suspend fun loadUserPreferences(userId: String) {
-        // Reset editing state when loading user preferences (e.g., on login)
-        // Only reset if we're not in edit mode - prevents existing state from being overwritten
-        // if (!_isEditing.value) { // This condition might be too restrictive if called from cancelEditing
-            // We're not in editing mode, so load everything normally
-            // viewModelScope.launch { // Removed launch, as this is now a suspend function
                 try {
                     val foodPrefs = userFoodCategoryPreferenceRepository
                         .getPreferencesByUserId(userId).firstOrNull()
-                    
-                    // Create a proper Map<String, Boolean> from preferences
+
                     val foodCategoryMap = mutableMapOf<String, Boolean>()
                     
                     // Get all food categories first to ensure we have a complete map
@@ -325,7 +307,7 @@ class QuestionnaireViewModel(
                         foodCategoryMap[category.foodDefId] = false
                     }
                     
-                    // Then update with user's selections
+                    // update with user's selections
                     foodPrefs?.forEach { pref ->
                         foodCategoryMap[pref.foodPrefCategoryKey] = pref.foodPrefCheckedStatus
                     }
@@ -344,21 +326,11 @@ class QuestionnaireViewModel(
                     validateTimesLogic()
                     
                     // Check if questionnaire is already completed based on loaded preferences
-                    // Don't check if we're in edit mode
                     checkQuestionnaireCompleted()
                 } catch (e: Exception) {
                     // Handle exceptions during loading, e.g., update a status StateFlow
                      _saveStatus.value = "Error loading preferences: ${e.message}"
                 }
-            // } // End of removed viewModelScope.launch
-        // } else { // Removed else block related to _isEditing check, simplifying the function
-            // We're in edit mode, so just reload to make sure the isQuestionnaireCompleted state
-            // gets properly updated after checking completion
-            // This case is now covered by the main block since _isEditing is set by caller before calling this if needed
-            // viewModelScope.launch {
-            //    checkQuestionnaireCompleted()
-            // }
-        // }
     }
 
     /**
@@ -392,13 +364,7 @@ class QuestionnaireViewModel(
      */
     fun hasUnsavedChanges(): Boolean {
         // If not in edit mode, no unsaved changes
-        if (!_isEditing.value) {
-            return false
-        }
-        
-        // Implementation would compare current state to saved state
-        // For simplicity, we'll return true in edit mode
-        return true
+        return _isEditing.value
     }
 
     /**

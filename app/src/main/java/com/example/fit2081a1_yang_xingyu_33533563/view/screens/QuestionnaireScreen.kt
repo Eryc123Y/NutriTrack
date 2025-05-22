@@ -121,13 +121,8 @@ fun QuestionnaireScreen(
 
     // Effect to load user preferences when the screen is first displayed
     LaunchedEffect(userID) {
-        // Set editing mode based on the parameter first - this is fast
         viewModel.setEditingMode(isEditMode)
-
-        // Load user preferences asynchronously using the LaunchedEffect's scope directly
         viewModel.loadUserPreferences(userID.toString())
-
-        // If in edit mode, explicitly reset completion state AFTER loading preferences
         if (isEditMode) {
             viewModel.resetCompleted()
         }
@@ -141,34 +136,17 @@ fun QuestionnaireScreen(
         }
     }
 
-    // If the questionnaire is completed, navigate to the home screen
-    // LaunchedEffect(isQuestionnaireCompleted) {
-    //     if (isQuestionnaireCompleted) {
-    //         // Reset editing mode flag before navigating back
-    //         viewModel.setEditingMode(false)
-
-    //         // Reduce delay to improve responsiveness - 300ms is enough for visual feedback
-    //         kotlinx.coroutines.delay(300)
-    //         onSaveComplete()
-    //     }
-    // }
-
-    // Handle back press
     BackHandler(enabled = true) {
         if (isInEditMode) {
-            // Only show confirmation dialog if there are unsaved changes
             if (viewModel.hasUnsavedChanges()) {
                 showExitConfirmation.value = true
             } else {
-                // No changes, just go back with proper cleanup
-                // Launch the cancelEditing in a coroutine to avoid blocking the UI thread
                 coroutineScope.launch {
                     viewModel.cancelEditing(userID.toString())
                     onBackClick()
                 }
             }
         } else {
-            // For new users, don't allow going back - they must complete questionnaire
             Toast.makeText(context,
                 "Please complete the questionnaire before proceeding",
                 Toast.LENGTH_SHORT).show()
@@ -215,8 +193,6 @@ fun QuestionnaireScreen(
                     if (viewModel.hasUnsavedChanges()) {
                         showExitConfirmation.value = true
                     } else {
-                        // No changes, just go back with proper cleanup
-                        // Launch in a coroutine to avoid blocking the UI thread
                         coroutineScope.launch {
                             viewModel.cancelEditing(userID.toString())
                             onBackClick()
@@ -225,8 +201,10 @@ fun QuestionnaireScreen(
                 }
             )
         },
-        // Intercepting system back button
-        modifier = Modifier.fillMaxSize().systemBarsPadding()
+
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
     ) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -350,19 +328,14 @@ fun QuestionnaireScreen(
                                         animationSpec = AnimationUtils.smoothSpringSpec
                                     )
                                 } else if (isQuestionnaireValid) {
-                                    // viewModel.saveAllPreferences is a suspend function that returns true on success
                                     if (viewModel.saveAllPreferences(userID.toString())) {
-                                        // If save was successful, onSaveComplete (which handles navigation) is called
                                         onSaveComplete()
                                     }
-                                    // Toast message for save status is handled by a separate LaunchedEffect(saveStatus)
                                 }
                             }
                         },
-                        // Enable 'Next' for pages 0,1,2. Enable 'Save' on page 3 only if valid.
                         enabled = if (pagerState.currentPage < 3) true else isQuestionnaireValid
                     ) {
-                        // Change text to 'Save' on the summary page (page 3)
                         Text(if (pagerState.currentPage < 3) "Next" else "Save")
                     }
                 }
@@ -385,7 +358,9 @@ fun FoodCategoryPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (allFoodCategories.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .weight(1f), contentAlignment = Alignment.Center) {
                 Text(
                     text = "Loading food categories...",
                     style = MaterialTheme.typography.bodyLarge
@@ -394,7 +369,9 @@ fun FoodCategoryPage(
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 100.dp),
-                modifier = Modifier.fillMaxWidth().weight(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -557,7 +534,9 @@ fun SummaryPage(
             Text(
                 text = "Summary",
                 style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
                 textAlign = TextAlign.Center
             )
         }
@@ -671,7 +650,9 @@ fun SummaryPage(
                     UserTimePref.entries.forEach { pref ->
                         val time = timePreferences[pref] ?: ""
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(text = pref.timePrefName, style = MaterialTheme.typography.bodyLarge)
@@ -699,7 +680,9 @@ fun SummaryPage(
 @Composable
 fun QuestionnaireTextRow(text: String, fontSize: Int ) {
     Row(
-        modifier = Modifier.fillMaxWidth() .padding(4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp),
         horizontalArrangement = Arrangement.Start
     ) {
         Text(

@@ -22,7 +22,7 @@ import androidx.room.PrimaryKey
 )
 data class UserTimePreferenceEntity(
     @PrimaryKey val timePrefUserId: String,                  // Foreign key to UserEntity
-    val biggestMealTime: String? = null, // Time of biggest meal (e.g., "08:00")
-    val sleepTime: String? = null,       // Time user goes to sleep (e.g., "23:00")
-    val wakeUpTime: String? = null       // Time user wakes up (e.g., "07:00")
+    val biggestMealTime: String? = null,
+    val sleepTime: String? = null,
+    val wakeUpTime: String? = null
 )
