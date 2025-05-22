@@ -3,7 +3,6 @@ package com.example.fit2081a1_yang_xingyu_33533563
 import android.app.Application
 import android.util.Log
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.AppDatabase
-import com.example.fit2081a1_yang_xingyu_33533563.data.model.dao.PersonaDao
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ChatRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.FoodCategoryDefinitionRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.PersonaRepository
