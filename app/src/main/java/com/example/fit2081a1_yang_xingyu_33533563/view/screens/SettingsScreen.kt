@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -47,6 +48,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.util.verifyClinicianCode
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.InfoCard
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
+import com.example.fit2081a1_yang_xingyu_33533563.view.theme.AccentTeal
+import com.example.fit2081a1_yang_xingyu_33533563.view.theme.Error
 
 /**
  * Created by Eric
@@ -210,7 +213,7 @@ fun UserSettingsContent(
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp) // Increased spacing between cards
     ) {
         // Profile Section
         InfoCard(title = "Profile") {
@@ -223,11 +226,17 @@ fun UserSettingsContent(
         // App Settings Section
         InfoCard(title = "App Settings") {
             ListItem(
-                headlineContent = { Text("Dark Mode") },
+                headlineContent = { 
+                    Text(
+                        "Dark Mode", 
+                        fontWeight = FontWeight.Medium
+                    ) 
+                },
                 leadingContent = {
                     Icon(
                         if (isDarkMode) Icons.Filled.ModeNight else Icons.Filled.WbSunny,
-                        contentDescription = "Dark Mode Icon"
+                        contentDescription = "Dark Mode Icon",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 },
                 trailingContent = {
@@ -243,10 +252,24 @@ fun UserSettingsContent(
         InfoCard(title = "Clinician Portal") {
              Button(
                 onClick = onClinicianLoginClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentTeal
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 2.dp
+                )
             ) {
-                Icon(Icons.Default.Lock, contentDescription = "Clinician Login Icon", modifier = Modifier.padding(end = 8.dp))
-                Text("Clinician Login")
+                Icon(
+                    Icons.Default.Lock, 
+                    contentDescription = "Clinician Login Icon", 
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    "Clinician Login",
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
 
@@ -255,19 +278,45 @@ fun UserSettingsContent(
             Button(
                 onClick = onChangePasswordClick,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 2.dp
+                )
             ) {
-                Icon(Icons.Default.Lock, contentDescription = "Change Password Icon", modifier = Modifier.padding(end = 8.dp))
-                Text("Change Password")
+                Icon(
+                    Icons.Default.Lock, 
+                    contentDescription = "Change Password Icon", 
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    "Change Password",
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp)) // Increased spacing
             Button(
                 onClick = onLogoutClick,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Error
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 2.dp
+                )
             ) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout Icon", modifier = Modifier.padding(end = 8.dp))
-                Text("Log Out")
+                Icon(
+                    Icons.AutoMirrored.Filled.ExitToApp, 
+                    contentDescription = "Logout Icon", 
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    "Log Out",
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
         
@@ -280,13 +329,27 @@ fun UserInfoRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 10.dp), // Increased vertical padding
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(0.4f))
-        Text(text = value, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.6f))
+        Text(
+            text = label, 
+            fontWeight = FontWeight.SemiBold, 
+            style = MaterialTheme.typography.bodyLarge, 
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(0.4f)
+        )
+        Text(
+            text = value, 
+            style = MaterialTheme.typography.bodyMedium, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.6f)
+        )
     }
-    HorizontalDivider()
+    HorizontalDivider(
+        thickness = 0.5.dp,
+        color = MaterialTheme.colorScheme.outlineVariant
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -300,7 +363,13 @@ fun ClinicianLoginDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Clinician Login") },
+        title = { 
+            Text(
+                "Clinician Login",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall
+            ) 
+        },
         text = {
             Column {
                 OutlinedTextField(
@@ -309,20 +378,27 @@ fun ClinicianLoginDialog(
                     label = { Text("Enter Clinician Key") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    isError = showError
+                    isError = showError,
+                    shape = RoundedCornerShape(8.dp)
                 )
                 if (showError) {
                     Text(
                         text = "Invalid clinician code. Please try again.",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentTeal
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
                 Text("Login")
             }
         },
@@ -350,7 +426,13 @@ fun ChangePasswordDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Change Password") },
+        title = { 
+            Text(
+                "Change Password",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall
+            ) 
+        },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
@@ -359,25 +441,28 @@ fun ChangePasswordDialog(
                     label = { Text("Current Password") },
                     singleLine = true,
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = onNewPasswordChange,
                     label = { Text("New Password") },
                     singleLine = true,
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = confirmNewPassword,
                     onValueChange = onConfirmNewPasswordChange,
                     label = { Text("Confirm New Password") },
                     singleLine = true,
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
                 )
                 passwordChangeStatus?.let {
                     val isError = !it.contains("success", ignoreCase = true)
@@ -385,18 +470,25 @@ fun ChangePasswordDialog(
                         text = it,
                         color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 12.dp)
                     )
                 }
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = onConfirm, 
-                enabled = !isLoading
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp)) 
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    ) 
                 } else {
                     Text("Confirm")
                 }

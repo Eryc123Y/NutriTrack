@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Analytics
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,13 +43,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.ScoreTypeDefinitionRepository
+import com.example.fit2081a1_yang_xingyu_33533563.data.model.repository.UserScoreRepository
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.ClinicianDashboardViewModel
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.view.UiState
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.InfoCard
+import com.example.fit2081a1_yang_xingyu_33533563.view.components.ScoreProgressBarRow
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.TopNavigationBar
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.UserScoreDialogViewModel
 
 
 /**
@@ -164,15 +179,20 @@ fun DashboardContent(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
                         text = "HEIFA Score Averages",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -323,11 +343,42 @@ fun PatternItem(
 fun UserStatsContent(
     userStats: List<ClinicianDashboardViewModel.UserStatsDisplay>
 ) {
+    var selectedUser by remember { mutableStateOf<ClinicianDashboardViewModel.UserStatsDisplay?>(null) }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Add hint card at the top
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    Text(
+                        text = "User Display Information",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "• Registered users are shown with their full name\n• Unregistered users are displayed as \"user+id\"",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+        
         if (userStats.isEmpty()) {
             item {
                 Text(
@@ -339,13 +390,19 @@ fun UserStatsContent(
         } else {
             items(userStats) { userStat ->
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selectedUser = userStat },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(20.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -374,6 +431,124 @@ fun UserStatsContent(
             }
         }
     }
+    
+    // Show dialog when a user is selected
+    selectedUser?.let { user ->
+        UserScoreDialog(
+            user = user,
+            onDismiss = { selectedUser = null }
+        )
+    }
+}
+
+/**
+ * Dialog showing detailed scores for a user
+ */
+@Composable
+fun UserScoreDialog(
+    user: ClinicianDashboardViewModel.UserStatsDisplay,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val application = context.applicationContext as android.app.Application
+    val database = com.example.fit2081a1_yang_xingyu_33533563.data.model.AppDatabase.getDatabase(application)
+    val userScoreRepository = UserScoreRepository(database.userScoreDao())
+    val scoreTypeDefinitionRepository = ScoreTypeDefinitionRepository(database.scoreTypeDefinitionDao())
+    
+    val viewModel = remember {
+        UserScoreDialogViewModel(
+            userId = user.userId,
+            userScoreRepository = userScoreRepository,
+            scoreTypeDefinitionRepository = scoreTypeDefinitionRepository
+        )
+    }
+    
+    val scores by viewModel.scores.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false
+        ),
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .padding(16.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 8.dp,
+        titleContentColor = MaterialTheme.colorScheme.primary,
+        textContentColor = MaterialTheme.colorScheme.onSurface,
+        title = {
+            Text(
+                text = if (user.userName.toString() == "null") "User Details" else "${user.userName}'s Details",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                } else if (scores.isEmpty()) {
+                    Text(
+                        text = "No detailed scores available for this user",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Text(
+                        text = "HEIFA Score Breakdown",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
+                    // Display each score with a progress bar
+                    scores.forEach { score ->
+                        ScoreProgressBarRow(
+                            displayName = score.displayName,
+                            currentValue = score.scoreValue,
+                            maxValue = score.maxScore
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp
+                )
+            ) {
+                Text(
+                    "Close",
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    )
 }
 
 /**
@@ -409,14 +584,16 @@ fun AITrendsContent(
             items(trends) { trend ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     MarkdownText(
                         markdown = trend,
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(20.dp)
                     )
                 }
             }
@@ -508,11 +685,13 @@ fun AskAIContent(
                 }
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     )
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
                             text = "Error",
                             style = MaterialTheme.typography.titleMedium,
@@ -534,11 +713,13 @@ fun AskAIContent(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
                             text = "AI Response",
                             style = MaterialTheme.typography.titleMedium,
@@ -573,13 +754,19 @@ fun AskAIContent(
         // Sample questions section
         item {
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
                         text = "Sample Questions",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))

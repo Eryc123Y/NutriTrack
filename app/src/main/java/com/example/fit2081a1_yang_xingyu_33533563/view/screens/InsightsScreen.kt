@@ -6,12 +6,23 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -20,9 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.ScoreTypes
 import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.User
-import com.example.fit2081a1_yang_xingyu_33533563.data.legacy.NutritionScores
 import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.InsightsViewModel
 import com.example.fit2081a1_yang_xingyu_33533563.navigation.Screen
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.BottomNavigationBar
@@ -39,8 +46,8 @@ import com.example.fit2081a1_yang_xingyu_33533563.view.components.TotalScoreCard
 import com.example.fit2081a1_yang_xingyu_33533563.view.components.ScoreProgressBarRow
 import com.example.fit2081a1_yang_xingyu_33533563.util.SharedPreferencesManager
 import com.example.fit2081a1_yang_xingyu_33533563.util.generateSharedText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.example.fit2081a1_yang_xingyu_33533563.view.theme.AccentTeal
+import com.example.fit2081a1_yang_xingyu_33533563.view.theme.Success
 
 @Composable
 fun InsightScreen(
@@ -88,7 +95,9 @@ fun InsightScreen(
         }
     ){ innerPadding ->
         Surface(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
             if (isLoading && displayableScores.isEmpty()) {
@@ -102,8 +111,9 @@ fun InsightScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(scrollState),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                        .verticalScroll(scrollState)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Total score card
@@ -122,18 +132,32 @@ fun InsightScreen(
                     if (displayableScores.any { it.displayName != ScoreTypes.TOTAL.displayName }) {
                         Text(
                             text = "Score Categories",
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                            modifier = Modifier
+                                .padding(top = 16.dp, bottom = 8.dp)
+                                .align(Alignment.Start)
                         )
                         
-                        // Display scores using data from ViewModel
-                        displayableScores.filter { it.displayName != ScoreTypes.TOTAL.displayName }.forEach { scoreData ->
-                            ScoreProgressBarRow(
-                                displayName = scoreData.displayName,
-                                currentValue = scoreData.scoreValue,
-                                maxValue = scoreData.maxScore
-                            )
+                        // Card for score categories with elevated style
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                // Display scores using data from ViewModel
+                                displayableScores.filter { it.displayName != ScoreTypes.TOTAL.displayName }.forEach { scoreData ->
+                                    ScoreProgressBarRow(
+                                        displayName = scoreData.displayName,
+                                        currentValue = scoreData.scoreValue,
+                                        maxValue = scoreData.maxScore
+                                    )
+                                }
+                            }
                         }
                     } else if (!isLoading) {
                         Text("No scores available or user ID not found.", modifier = Modifier.padding(16.dp))
@@ -163,9 +187,27 @@ fun ShareButton(user: User) {
             val chooserIntent = Intent.createChooser(shareIntent, "Share text via")
             context.startActivity(chooserIntent)
         },
-        modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = AccentTeal
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 4.dp
+        )
     ) {
-        Text("Share With Someone")
+        Icon(
+            imageVector = Icons.Filled.Share,
+            contentDescription = "Share Icon",
+            modifier = Modifier.size(ButtonDefaults.IconSize)
+        )
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        Text(
+            text = "Share With Someone",
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
@@ -176,8 +218,26 @@ fun ImproveDietButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.padding(bottom = 16.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Success
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 4.dp
+        )
     ) {
-        Text("Improve My Diet")
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = "Improve Diet Icon",
+            modifier = Modifier.size(ButtonDefaults.IconSize)
+        )
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        Text(
+            text = "Improve My Diet",
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }

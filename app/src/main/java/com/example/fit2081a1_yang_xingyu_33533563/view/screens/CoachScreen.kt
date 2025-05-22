@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -36,6 +37,7 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.delay
 import kotlin.collections.filter
 import kotlin.collections.isNotEmpty
+import com.example.fit2081a1_yang_xingyu_33533563.view.theme.Fruits
 
 @Composable
 fun CoachScreen(
@@ -144,7 +146,13 @@ fun FruitViceQueryPanel(
             onValueChange = onFruitNameInputChange,
             label = { Text("Enter fruit name") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Fruits,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = Fruits,
+                cursorColor = Fruits
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -156,7 +164,11 @@ fun FruitViceQueryPanel(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading && fruitNameInput.isNotBlank()
+            enabled = !isLoading && fruitNameInput.isNotBlank(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Fruits,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
             Text(if (isLoading) "Searching..." else "Get Fruit Details")
         }
@@ -370,13 +382,25 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            singleLine = true
+            singleLine = true,
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.secondary,
+                cursorColor = MaterialTheme.colorScheme.secondary
+            )
         )
 
         LazyColumn(
             state = chatListState,
-            modifier = Modifier.fillMaxWidth().height(300.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -464,7 +488,12 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                         onClick = { 
                             chatInput = question 
                         },
-                        label = { Text(question, style = MaterialTheme.typography.bodySmall) }
+                        label = { Text(question, style = MaterialTheme.typography.bodySmall) },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     )
                 }
             }
@@ -479,7 +508,12 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                         onClick = { 
                             chatInput = question 
                         },
-                        label = { Text(question, style = MaterialTheme.typography.bodySmall) }
+                        label = { Text(question, style = MaterialTheme.typography.bodySmall) },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     )
                 }
             }
@@ -501,6 +535,13 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
             onValueChange = { chatInput = it },
             label = { Text("Ask NutriCoach...") },
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.secondary,
+                cursorColor = MaterialTheme.colorScheme.secondary
+            ),
             trailingIcon = {
                 IconButton(
                     onClick = {
@@ -514,9 +555,10 @@ fun AiChatPanel(genAIViewModel: GenAIViewModel, currentUserIdString: String?) {
                     Icon(
                         Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send message",
-                        tint = if (chatInput.isNotBlank()
-                            && !isLoadingAi) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        tint = if (chatInput.isNotBlank() && !isLoadingAi) 
+                            MaterialTheme.colorScheme.secondary
+                        else 
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     )
                 }
             }
@@ -533,25 +575,31 @@ fun AiMessageBubble(text: String, useMarkdown: Boolean = false) {
         horizontalArrangement = Arrangement.Start
     ) {
         Card(
-            modifier = Modifier.weight(1f, fill = false), // Prevents the card from taking full width if text is short
-            shape = MaterialTheme.shapes.medium,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            modifier = Modifier.weight(1f, fill = false),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Box(modifier = Modifier.padding(12.dp)) {
                 if (useMarkdown) {
                     MarkdownText(
                         markdown = text,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     )
                 } else {
                     Text(
                         text = text,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
         }
-        Spacer(modifier = Modifier.weight(0.2f)) // Pushes the bubble to the left by adding space on the right
+        Spacer(modifier = Modifier.weight(0.2f))
     }
 }
 
@@ -563,16 +611,21 @@ fun UserMessageBubble(text: String) {
             .padding(vertical = 4.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.End
     ) {
-        Spacer(modifier = Modifier.weight(0.2f)) // Pushes the bubble to the right by adding space on the left
+        Spacer(modifier = Modifier.weight(0.2f))
         Card(
-            modifier = Modifier.weight(1f, fill = false), // Prevents the card from taking full width if text is short
-            shape = MaterialTheme.shapes.medium,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+            modifier = Modifier.weight(1f, fill = false),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Box(modifier = Modifier.padding(12.dp)) {
                 MarkdownText(
                     markdown = text,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 )
             }
         }
@@ -589,10 +642,14 @@ fun InfoCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -611,8 +668,9 @@ fun InfoCard(
                     }
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleLarge
-                            .copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 
@@ -624,7 +682,7 @@ fun InfoCard(
                                 .padding(end = 8.dp)
                                 .background(
                                     MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = MaterialTheme.shapes.small
+                                    shape = RoundedCornerShape(8.dp)
                                 )
                         ) {
                             Icon(
@@ -639,7 +697,7 @@ fun InfoCard(
                             onClick = onClearClick,
                             modifier = Modifier.background(
                                 MaterialTheme.colorScheme.errorContainer,
-                                shape = MaterialTheme.shapes.small
+                                shape = RoundedCornerShape(8.dp)
                             )
                         ) {
                             Icon(
@@ -651,6 +709,7 @@ fun InfoCard(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(4.dp))
             content()
         }
     }
