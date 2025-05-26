@@ -1,5 +1,6 @@
 package com.example.fit2081a1_yang_xingyu_33533563.view.screens
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +63,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import com.example.fit2081a1_yang_xingyu_33533563.data.viewmodel.UserScoreDialogViewModel
 
 
 /**
@@ -549,6 +550,54 @@ fun UserScoreDialog(
             }
         }
     )
+}
+
+/**
+ * ViewModel for the UserScoreDialog
+ */
+class UserScoreDialogViewModel(
+    private val userId: String,
+    private val userScoreRepository: UserScoreRepository,
+    private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository
+) : androidx.lifecycle.ViewModel() {
+    
+    private val _scores = MutableStateFlow<List<InsightsViewModel.DisplayableScore>>(emptyList())
+    val scores: StateFlow<List<InsightsViewModel.DisplayableScore>> = _scores.asStateFlow()
+    
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    
+    init {
+        loadUserScores()
+    }
+    
+    private fun loadUserScores() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val userScores = userScoreRepository.getScoresByUserId(userId).firstOrNull() ?: emptyList()
+                val scoreDefinitions = scoreTypeDefinitionRepository.getAllScoreTypes().firstOrNull() ?: emptyList()
+                
+                val displayableScores = userScores.mapNotNull { userScore ->
+                    scoreDefinitions.find { it.scoreDefId == userScore.scoreTypeKey }
+                        ?.let { definition ->
+                            InsightsViewModel.DisplayableScore(
+                                displayName = definition.scoreTypeName,
+                                scoreValue = userScore.scoreValue,
+                                maxScore = definition.scoreMaximum
+                            )
+                        }
+                }.sortedBy { it.displayName != "Total HEIFA Score" } // Put Total score first
+                
+                _scores.value = displayableScores
+            } catch (e: Exception) {
+                Log.e("UserScoreDialogViewModel", "Error loading scores: ${e.message}")
+                _scores.value = emptyList()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }
 
 /**
