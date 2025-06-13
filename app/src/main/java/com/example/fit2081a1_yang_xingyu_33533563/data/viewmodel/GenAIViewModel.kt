@@ -243,7 +243,7 @@ class GenAIViewModel(
      */
     private fun createModelWithSystemInstruction(systemInstructionText: String): GenerativeModel {
         return GenerativeModel(
-            modelName = "gemini-2.5-flash-preview-04-17",
+            modelName = "gemini-2.5-flash-preview-05-20",
             apiKey = BuildConfig.MAPS_API_KEY, // in case it not working, please use AIzaSyAessDw1RJqZWtxUnx0nHTU7V7xxjGv9dg
             systemInstruction = content {
                 text(systemInstructionText)
