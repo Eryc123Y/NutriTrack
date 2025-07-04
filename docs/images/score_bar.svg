@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <!-- Background circle -->
+  <circle cx="80" cy="80" r="70" stroke="#E0E0E0" stroke-width="15" fill="none" />
+  <!-- Progress circle (75%) -->
+  <circle cx="80" cy="80" r="70" stroke="#4CAF50" stroke-width="15" fill="none"
+          stroke-dasharray="439.6" stroke-dashoffset="109.9"
+          stroke-linecap="round" transform="rotate(-90 80 80)" />
+  <!-- Label -->
+  <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="32" fill="#333">75%</text>
+</svg>
