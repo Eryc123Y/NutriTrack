@@ -98,6 +98,24 @@ viewModelScope.launch {
 }
 ```
 
+**Example API response (`banana`)**
+```json
+{
+  "genus": "Musa",
+  "name": "Banana",
+  "id": 1,
+  "family": "Musaceae",
+  "order": "Zingiberales",
+  "nutritions": {
+    "carbohydrates": 22,
+    "protein": 1,
+    "fat": 0.2,
+    "calories": 96,
+    "sugar": 17.2
+  }
+}
+```
+
 ---
 
 ## 5 · Utilities ⚙️
@@ -134,14 +152,40 @@ val viewModel: AuthViewModel = viewModel()
 val uiState by viewModel.uiState.collectAsState()
 ```
 
+**Implementation sketch – `AuthViewModel`**
+```kotlin
+class AuthViewModel(
+    private val userRepo: UserRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<UiState>(UiState.Initial)
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    fun login(userId: String, password: String) {
+        viewModelScope.launch(dispatcher) {
+            _uiState.value = UiState.Loading
+            runCatching {
+                userRepo.login(userId, password)
+            }.onSuccess {
+                _uiState.value = UiState.Success("Welcome back $userId!")
+            }.onFailure { throwable ->
+                _uiState.value = UiState.Error.ApiError(throwable.message ?: "Unknown error")
+            }
+        }
+    }
+}
+```
+This pattern is mirrored across other ViewModels—each exposes a read-only `StateFlow` and mutates its backing state from within `viewModelScope` on the appropriate dispatcher.
+
 ---
 
 ## 7 · Jetpack Compose Components 🎨
 
 | Component | Preview | Description |
 |-----------|---------|-------------|
-| `ScoreProgressBar` | ![progress-bar](./images/score_bar.png) | Radial progress bar visualising nutrition score. |
-| `TimePickerComponent` | ![timePicker](./images/time_picker.png) | Reusable wheel picker for hour/minute selection. |
+| `ScoreProgressBar` | ![progress-bar](./images/score_bar.svg) | Radial progress bar visualising nutrition score. |
+| `TimePickerComponent` | ![timePicker](./images/time_picker.svg) | Reusable wheel picker for hour/minute selection. |
 | `NavigationBars` | – | Bottom / side navigation bars for mobile & tablet. |
 | `PersonaCard` | – | Card with name, emoji & score spark-line. |
 | `InfoCard` | – | Generic card with icon + text. |
