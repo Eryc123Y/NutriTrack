@@ -430,17 +430,12 @@ For support and questions:
 - **📺 Wear OS Support**: Companion app for smartwatches
 - **🔧 Export/Import**: Data portability features
 
-### 🗓️ Roadmap Timeline
-- **Q1 2025**: Push notifications and cloud sync
-- **Q2 2025**: Advanced analytics and fitness integration
-- **Q3 2025**: Multi-language support and food recognition
-- **Q4 2025**: Social features and offline AI capabilities
-
 ---
 
 ## 📈 Project Stats
 
 <!-- Project stats will be updated when repository is public -->
+
 - 📱 **App Version**: 1.0.0
 - 🆔 **Package ID**: com.example.fit2081a1_yang_xingyu_33533563
 - 📦 **APK Size**: ~15MB
