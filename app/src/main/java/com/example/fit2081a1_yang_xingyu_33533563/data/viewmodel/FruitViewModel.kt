@@ -13,18 +13,51 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel for managing fruit data and user fruit preferences.
+ * 
+ * This ViewModel handles:
+ * - Fetching fruit information from external API (FruityVice)
+ * - Managing user fruit serving size preferences
+ * - Handling API loading states and error conditions
+ * - Providing fruit data for the nutrition coach interface
+ * 
+ * @param userRepository Repository for user data operations (serving size preferences)
+ */
 class FruitViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
+    /**
+     * Repository instance for accessing the FruityVice API.
+     * Provides methods for fetching fruit information and nutritional data.
+     */
     private val fruitApiRepository = FruitViceRepo.getRepository()
 
-    // StateFlow to hold the fruit details or error messages
+    // ==================== FRUIT DATA STATE ====================
+    
+    /**
+     * Private mutable StateFlow holding fruit details from API response.
+     * Contains comprehensive information about the requested fruit including nutritional data.
+     */
     private val _fruitDetails = MutableStateFlow<FruitResponse?>(null)
+    
+    /**
+     * Public read-only StateFlow for observing fruit details.
+     * UI components observe this to display fruit information and nutritional data.
+     */
     val fruitDetails: StateFlow<FruitResponse?> = _fruitDetails.asStateFlow()
 
-    // StateFlow for loading state (used for fruit API calls)
+    /**
+     * Private mutable StateFlow tracking API loading state.
+     * Used to show loading indicators during fruit data fetching operations.
+     */
     private val _isLoading = MutableStateFlow(false)
+    
+    /**
+     * Public read-only StateFlow for observing loading state.
+     * UI uses this to show/hide loading spinners and disable controls during API calls.
+     */
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // StateFlow for user's fruit serving size

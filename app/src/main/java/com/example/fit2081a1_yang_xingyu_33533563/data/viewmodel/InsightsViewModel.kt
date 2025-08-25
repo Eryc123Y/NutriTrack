@@ -12,13 +12,31 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-// Assuming the filename is InsightViewModel.kt based on previous exploration
+/**
+ * ViewModel for managing insights and analytics data.
+ * 
+ * This ViewModel handles:
+ * - Loading and displaying user nutrition scores
+ * - Managing score type definitions and display formats
+ * - Providing analytics data for the insights screen
+ * - Calculating score-based metrics and progress indicators
+ * 
+ * @param userScoreRepository Repository for user score data operations
+ * @param scoreTypeDefinitionRepository Repository for score type definitions
+ */
 class InsightsViewModel(
     private val userScoreRepository: UserScoreRepository,
     private val scoreTypeDefinitionRepository: ScoreTypeDefinitionRepository
 ) : ViewModel() {
 
-    // A helper data class for displaying scores - remains the same
+    /**
+     * Helper data class for displaying scores in the UI.
+     * Combines score values with display names and maximum values for proper visualization.
+     * 
+     * @param displayName Human-readable name for the score type
+     * @param scoreValue The actual score value achieved by the user
+     * @param maxScore The maximum possible score for this type
+     */
     data class DisplayableScore(
         val displayName: String,
         val scoreValue: Float,
