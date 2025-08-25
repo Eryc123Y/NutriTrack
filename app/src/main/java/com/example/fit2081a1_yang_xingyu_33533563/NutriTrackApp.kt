@@ -20,11 +20,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+/**
+ * Application class for NutriTrack that manages the application lifecycle
+ * and initializes core components like database, repositories, and ViewModels.
+ * 
+ * This class serves as the dependency injection container for the entire application,
+ * providing centralized access to all repositories and data sources.
+ */
 class NutriTrackApp : Application() {
-    // Application scope for database operations
+    // Application scope for database operations using SupervisorJob for structured concurrency
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     
-    // Database and repositories , use lateinit for lazy initialization
+    // Database and repositories - use lateinit for lazy initialization
+    // These are initialized in onCreate() and available throughout the app lifecycle
     lateinit var database: AppDatabase
     lateinit var foodCategoryDefinitionRepository: FoodCategoryDefinitionRepository
     lateinit var personaRepository: PersonaRepository
@@ -37,11 +45,19 @@ class NutriTrackApp : Application() {
     lateinit var authViewModel: AuthViewModel
     lateinit var chatRepository: ChatRepository
 
+    /**
+     * Called when the application is starting.
+     * Initializes all core components including database, repositories, and ViewModel factory.
+     */
     override fun onCreate() {
         super.onCreate()
         initializeComponents()
     }
 
+    /**
+     * Called when the application is terminating.
+     * Performs cleanup operations including user logout if AuthViewModel is initialized.
+     */
     override fun onTerminate() {
         super.onTerminate()
         if (::authViewModel.isInitialized) {
@@ -50,11 +66,15 @@ class NutriTrackApp : Application() {
         }
     }
     
+    /**
+     * Initializes all core application components in the correct order.
+     * This method sets up the database, repositories, and ViewModel factory.
+     */
     private fun initializeComponents() {
-        // Initialize database
+        // Initialize Room database with all necessary DAOs
         database = AppDatabase.getDatabase(applicationContext)
         
-        // Initialize repositories
+        // Initialize repositories with their corresponding DAOs
         foodCategoryDefinitionRepository = FoodCategoryDefinitionRepository(database.foodCategoryDefinitionDao())
         personaRepository = PersonaRepository(database.personaDao())
         userRepository = UserRepository(database.userDao())
@@ -64,7 +84,7 @@ class NutriTrackApp : Application() {
         userScoreRepository = UserScoreRepository(database.userScoreDao())
         chatRepository = ChatRepository(database.chatMessageDao())
         
-        // Initialize ViewModel factory
+        // Initialize ViewModel factory with all required dependencies
         viewModelProviderFactory = ViewModelProviderFactory(
             userRepository = userRepository,
             personaRepository = personaRepository,
@@ -77,10 +97,14 @@ class NutriTrackApp : Application() {
             sharedPreferencesManager = SharedPreferencesManager.getInstance(applicationContext),
         )
 
-        // Initialize database with data
+        // Initialize database with initial data if needed
         initializeDatabase()
     }
 
+    /**
+     * Initializes the database with default data using a coroutine.
+     * This runs on the IO dispatcher to avoid blocking the main thread.
+     */
     private fun initializeDatabase() {
         applicationScope.launch {
             InitDataUtils.initializeDatabaseAsNeeded(
